@@ -22,6 +22,7 @@ try:
         InvestorPortfolio,
         AppUser,
     )
+    from backend.api.v1 import api_v1_router
 except ImportError:
     from config import settings
     from database import engine, get_db
@@ -34,6 +35,7 @@ except ImportError:
         InvestorPortfolio,
         AppUser,
     )
+    from api.v1 import api_v1_router
 
 
 @asynccontextmanager
@@ -77,6 +79,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount API v1 Routes
+app.include_router(api_v1_router)
 
 
 @app.get("/")
