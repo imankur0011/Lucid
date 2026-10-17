@@ -138,8 +138,8 @@ class PortfolioBacktestEngine:
             f"{eq_res['sharpe_ratio']:.2f} for Equal-Weight and {mkt_res['sharpe_ratio']:.2f} for the Market Proxy.",
             f"Maximum Drawdown for the optimized portfolio was constrained to -{opt_res['max_drawdown_pct']:.2f}% "
             f"versus -{mkt_res['max_drawdown_pct']:.2f}% for the market cap-weighted index.",
-            f"Diversification score of {opt_res['diversification_score']:.1f}/100 complies with SEBI single-stock (≤25%) "
-            f"and sector (≤40%) risk limits.",
+            f"Diversification score of {opt_res['diversification_score']:.1f}/100 complies with application single-stock (≤25%) "
+            f"and sector (≤40%) safety limits.",
         ]
 
         return {

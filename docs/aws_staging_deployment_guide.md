@@ -86,38 +86,75 @@ Attach policy granting:
 ### Database Migration & Seeding
 On initial launch or CI/CD deployment:
 ```bash
-# Run Alembic migrations against staging RDS
-DATABASE_URL="postgresql://..." alembic upgrade head
+# Run Alembic migrations against staging RDS (using canonical DATABASE_URL)
+DATABASE_URL="postgresql://db_user:db_pass@staging-rds.czx.ap-south-1.rds.amazonaws.com:5432/portfolio_staging" \
+  ./.venv/bin/alembic upgrade head
 
-# Seed initial universe & strategies
-DATABASE_URL="postgresql://..." python -m backend.seed.seed_data
+# Seed initial securities, listings, sectors, and benchmark data
+DATABASE_URL="postgresql://db_user:db_pass@staging-rds.czx.ap-south-1.rds.amazonaws.com:5432/portfolio_staging" \
+  ./.venv/bin/python -m backend.seed.seed_data
 ```
 
-### Restore Testing Protocol (AWS Reliability Pillar Compliance)
-AWS Well-Architected Framework requires verifying backup recoverability regularly:
+### Database Recovery Testing Protocol (AWS Reliability Pillar)
+AWS Well-Architected Framework requires distinguishing between **Snapshot Restores** and true **Point-In-Time Recovery (PITR)**:
+
+#### Procedure A: Manual Snapshot Restore Drill
+Proves an operator can restore a specific historical point-in-time snapshot:
 1. **Trigger Manual Snapshot:**
    ```bash
    aws rds create-db-snapshot \
      --db-instance-identifier portfolio-staging-rds \
-     --db-snapshot-identifier staging-recovery-drill-$(date +%Y%m%d)
+     --db-snapshot-identifier staging-manual-snapshot-$(date +%Y%m%d) \
+     --region ap-south-1
    ```
 2. **Restore Snapshot to Temporary Drill Instance:**
    ```bash
    aws rds restore-db-instance-from-db-snapshot \
-     --db-instance-identifier drill-restore-test \
-     --db-snapshot-identifier staging-recovery-drill-$(date +%Y%m%d) \
+     --db-instance-identifier drill-snapshot-test \
+     --db-snapshot-identifier staging-manual-snapshot-$(date +%Y%m%d) \
      --db-instance-class db.t4g.micro \
-     --publicly-accessible false
+     --vpc-security-group-ids sg-rds-private \
+     --db-subnet-group-name portfolio-db-subnets \
+     --publicly-accessible false \
+     --region ap-south-1
    ```
-3. **Run Validation Query against Drill Instance:**
+3. **Validate Restored Schema & Holdings:**
    ```bash
-   psql -h <drill-endpoint> -U db_user -d portfolio_staging -c "SELECT count(*) FROM securities; SELECT count(*) FROM portfolio_versions;"
+   psql -h <drill-snapshot-test-endpoint> -U db_user -d portfolio_staging \
+     -c "SELECT count(*) FROM securities; SELECT count(*) FROM portfolio_versions;"
    ```
-4. **Teardown Drill Instance:**
+4. **Teardown Snapshot Drill Instance:**
    ```bash
-   aws rds delete-db-instance \
-     --db-instance-identifier drill-restore-test \
-     --skip-final-snapshot
+   aws rds delete-db-instance --db-instance-identifier drill-snapshot-test --skip-final-snapshot
+   ```
+
+#### Procedure B: True Point-In-Time Recovery (PITR) Drill
+Proves continuous write-ahead log (WAL) restoration to an arbitrary second within the backup retention window:
+1. **Identify Target Restore Time (e.g. 1 hour ago UTC):**
+   ```bash
+   RESTORE_TIME=$(date -u -v-1H +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date -u -d "1 hour ago" +"%Y-%m-%dT%H:%M:%SZ")
+   echo "Executing PITR drill to target time: $RESTORE_TIME"
+   ```
+2. **Execute Point-In-Time Restore Command:**
+   ```bash
+   aws rds restore-db-instance-to-point-in-time \
+     --source-db-instance-identifier portfolio-staging-rds \
+     --target-db-instance-identifier drill-pitr-test \
+     --restore-time "$RESTORE_TIME" \
+     --db-instance-class db.t4g.micro \
+     --vpc-security-group-ids sg-rds-private \
+     --db-subnet-group-name portfolio-db-subnets \
+     --publicly-accessible false \
+     --region ap-south-1
+   ```
+3. **Verify Restored Endpoint Connectivity & Audit Table Counts:**
+   ```bash
+   psql -h <drill-pitr-test-endpoint> -U db_user -d portfolio_staging \
+     -c "SELECT count(*) AS total_tables FROM information_schema.tables WHERE table_schema='public';"
+   ```
+4. **Teardown PITR Drill Instance:**
+   ```bash
+   aws rds delete-db-instance --db-instance-identifier drill-pitr-test --skip-final-snapshot
    ```
 
 ---
@@ -125,30 +162,49 @@ AWS Well-Architected Framework requires verifying backup recoverability regularl
 ## 4. Backend Deployment (FastAPI + LangGraph on EC2)
 
 ### Provisioning EC2
-1. **AMI:** Ubuntu Server 24.04 LTS (HVM), ARM64 or x86_64.
+1. **AMI:** Ubuntu Server 24.04 LTS (HVM), **ARM64** (`aarch64`).  
+   *(Strict Architecture Requirement: AWS Graviton `t4g.small` is an ARM64 processor; do not select an x86_64 AMI).*
 2. **Instance Type:** `t4g.small` (2 vCPU, 2 GB RAM).
-3. **Storage:** 30 GB gp3.
-4. **Security Group:**
-   - Inbound 22: Restricted to Administrator IP.
-   - Inbound 443 / 80: Restricted to Application Load Balancer or public if standalone Nginx with Let's Encrypt.
+3. **Storage:** 30 GB gp3 root EBS volume.
+4. **Security Group (`sg-ec2-backend`):**
+   - Inbound 22: Restricted to Administrator IP or via AWS Systems Manager Session Manager (recommended, requires zero open inbound ports).
+   - Inbound 443 / 80: Restricted to Application Load Balancer (or Nginx with Let's Encrypt).
+
+### Secret Bootstrap Script (`/opt/portfolio-app/scripts/bootstrap_env.sh`)
+Pulls encrypted secrets from AWS Systems Manager Parameter Store into the application environment file:
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "Fetching staging secrets from AWS SSM Parameter Store..."
+aws ssm get-parameters-by-path \
+  --path "/portfolio-app/staging" \
+  --with-decryption \
+  --region ap-south-1 \
+  --query "Parameters[*].[Name,Value]" \
+  --output text | awk '{split($1,a,"/"); print a[4]"="$2}' > /etc/portfolio-backend.env
+
+chmod 600 /etc/portfolio-backend.env
+echo "Environment configuration successfully generated at /etc/portfolio-backend.env"
+```
 
 ### Systemd Service Configuration (`/etc/systemd/system/portfolio-backend.service`)
 ```ini
 [Unit]
-Description=Portfolio Optimization Backend API
+Description=Intelligent Portfolio Optimization Backend API
 After=network.target
 
 [Service]
 User=ubuntu
-WorkingDirectory=/opt/portfolio-app/backend
+WorkingDirectory=/opt/portfolio-app
 EnvironmentFile=/etc/portfolio-backend.env
-ExecStart=/opt/portfolio-app/.venv/bin/gunicorn backend.main:app \
-    --workers 3 \
-    --worker-class uvicorn.workers.UvicornWorker \
-    --bind 127.0.0.1:8000 \
-    --timeout 120 \
-    --access-logfile /var/log/portfolio/access.log \
-    --error-logfile /var/log/portfolio/error.log
+Environment="PYTHONPATH=/opt/portfolio-app"
+# Single worker for 2GB RAM t4g.small to avoid memory pressure from SciPy and LLM calls
+ExecStart=/opt/portfolio-app/.venv/bin/uvicorn backend.main:app \
+    --host 127.0.0.1 \
+    --port 8000 \
+    --workers 1 \
+    --log-config /opt/portfolio-app/backend/logging.conf
 Restart=always
 RestartSec=5
 
@@ -239,9 +295,11 @@ frontend:
 1. Create a monthly cost budget in **AWS Budgets**:
    - Budget Amount: `$25.00 / month`
    - Threshold 1: 80% ($20.00) -> Email alert to Administrator.
-   - Threshold 2: 100% ($25.00) -> High-priority notification.
-2. Estimated Monthly Staging Cost:
-   - EC2 `t4g.small`: ~$12.00/mo
-   - RDS PostgreSQL `db.t4g.micro`: ~$13.00/mo
-   - Amplify Hosting: ~$2.00/mo
-   - **Total Estimated Staging Cost:** ~$27.00/mo (eligible for AWS Free Tier offsets).
+   - Threshold 2: 100% ($25.00) -> High-priority SNS notification + trigger Lambda to stop non-essential EC2 instances.
+2. Itemized Monthly Staging Cost (AWS Mumbai `ap-south-1` Pricing Calculator):
+   - **EC2 `t4g.small` (ARM64, 2GB RAM):** ~$12.26 / month (or $0.00 if using first-month AWS Graviton free trial).
+   - **RDS PostgreSQL `db.t4g.micro` (20GB gp3, Single-AZ):** ~$13.14 / month (or free tier eligible for first 12 months with 20GB storage).
+   - **Public IPv4 Address ($0.005/hr):** ~$3.60 / month (eliminated if instance uses private subnet with AWS Systems Manager / Amplify).
+   - **AWS Amplify Hosting:** ~$0.00 / month (within Free Tier: 1,000 build minutes, 5 GB storage, 15 GB served).
+   - **Total Estimated Staging Cost:** ~$25.40 – $29.00 / month before Free Tier offsets; effectively **$0.00 – $5.00 / month** on active AWS Free Tier accounts.
+   - *Important Operational Rule:* AWS Budget alerts notify administrators but **do not automatically shut down resources**. Configure an AWS Budget Action or CloudWatch billing alarm with an automated Lambda stop-instance target to strictly cap spending at $25.00/month.

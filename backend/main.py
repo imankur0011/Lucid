@@ -46,6 +46,9 @@ async def lifespan(app: FastAPI):
     print(f"   Neo4j: {settings.neo4j_uri}")
     print(f"   PostgreSQL: {settings.postgres_host}:{settings.postgres_port}/{settings.postgres_db}")
 
+    # Validate Security Keys in non-dev environments
+    settings.validate_security_keys()
+
     # Verify Database Connection
     try:
         with engine.connect() as conn:
@@ -95,9 +98,10 @@ async def root():
     }
 
 
+@app.get("/health")
 @app.get("/api/health")
 async def health(db: Session = Depends(get_db)):
-    """Health check with database connectivity status."""
+    """Health check with database connectivity status. Serves both /health (ALB/Nginx) and /api/health."""
     db_status = "unhealthy"
     table_count = 0
     try:
@@ -114,8 +118,8 @@ async def health(db: Session = Depends(get_db)):
         "database": {"status": db_status},
     }
 
-    # Only expose detailed infrastructure metadata in non-production environments
-    if settings.app_env != "production":
+    # Only expose detailed infrastructure metadata in development environment
+    if settings.app_env == "development":
         response["database"].update({
             "host": settings.postgres_host,
             "port": settings.postgres_port,
@@ -130,9 +134,9 @@ async def health(db: Session = Depends(get_db)):
 
 @app.get("/api/db/stats")
 async def db_stats(db: Session = Depends(get_db)):
-    """Returns database summary statistics across core domain entities (dev diagnostic)."""
-    if settings.app_env == "production":
-        raise HTTPException(status_code=403, detail="Diagnostic endpoint disabled in production.")
+    """Returns database summary statistics across core domain entities (dev diagnostic only)."""
+    if settings.app_env in ("production", "staging"):
+        raise HTTPException(status_code=403, detail="Diagnostic endpoint disabled in non-development environments.")
 
     return {
         "users": db.query(AppUser).count(),

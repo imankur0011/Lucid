@@ -85,17 +85,38 @@ def calculate_risk_scores(db: Session, answers: list) -> tuple[float, float, str
     tolerance_score = (tolerance_sum / tolerance_weight) if tolerance_weight > 0 else overall_score
     capacity_score = (capacity_sum / capacity_weight) if capacity_weight > 0 else overall_score
 
-    # Deterministic mapping to SEBI-aligned risk classification
-    if overall_score < 35.0:
-        risk_category = "very_conservative"
-    elif overall_score < 50.0:
-        risk_category = "conservative"
-    elif overall_score < 70.0:
-        risk_category = "moderate"
-    elif overall_score < 85.0:
-        risk_category = "growth"
-    else:
-        risk_category = "aggressive"
+    # Deterministic mapping to canonical 5-tier classification
+    def _score_to_category(score: float) -> str:
+        if score < 35.0:
+            return "very_conservative"
+        elif score < 50.0:
+            return "conservative"
+        elif score < 70.0:
+            return "moderate"
+        elif score < 85.0:
+            return "growth"
+        else:
+            return "aggressive"
+
+    tolerance_category = _score_to_category(tolerance_score)
+    capacity_category = _score_to_category(capacity_score)
+
+    CATEGORY_RANKS = {
+        "very_conservative": 1,
+        "conservative": 2,
+        "moderate": 3,
+        "growth": 4,
+        "aggressive": 5,
+    }
+    RANK_TO_CATEGORY = {v: k for k, v in CATEGORY_RANKS.items()}
+
+    # Fiduciary Suitability Policy (SEBI IA Master Circular Principle):
+    # An investor's actionable risk posture cannot exceed their financial loss capacity.
+    # final_category = min(tolerance_category, capacity_category)
+    tol_rank = CATEGORY_RANKS[tolerance_category]
+    cap_rank = CATEGORY_RANKS[capacity_category]
+    final_rank = min(tol_rank, cap_rank)
+    risk_category = RANK_TO_CATEGORY[final_rank]
 
     return round(tolerance_score, 2), round(capacity_score, 2), risk_category
 

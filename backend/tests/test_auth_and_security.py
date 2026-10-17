@@ -116,3 +116,34 @@ def test_user_data_isolation_on_existing_portfolios():
         assert "unauthorized" in res.json()["detail"].lower() or "not found" in res.json()["detail"].lower()
     finally:
         db.close()
+
+
+def test_admin_authorization_enforced_on_ingestion_in_staging(monkeypatch):
+    """Verify that in staging, market data ingestion requires admin credentials."""
+    from backend.config import settings
+    monkeypatch.setattr(settings, "app_env", "staging")
+
+    # Regular non-admin user
+    reg_token = create_access_token(DEMO_USER_ID)
+    reg_headers = {"Authorization": f"Bearer {reg_token}"}
+
+    res = client.post(
+        "/api/v1/market-data/ingest",
+        json={"symbol": "RELIANCE", "provider": "simulated"},
+        headers=reg_headers,
+    )
+    assert res.status_code == 403, f"Expected 403 Forbidden for regular user, got {res.status_code}"
+    assert "admin" in res.json()["detail"].lower()
+
+
+def test_insecure_jwt_secret_rejected_in_staging(monkeypatch):
+    """Verify that startup fails if an insecure/default secret key is configured in staging."""
+    from backend.config import Settings
+    import pytest
+
+    insecure_settings = Settings(
+        app_env="staging",
+        jwt_secret_key="change-me-short",
+    )
+    with pytest.raises(ValueError, match="CRITICAL SECURITY CONFIGURATION ERROR"):
+        insecure_settings.validate_security_keys()

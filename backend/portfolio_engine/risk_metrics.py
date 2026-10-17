@@ -66,10 +66,17 @@ def compute_portfolio_metrics(
     # HHI = sum(w_i^2) where w_i is fraction in [0, 1]
     hhi = float(np.sum(weights ** 2))
 
-    # Diversification Score: 0 to 100
-    # For a fully concentrated 1-stock portfolio, HHI = 1.0 -> score = 0
-    # For equal weight of 10 stocks, HHI = 0.10 -> score = 90
-    diversification_score = round(max(0.0, min(100.0, (1.0 - hhi) * 100.0)), 2)
+    # Normalized Diversification Score (0 to 100):
+    # Benchmark: 0 for full concentration (1 asset), 100 for theoretical maximum equal-weight (1/N)
+    if n <= 1:
+        diversification_score = 0.0
+    else:
+        min_hhi = 1.0 / n
+        if abs(1.0 - min_hhi) < 1e-6:
+            diversification_score = 100.0
+        else:
+            norm_val = (hhi - min_hhi) / (1.0 - min_hhi)
+            diversification_score = round(max(0.0, min(100.0, (1.0 - norm_val) * 100.0)), 2)
 
     return {
         "expected_return_pct": round(port_return, 4),
@@ -77,4 +84,5 @@ def compute_portfolio_metrics(
         "sharpe_ratio": round(sharpe, 4),
         "diversification_score": diversification_score,
         "herfindahl_index": round(hhi, 4),
+        "raw_diversification_pct": round((1.0 - hhi) * 100.0, 2),
     }

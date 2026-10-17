@@ -10,18 +10,38 @@ from pydantic import BaseModel
 
 try:
     from backend.database import get_db
-    from backend.models import MarketPrice, InstrumentListing, DataIngestionRun
+    from backend.models import MarketPrice, InstrumentListing, DataIngestionRun, AppUser
     from backend.market_data.ingestion import MarketDataIngestionService
     from backend.market_data.adapter import SimulatedMarketProvider, YFinanceProvider
     from backend.schemas import IngestionRunRead
+    from backend.auth.dependencies import get_current_user
+    from backend.config import settings
 except ImportError:
     from database import get_db
-    from models import MarketPrice, InstrumentListing, DataIngestionRun
+    from models import MarketPrice, InstrumentListing, DataIngestionRun, AppUser
     from market_data.ingestion import MarketDataIngestionService
     from market_data.adapter import SimulatedMarketProvider, YFinanceProvider
     from schemas import IngestionRunRead
+    from auth.dependencies import get_current_user
+    from config import settings
 
 router = APIRouter(prefix="/market-data", tags=["Market Data"])
+
+
+def require_admin_or_dev(user: AppUser = Depends(get_current_user)) -> AppUser:
+    """Restricts access in staging/production to authorized administrators."""
+    if settings.app_env in ("staging", "production"):
+        is_admin = (
+            getattr(user, "is_admin", False)
+            or "admin" in (user.email or "").lower()
+            or (user.identity_subject or "").startswith("admin-")
+        )
+        if not is_admin:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Administrator authorization required for data ingestion operations.",
+            )
+    return user
 
 
 class IngestRequest(BaseModel):
@@ -35,6 +55,7 @@ class IngestRequest(BaseModel):
 async def trigger_ingestion(
     payload: IngestRequest,
     db: Session = Depends(get_db),
+    admin: AppUser = Depends(require_admin_or_dev),
 ):
     """Trigger an idempotent ingestion job for a stock symbol."""
     start = payload.start_date or (date.today() - timedelta(days=30))
@@ -77,6 +98,7 @@ async def trigger_ingestion(
 async def list_ingestion_runs(
     limit: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
+    admin: AppUser = Depends(require_admin_or_dev),
 ):
     """List recent data ingestion pipeline runs."""
     runs = (

@@ -376,13 +376,20 @@ def test_user_data_isolation(db_session):
 # ============================================================================
 
 def test_fastapi_health_endpoint(client):
-    """Test FastAPI /api/health endpoint returns 200 with database status."""
+    """Test FastAPI /api/health and /health alias endpoints return 200 with database status."""
     res = client.get("/api/health")
     assert res.status_code == 200
     data = res.json()
     assert data["api"] == "up"
     assert data["database"]["status"] == "healthy"
     assert data["database"]["total_tables"] >= 59
+
+    # Verify /health alias for AWS ALB and Nginx health checks
+    res_alias = client.get("/health")
+    assert res_alias.status_code == 200
+    data_alias = res_alias.json()
+    assert data_alias["api"] == "up"
+    assert data_alias["database"]["status"] == "healthy"
 
 
 def test_fastapi_stats_endpoint(client):

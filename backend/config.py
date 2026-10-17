@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:3000"
     risk_free_rate_pct: float = 7.0  # Configurable benchmark yield (India 10Y G-Sec)
 
+    # --- Database URL (Overrides component settings if provided) ---
+    database_url: Optional[str] = None
+
     # --- Data Paths ---
     data_raw_dir: str = "../data/raw"
     data_processed_dir: str = "../data/processed"
@@ -53,6 +56,13 @@ class Settings(BaseSettings):
 
     @property
     def postgres_url(self) -> str:
+        # Canonical Precedence: Explicit database_url or DATABASE_URL overrides component settings
+        raw_url = self.database_url or os.environ.get("DATABASE_URL")
+        if raw_url:
+            if raw_url.startswith("postgresql://") and not raw_url.startswith("postgresql+psycopg2://"):
+                return raw_url.replace("postgresql://", "postgresql+psycopg2://", 1)
+            return raw_url
+
         if self.postgres_password:
             return (
                 f"postgresql+psycopg2://{self.postgres_user}:{self.postgres_password}"
@@ -62,6 +72,20 @@ class Settings(BaseSettings):
             f"postgresql+psycopg2://{self.postgres_user}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
+
+    def validate_security_keys(self) -> None:
+        """Fails closed in staging/production if default or insecure secrets are configured."""
+        if self.app_env.lower() in ("staging", "production"):
+            if not self.jwt_secret_key or "change-me" in self.jwt_secret_key or len(self.jwt_secret_key) < 32:
+                raise ValueError(
+                    f"CRITICAL SECURITY CONFIGURATION ERROR: Environment '{self.app_env}' strictly requires "
+                    f"a non-default JWT_SECRET_KEY of at least 32 characters (RFC 7518 Section 3.2)."
+                )
+            if not self.app_secret_key or "change-me" in self.app_secret_key:
+                raise ValueError(
+                    f"CRITICAL SECURITY CONFIGURATION ERROR: Environment '{self.app_env}' strictly requires "
+                    f"a non-default APP_SECRET_KEY."
+                )
 
     @property
     def redis_url(self) -> str:

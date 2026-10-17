@@ -114,9 +114,14 @@ def test_portfolio_metrics_and_diversification_score():
     metrics = compute_portfolio_metrics(allocations)
     assert metrics["expected_return_pct"] > 0
     assert metrics["expected_volatility_pct"] > 0
-    # Equal weight of 10 stocks has HHI = 10 * (0.10^2) = 0.10 -> Diversification score = 90.0
-    assert metrics["diversification_score"] == 90.0
+    # Equal weight of 10 stocks has HHI = 10 * (0.10^2) = 0.10 -> Normalized Diversification = 100.0
+    assert metrics["diversification_score"] == 100.0
     assert metrics["herfindahl_index"] == 0.10
+
+    # Concentrated single stock has HHI = 1.0 -> Normalized Diversification = 0.0
+    conc_metrics = compute_portfolio_metrics([{"symbol": "ONLY_ONE", "target_weight_pct": 100.0}])
+    assert conc_metrics["herfindahl_index"] == 1.0
+    assert conc_metrics["diversification_score"] == 0.0
 
 
 def test_infeasible_constraints_produce_explicit_failure():
@@ -225,4 +230,44 @@ def test_mathematical_mean_variance_objective_and_constraints():
     assert metrics_vc["expected_return_pct"] > 0
     assert metrics_agg["expected_return_pct"] > 0
     assert metrics_vc["diversification_score"] >= 70.0
+
+
+def test_post_rounding_integer_allocation_validation():
+    """Verifies that integer share rounding is audited against budget overruns and realized cap breaches."""
+    from backend.portfolio_engine.validators import PortfolioValidator
+    from backend.portfolio_engine.constraints import PortfolioConstraints
+    from decimal import Decimal
+
+    validator = PortfolioValidator(PortfolioConstraints(max_single_stock_pct=25.0, max_sector_pct=40.0))
+
+    # Case 1: Realized purchase breaches budget (unallocated cash < 0)
+    overrun_allocs = [
+        {"symbol": "STOCK_A", "target_weight_pct": 25.0, "shares_quantity": 60, "latest_price": 1000.0, "sector_name": "Tech"}, # 60,000
+        {"symbol": "STOCK_B", "target_weight_pct": 25.0, "shares_quantity": 50, "latest_price": 1000.0, "sector_name": "Finance"}, # 50,000
+    ] # Total 110,000 on a 100,000 budget!
+    res_overrun = validator.validate_portfolio(overrun_allocs, Decimal("100000.00"))
+    assert not res_overrun["all_passed"]
+    assert any(r["rule_code"] == "BUDGET_OVERRUN_PROTECTION" and r["result_status"] == "fail" for r in res_overrun["results"])
+
+    # Case 2: Post-rounding weight exceeds single-stock cap
+    cap_breach_allocs = [
+        {"symbol": "STOCK_A", "target_weight_pct": 25.0, "shares_quantity": 30, "latest_price": 1000.0, "sector_name": "Tech"}, # 30,000 / 100,000 = 30% > 25%
+        {"symbol": "STOCK_B", "target_weight_pct": 25.0, "shares_quantity": 20, "latest_price": 1000.0, "sector_name": "Finance"},
+    ]
+    res_breach = validator.validate_portfolio(cap_breach_allocs, Decimal("100000.00"))
+    assert not res_breach["all_passed"]
+    assert any(r["rule_code"] == "POST_ROUNDING_STOCK_CAP" and r["result_status"] == "fail" for r in res_breach["results"])
+
+    # Case 3: Compliant integer shares with positive liquid cash reserve
+    valid_allocs = [
+        {"symbol": "STOCK_A", "target_weight_pct": 20.0, "shares_quantity": 19, "latest_price": 1000.0, "sector_name": "Tech"}, # 19,000 (19%)
+        {"symbol": "STOCK_B", "target_weight_pct": 20.0, "shares_quantity": 20, "latest_price": 1000.0, "sector_name": "Finance"}, # 20,000 (20%)
+        {"symbol": "STOCK_C", "target_weight_pct": 20.0, "shares_quantity": 20, "latest_price": 1000.0, "sector_name": "Energy"}, # 20,000 (20%)
+        {"symbol": "STOCK_D", "target_weight_pct": 20.0, "shares_quantity": 20, "latest_price": 1000.0, "sector_name": "FMCG"}, # 20,000 (20%)
+        {"symbol": "STOCK_E", "target_weight_pct": 20.0, "shares_quantity": 20, "latest_price": 1000.0, "sector_name": "Healthcare"}, # 20,000 (20%)
+    ] # Total 99,000 with 1,000 unallocated cash
+    res_valid = validator.validate_portfolio(valid_allocs, Decimal("100000.00"))
+    assert res_valid["all_passed"]
+    assert any(r["rule_code"] == "POST_ROUNDING_BUDGET_VERIFIED" and r["result_status"] == "pass" for r in res_valid["results"])
+
 

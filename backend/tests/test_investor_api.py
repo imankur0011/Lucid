@@ -120,7 +120,7 @@ def test_risk_questions_retrieval_and_submission():
     assert assessment["user_id"] == DEMO_USER_ID
     assert assessment["assessment_status"] == "completed"
     assert assessment["risk_tolerance_score"] is not None
-    assert assessment["risk_category"] in ["conservative", "moderate", "growth", "aggressive"]
+    assert assessment["risk_category"] in ["very_conservative", "conservative", "moderate", "growth", "aggressive"]
 
     # 3. Get Latest Completed Assessment
     latest_res = client.get("/api/v1/risk-assessments/latest")
@@ -128,3 +128,48 @@ def test_risk_questions_retrieval_and_submission():
     latest = latest_res.json()
     assert latest["risk_assessment_id"] == assessment["risk_assessment_id"]
     assert latest["risk_category"] == assessment["risk_category"]
+
+
+def test_fiduciary_capacity_constraint_and_threshold_boundaries():
+    """
+    Verifies that when financial risk capacity is constrained (e.g. low capacity score),
+    the final assigned risk category cannot exceed the capacity rank, regardless of high tolerance.
+    """
+    from backend.api.v1.risk_assessments import calculate_risk_scores
+    from backend.models import RiskQuestion, RiskQuestionOption
+    from backend.database import SessionLocal
+    import uuid
+
+    # Test pure function calculation directly
+    # Simulate high tolerance (answers with score 90) and low capacity (answers with score 20)
+    db = SessionLocal()
+    try:
+        # Retrieve all active questions
+        questions = db.query(RiskQuestion).filter(RiskQuestion.is_active == True).all()
+        assert len(questions) >= 5
+
+        # Create answers payload
+        # Force capacity questions to lowest score option (score <= 25)
+        # Force tolerance questions to highest score option (score >= 85)
+        from backend.schemas import RiskAnswerSubmit
+        answers = []
+        for q in questions:
+            is_cap = (q.scoring_config or {}).get("category") == "capacity"
+            opts = sorted(q.options, key=lambda o: float(o.score))
+            chosen = opts[0] if is_cap else opts[-1]
+            answers.append(RiskAnswerSubmit(
+                question_id=q.question_id,
+                selected_option_id=chosen.option_id,
+            ))
+
+        tol_score, cap_score, assigned_cat = calculate_risk_scores(db, answers)
+
+        assert tol_score >= 60.0, f"Expected high tolerance, got {tol_score}"
+        assert cap_score <= 35.0, f"Expected low capacity, got {cap_score}"
+
+        # Fiduciary Rule: Even with high tolerance, low capacity forces category to very_conservative
+        assert assigned_cat == "very_conservative", (
+            f"Fiduciary rule failed: expected 'very_conservative' due to cap_score {cap_score}, got {assigned_cat}"
+        )
+    finally:
+        db.close()

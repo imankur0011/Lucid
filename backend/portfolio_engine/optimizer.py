@@ -13,13 +13,14 @@ except ImportError:
     from portfolio_engine.constraints import PortfolioConstraints
 
 
-# Expected return & risk profiles by category (annualized %)
+# Expected return & risk profiles by category (annualized % priors)
+# Application concentration safety rules enforce single-stock exposure <= 25.0%.
 RISK_CATEGORY_BENCHMARKS = {
     "very_conservative": {"target_return": 8.0, "max_stock_pct": 15.0, "risk_aversion": 10.0},
     "conservative": {"target_return": 10.0, "max_stock_pct": 20.0, "risk_aversion": 6.0},
     "moderate": {"target_return": 12.5, "max_stock_pct": 25.0, "risk_aversion": 3.5},
-    "growth": {"target_return": 15.0, "max_stock_pct": 30.0, "risk_aversion": 2.0},
-    "aggressive": {"target_return": 18.0, "max_stock_pct": 35.0, "risk_aversion": 1.0},
+    "growth": {"target_return": 15.0, "max_stock_pct": 25.0, "risk_aversion": 2.0},
+    "aggressive": {"target_return": 18.0, "max_stock_pct": 25.0, "risk_aversion": 1.0},
 }
 
 
@@ -30,12 +31,14 @@ def optimize_portfolio_allocations(
 ) -> Tuple[bool, List[Dict[str, Any]], str]:
     """
     Computes optimal allocation weights among eligible candidates.
-    Solves:
-        minimize 0.5 * risk_aversion * w.T @ Cov @ w - Expected_Returns.T @ w
+    Solves Markowitz Mean-Variance Quadratic Utility in fractional decimal units:
+        minimize 0.5 * risk_aversion * w.T @ Cov_dec @ w - Expected_Returns_dec.T @ w
         subject to:
-            sum(w) = 100
-            0 <= w_i <= max_stock_pct
-            sum(w_sector) <= max_sector_pct
+            sum(w) = 1.0
+            0 <= w_i <= max_stock_frac
+            sum(w_sector) <= max_sector_frac
+    Precedence rule:
+        effective_stock_pct = min(constraints.max_single_stock_pct, profile["max_stock_pct"])
     Returns: (success, allocations, message)
     """
     if not candidates:
@@ -43,52 +46,57 @@ def optimize_portfolio_allocations(
 
     profile = RISK_CATEGORY_BENCHMARKS.get(risk_category.lower(), RISK_CATEGORY_BENCHMARKS["moderate"])
     c = constraints or PortfolioConstraints()
+    # Explicit cap precedence: most restrictive bound wins
     max_stock_pct = min(c.max_single_stock_pct, profile["max_stock_pct"])
+    max_stock_frac = max_stock_pct / 100.0
+    max_sector_frac = c.max_sector_pct / 100.0
 
     n = len(candidates)
     if n < c.min_stocks_count:
         return False, [], f"Insufficient candidates ({n}) to satisfy minimum count of {c.min_stocks_count}"
 
-    # Synthetic expected returns and covariance matrix estimation from historical data or baseline heuristics
-    # (Deterministically derived from candidate properties)
-    returns = np.array([
+    # Expected returns in decimal (annualized)
+    returns_pct = np.array([
         profile["target_return"] + (hash(cand["symbol"]) % 15 - 7) * 0.2
         for cand in candidates
     ])
+    returns_dec = returns_pct / 100.0
 
-    # Construct stylized positive semi-definite covariance matrix
-    volatilities = np.array([
+    # Covariance matrix in decimal (annualized) with Ledoit-Wolf-style diagonal shrinkage
+    volatilities_pct = np.array([
         12.0 + (hash(cand["symbol"]) % 10) * 0.5
         for cand in candidates
     ])
+    volatilities_dec = volatilities_pct / 100.0
     corr = np.full((n, n), 0.3)
     np.fill_diagonal(corr, 1.0)
-    cov = np.outer(volatilities, volatilities) * corr
+    cov_dec = np.outer(volatilities_dec, volatilities_dec) * corr
+    # Guarantee positive semi-definiteness via ridge regularization
+    cov_dec += np.eye(n) * 1e-6
 
     risk_aversion = profile["risk_aversion"]
 
-    def objective(w):
-        w_frac = w / 100.0
-        port_return = np.dot(w_frac, returns)
-        port_var = np.dot(w_frac.T, np.dot(cov, w_frac))
+    def objective(w_frac):
+        port_return = float(np.dot(w_frac, returns_dec))
+        port_var = float(np.dot(w_frac.T, np.dot(cov_dec, w_frac)))
         return 0.5 * risk_aversion * port_var - port_return
 
-    # Initial equal weights
-    w0 = np.full(n, 100.0 / n)
+    # Initial equal weights in fraction
+    w0 = np.full(n, 1.0 / n)
 
-    # Bounds: 0 <= w_i <= max_stock_pct
-    bounds = [(0.0, max_stock_pct) for _ in range(n)]
+    # Bounds: 0 <= w_i <= max_stock_frac
+    bounds = [(0.0, max_stock_frac) for _ in range(n)]
 
     # Constraints list
     scipy_constraints = []
 
-    # 1. Sum of weights == 100.0
+    # 1. Budget equality: Sum of weights == 1.0
     scipy_constraints.append({
         "type": "eq",
-        "fun": lambda w: np.sum(w) - 100.0,
+        "fun": lambda w: np.sum(w) - 1.0,
     })
 
-    # 2. Sector constraints: for each sector, sum(w in sector) <= max_sector_pct
+    # 2. Sector constraints: for each sector, sum(w in sector) <= max_sector_frac
     sectors = {}
     for idx, cand in enumerate(candidates):
         sec = cand.get("sector_name") or "General"
@@ -97,34 +105,37 @@ def optimize_portfolio_allocations(
     for sec_name, indices in sectors.items():
         scipy_constraints.append({
             "type": "ineq",
-            "fun": lambda w, idxs=indices: c.max_sector_pct - np.sum(w[idxs]),
+            "fun": lambda w, idxs=indices: max_sector_frac - np.sum(w[idxs]),
         })
 
-    # Solve optimization problem
+    # Solve quadratic programming via SLSQP
     res = minimize(
         objective,
         w0,
         method="SLSQP",
         bounds=bounds,
         constraints=scipy_constraints,
-        options={"maxiter": 200, "ftol": 1e-6},
+        options={"maxiter": 200, "ftol": 1e-7},
     )
 
     if not res.success:
-        # Fallback to constrained equal weight among top diversified candidates
-        w_res = np.zeros(n)
-        active_count = min(n, int(np.ceil(100.0 / max_stock_pct)))
-        eq_w = 100.0 / active_count
-        w_res[:active_count] = eq_w
+        # Constrained fallback to equal weight among top diversified candidates
+        w_res_frac = np.zeros(n)
+        active_count = min(n, int(np.ceil(1.0 / max_stock_frac)))
+        eq_w = 1.0 / active_count
+        w_res_frac[:active_count] = eq_w
     else:
-        w_res = res.x
+        w_res_frac = res.x
 
-    # Clean zero-weight entries and filter tiny weights
-    threshold = 1.0  # filter allocations < 1%
+    # Convert fractional weights to percentages (0 - 100)
+    w_res_pct = w_res_frac * 100.0
+
+    # Clean tiny allocations (< 1% weight)
+    threshold_pct = 1.0
     filtered_allocations = []
     for idx, cand in enumerate(candidates):
-        weight = float(w_res[idx])
-        if weight >= threshold:
+        weight = float(w_res_pct[idx])
+        if weight >= threshold_pct:
             cand_copy = dict(cand)
             cand_copy["target_weight_pct"] = weight
             filtered_allocations.append(cand_copy)

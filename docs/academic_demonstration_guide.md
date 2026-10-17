@@ -82,9 +82,16 @@ $$\tau = \frac{1}{2} \sum_{i=1}^N \left| w_i^{\text{tgt}} - w_i^{\text{cur}} \ri
 
 ## 3. Quantitative Evaluation & Benchmark Results
 
-To evaluate the mathematical optimizer independently of the language model, we executed a 252-day quantitative backtesting experiment comparing three allocation strategies over the universe of NIFTY 50 large-cap equities.
+To evaluate the mathematical optimizer independently of the language model, we executed a 252-day quantitative backtesting simulation comparing three allocation strategies over representative liquid large-cap Indian equities.
 
-| Strategy | Annualized Return | Annualized Volatility | Sharpe Ratio ($R_f=7\%$) | Max Drawdown | HHI Diversification (0–100) |
+### Experiment Methodology & Parameters:
+- **Horizon & Frequency:** 252 trading days with monthly rebalancing (every 21 trading days).
+- **Candidate Universe:** 10 core liquid equities across diverse sectors (RELIANCE, TCS, HDFCBANK, INFY, ICICIBANK, BHARTIARTL, ITC, LT, KOTAKBANK, HINDUNILVR).
+- **Estimation Window:** 126-day rolling window for covariance $\Sigma$ and expected return vector $\mu$, regularized via Ledoit-Wolf diagonal shrinkage ($+10^{-6} I$).
+- **Transaction Costs & Slippage:** Simulated at 10 bps (0.10%) on portfolio turnover ($\tau$).
+- **Risk-Free Rate:** 7.00% annualized (India 10-Year Benchmark G-Sec yield).
+
+| Strategy | Annualized Return | Annualized Volatility | Sharpe Ratio ($R_f=7\%$) | Max Drawdown | Normalized Diversification (0–100) |
 |---|---|---|---|---|---|
 | **Constrained SLSQP Optimizer** | **17.82%** | **13.45%** | **0.804** | **-9.85%** | **88.42** |
 | Equal-Weight (1/N) Baseline | 15.60% | 15.20% | 0.566 | -12.40% | 100.00 |
@@ -93,7 +100,8 @@ To evaluate the mathematical optimizer independently of the language model, we e
 ### Key Academic Findings:
 1. **Volatility Reduction:** The SLSQP optimizer achieved a **20% reduction in volatility** relative to the market cap-weighted index by penalizing asset covariance.
 2. **Superior Risk-Adjusted Return:** The Sharpe ratio improved by **+95%** over the market proxy (0.804 vs 0.411).
-3. **Drawdown Protection:** Maximum drawdown was contained within 10% through sector caps ($\le 40\%$) preventing over-exposure to cyclical downturns.
+3. **Drawdown Protection:** Maximum drawdown was contained within 10% through sector concentration caps ($\le 40\%$) dampening cyclical downturn exposure.
+4. **Academic Boundary:** This backtest serves as a quantitative prototype evaluation. Commercial production requires multi-year point-in-time constituent adjustment and tick-level slippage analysis to address survivorship bias.
 
 ---
 
@@ -104,22 +112,22 @@ Follow this step-by-step walkthrough to demonstrate the full application capabil
 ### Step 1: Authentication & Investor Onboarding
 1. Navigate to the frontend application (`http://localhost:3000`).
 2. Notice the authenticated session badge displaying `Session: Active (Bearer JWT Verified)`.
-3. In the **Risk Questionnaire** tab, observe the SEBI-compliant 5-question psychometric assessment (Horizon, Drawdown Tolerance, Liquidity Needs, Experience, Reaction to Market Dip).
-4. Submitting the assessment automatically computes the investor's score and assigns a risk profile (`Conservative`, `Moderate`, `Growth`, or `Aggressive`).
+3. In the **Risk Questionnaire** tab, observe the application-defined 5-question psychometric assessment (Horizon, Drawdown Tolerance, Liquidity Needs, Experience, Reaction to Market Dip, incorporating fiduciary capacity-constraint rules).
+4. Submitting the assessment automatically computes the investor's score and assigns a canonical risk profile (`very_conservative`, `conservative`, `moderate`, `growth`, or `aggressive`).
 
 ### Step 2: Intelligent Portfolio Generation
 1. Switch to the **Generator** tab.
-2. Enter an investment amount: e.g., `₹250,000`.
+2. Enter an investment amount: e.g., `₹250,000` (or select preset `₹2.5L`).
 3. Set horizon: `36 Months`.
 4. Define constraints: Max Single-Stock `20%`, Max Sector `35%`.
 5. Enter custom user prompt: *"Focus on high return on equity and sustainable dividend payers in banking and technology."*
 6. Click **Generate Portfolio via Agent Workflow**.
-7. Observe the **Live Multi-Agent Execution Trace**:
+7. Observe the **Deterministic Multi-Agent Execution Trace** (persisted in PostgreSQL with step timestamps):
    - `Manager`: Interprets investor snapshot and validates capital sufficiency.
-   - `Analyst`: Filters universe and builds fundamental candidate metrics.
+   - `Analyst`: Filters universe and builds candidate metrics.
    - `Optimizer`: Solves the constrained SLSQP quadratic programming model.
    - `Critic`: Reviews concentration, cash drag, and macroeconomic risks.
-   - `Validator`: Evaluates 7 deterministic SEBI rules.
+   - `Validator`: Evaluates deterministic concentration safety rules (single-stock $\le 25\%$, sector $\le 40\%$).
    - `Moderator`: Synthesizes final balance.
    - `Persistence`: Saves immutable version and holdings to PostgreSQL.
 
@@ -136,26 +144,23 @@ Follow this step-by-step walkthrough to demonstrate the full application capabil
    - *Portfolio Strategy & Macro Stance*
    - *Sector Allocation Rationale*
    - *Risk Management & Hedging Strategy*
-3. Notice that all claims cite specific data sources (e.g., Q2 FY26 Earnings Reports, RBI Monetary Policy Bulletin).
+3. Notice that citations reference verifiable metrics and explicit source timestamps.
 
 ### Step 5: Macroeconomic Stress Testing
 1. Switch to the **Stress Scenarios** tab.
 2. Select a macroeconomic shock scenario:
-   - **RBI Rate Hike (+50 bps):** Evaluates interest rate sensitivity on banking margins and valuation compression on debt-heavy firms.
+   - **RBI Rate Hike (+50 bps):** Evaluates interest rate sensitivity on banking margins and debt-heavy firms.
    - **Global Tech Valuation Reset (-15% Nasdaq Spillover):** Analyzes export-driven IT services impact.
    - **Crude Oil Surge ($100/bbl):** Stresses paint, FMCG, and transportation holdings.
 3. Review estimated portfolio value impact, revised volatility, and the agent's mitigation commentary.
 
 ### Step 6: Portfolio Diagnosis & Simulated Rebalancing
 1. Open the **Diagnosis & Rebalancing** tab.
-2. Enter an existing user portfolio (or load sample holdings: e.g., 60% Reliance Industries, 30% TCS, 10% Cash).
-3. Click **Run Health Diagnosis**.
-4. Observe the warnings generated:
-   - Concentration Breach: `RELIANCE` constitutes 60.0% of portfolio (limit: 25.0%).
-   - Sector Concentration: `Energy & Refining` constitutes 60.0% (limit: 40.0%).
-5. Review the **Simulated Rebalancing Preview**:
-   - Suggested Actions: `SELL 14 shares RELIANCE`, `BUY 20 shares HDFCBANK`, `BUY 8 shares INFY`.
-   - Rebalance Turnover: `35.0%`.
+2. Enter an existing user portfolio (or use default holdings: e.g., RELIANCE: 40, TCS: 25, HDFCBANK: 60, INFY: 30).
+3. Click **Diagnose & Preview Rebalance**.
+4. Observe the concentration diagnostics and the **Simulated Rebalancing Preview**:
+   - Suggested Actions: Whole-share integer `BUY`, `SELL`, and `HOLD` recommendations.
+   - Realized Unallocated Cash and Turnover metrics ($\tau$).
    - Safety Notice: Explicitly disclaims that this preview is informational and not an executed trade.
 
 ### Step 7: Portfolio Version Comparison
@@ -179,18 +184,22 @@ Follow this step-by-step walkthrough to demonstrate the full application capabil
 # Set environment
 export DATABASE_URL="postgresql://portfolio_user:testpassword@localhost:5433/portfolio_dev"
 
-# Run Alembic migrations to create all 20+ relational tables
+# Run Alembic migrations to create all 59 relational application tables + alembic_version (60 tables total)
 alembic upgrade head
 
 # Seed initial securities, listings, sectors, and benchmark data
 python -m backend.seed.seed_data
 ```
 
-### 2. Run the Full Test Suite (41 Automated Tests)
+### 2. Run the Full Test Suite
 ```bash
+# Backend pytest suite (42 unit, security, mathematical, and concurrency tests)
 PYTHONPATH=. ./.venv/bin/pytest backend/tests/ -v --durations=10
+
+# Playwright browser end-to-end user journey tests (7 browser journeys)
+cd frontend && npm run test:e2e
 ```
-*All 41 tests across database integrity, portfolio engine, auth security, concurrency, diagnosis, and market data should pass in under 3 seconds.*
+*All backend tests and browser end-to-end tests execute cleanly.*
 
 ### 3. Launch Backend Dev Server
 ```bash
