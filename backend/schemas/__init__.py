@@ -197,6 +197,7 @@ class PortfolioPreferences(BaseModel):
 
 
 class PortfolioGenerationRequestCreate(BaseModel):
+    portfolio_id: Optional[UUID] = None
     portfolio_name: Optional[str] = "Intelligent AI Portfolio"
     investment_amount: Decimal = Field(..., gt=1000)
     currency_code: str = Field("INR", min_length=3, max_length=3)

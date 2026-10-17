@@ -42,6 +42,7 @@ class Settings(BaseSettings):
     app_env: str = "development"
     app_port: int = 8000
     app_secret_key: str = "change-me-in-production"
+    jwt_secret_key: str = "change-me-in-production-jwt-key-32-chars-minimum"
     cors_origins: str = "http://localhost:3000"
 
     # --- Data Paths ---

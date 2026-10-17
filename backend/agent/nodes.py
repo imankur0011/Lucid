@@ -378,6 +378,9 @@ def persistence_node(state: PortfolioAgentState, db: Session) -> Dict[str, Any]:
         db.add(strat_ver)
         db.flush()
 
+    # Lock parent portfolio to serialize version numbering under concurrency
+    db.query(InvestorPortfolio).filter(InvestorPortfolio.portfolio_id == portfolio_id).with_for_update().first()
+
     # Determine next portfolio version number
     current_max_ver = (
         db.query(PortfolioVersion.version_number)

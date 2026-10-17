@@ -10,6 +10,7 @@ from typing import List, Optional, Dict, Any
 from decimal import Decimal
 import uuid
 from datetime import datetime
+from pydantic import BaseModel
 
 try:
     from backend.database import get_db
@@ -66,7 +67,35 @@ except ImportError:
         ScenarioRunResult,
     )
 
+try:
+    from backend.portfolio_engine.backtest import PortfolioBacktestEngine
+except ImportError:
+    from portfolio_engine.backtest import PortfolioBacktestEngine
+
 router = APIRouter(prefix="", tags=["Portfolios"])
+
+
+@router.get("/portfolios/benchmark-evaluation")
+async def evaluate_portfolio_benchmark(
+    risk_category: str = "moderate",
+    amount: float = 100000.0,
+    db: Session = Depends(get_db),
+    current_user: AppUser = Depends(get_current_user),
+):
+    """
+    Evaluates the deterministic SLSQP optimizer against defined baselines:
+    1. Equal-Weight Portfolio (1/N)
+    2. Broad Market Benchmark (NIFTY 50 Proxy)
+    Returns Annualized Return, Volatility, Sharpe Ratio, Max Drawdown, and Turnover.
+    """
+    engine = PortfolioBacktestEngine(db)
+    try:
+        return engine.run_benchmark_comparison(
+            risk_category=risk_category,
+            investment_amount=amount,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc))
 
 
 @router.post("/portfolio-generation-requests", response_model=PortfolioVersionDetail, status_code=status.HTTP_201_CREATED)
@@ -110,21 +139,54 @@ async def create_portfolio_generation_request(
             risk_category = latest_assessment.risk_category
 
     # Create or retrieve InvestorPortfolio container
-    portfolio = (
-        db.query(InvestorPortfolio)
-        .filter(InvestorPortfolio.user_id == current_user.user_id)
-        .order_by(desc(InvestorPortfolio.updated_at))
-        .first()
-    )
-    if not portfolio:
-        portfolio = InvestorPortfolio(
-            portfolio_id=uuid.uuid4(),
-            user_id=current_user.user_id,
-            portfolio_name=payload.portfolio_name or "My AI Portfolio",
-            portfolio_status="active",
+    if payload.portfolio_id:
+        portfolio = (
+            db.query(InvestorPortfolio)
+            .filter(
+                InvestorPortfolio.portfolio_id == payload.portfolio_id,
+                InvestorPortfolio.user_id == current_user.user_id,
+            )
+            .first()
         )
-        db.add(portfolio)
-        db.flush()
+        if not portfolio:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Specified portfolio not found for current user",
+            )
+    elif payload.portfolio_name:
+        portfolio = (
+            db.query(InvestorPortfolio)
+            .filter(
+                InvestorPortfolio.user_id == current_user.user_id,
+                InvestorPortfolio.portfolio_name == payload.portfolio_name,
+            )
+            .first()
+        )
+        if not portfolio:
+            portfolio = InvestorPortfolio(
+                portfolio_id=uuid.uuid4(),
+                user_id=current_user.user_id,
+                portfolio_name=payload.portfolio_name,
+                portfolio_status="active",
+            )
+            db.add(portfolio)
+            db.flush()
+    else:
+        portfolio = (
+            db.query(InvestorPortfolio)
+            .filter(InvestorPortfolio.user_id == current_user.user_id)
+            .order_by(desc(InvestorPortfolio.updated_at))
+            .first()
+        )
+        if not portfolio:
+            portfolio = InvestorPortfolio(
+                portfolio_id=uuid.uuid4(),
+                user_id=current_user.user_id,
+                portfolio_name="My AI Portfolio",
+                portfolio_status="active",
+            )
+            db.add(portfolio)
+            db.flush()
 
     # Create Generation Request record
     gen_req = PortfolioGenerationRequest(
@@ -461,3 +523,134 @@ async def run_portfolio_scenario(
         loss_pct=loss_pct,
         impact_summary=summary,
     )
+
+
+class PortfolioCompareRequest(BaseModel):
+    version_a_id: uuid.UUID
+    version_b_id: uuid.UUID
+
+
+@router.get("/portfolios/{portfolio_id}/versions/{version_id}/explanations")
+async def get_portfolio_version_explanations(
+    portfolio_id: uuid.UUID,
+    version_id: uuid.UUID,
+    current_user: AppUser = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Retrieve detailed explanation cards and citations for a portfolio version."""
+    portfolio = (
+        db.query(InvestorPortfolio)
+        .filter(InvestorPortfolio.portfolio_id == portfolio_id, InvestorPortfolio.user_id == current_user.user_id)
+        .first()
+    )
+    if not portfolio:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Portfolio not found")
+
+    explanations = (
+        db.query(RecommendationExplanation)
+        .filter(RecommendationExplanation.portfolio_version_id == version_id)
+        .order_by(RecommendationExplanation.display_order.asc())
+        .all()
+    )
+
+    result = []
+    for exp in explanations:
+        evidence_links = []
+        for el in exp.evidence_links:
+            item = el.evidence_item
+            if item:
+                evidence_links.append({
+                    "evidence_id": str(item.evidence_item_id),
+                    "evidence_type": item.evidence_type,
+                    "title": item.title,
+                    "summary": item.evidence_summary,
+                    "relationship": el.relationship_label,
+                    "data_source": item.data_source.display_name if item.data_source else None,
+                    "observed_at": item.observed_at.isoformat() if item.observed_at else None,
+                    "snapshot": item.cited_value_snapshot,
+                })
+
+        result.append({
+            "explanation_id": str(exp.explanation_id),
+            "explanation_type": exp.explanation_type,
+            "title": exp.title,
+            "explanation_text": exp.explanation_text,
+            "display_order": exp.display_order,
+            "decision_id": str(exp.decision_id) if exp.decision_id else None,
+            "evidence": evidence_links,
+        })
+
+    return {
+        "portfolio_id": str(portfolio_id),
+        "version_id": str(version_id),
+        "count": len(result),
+        "explanations": result,
+    }
+
+
+@router.post("/portfolios/{portfolio_id}/compare")
+async def compare_portfolio_versions(
+    portfolio_id: uuid.UUID,
+    payload: PortfolioCompareRequest,
+    current_user: AppUser = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Compare two portfolio versions side-by-side (weights, metrics, and sector deltas)."""
+    portfolio = (
+        db.query(InvestorPortfolio)
+        .filter(InvestorPortfolio.portfolio_id == portfolio_id, InvestorPortfolio.user_id == current_user.user_id)
+        .first()
+    )
+    if not portfolio:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Portfolio not found")
+
+    ver_a = await get_portfolio_version(portfolio_id, payload.version_a_id, current_user, db)
+    ver_b = await get_portfolio_version(portfolio_id, payload.version_b_id, current_user, db)
+
+    # Compute Holding Comparisons
+    all_symbols = set([h.symbol for h in ver_a.holdings] + [h.symbol for h in ver_b.holdings])
+    holdings_comp = []
+
+    a_map = {h.symbol: h for h in ver_a.holdings}
+    b_map = {h.symbol: h for h in ver_b.holdings}
+
+    for sym in sorted(all_symbols):
+        ha = a_map.get(sym)
+        hb = b_map.get(sym)
+        wa = ha.target_weight_pct if ha else 0.0
+        wb = hb.target_weight_pct if hb else 0.0
+        holdings_comp.append({
+            "symbol": sym,
+            "security_name": ha.security_name if ha else (hb.security_name if hb else sym),
+            "sector_name": ha.sector_name if ha else (hb.sector_name if hb else "General"),
+            "weight_version_a": wa,
+            "weight_version_b": wb,
+            "weight_delta": round(wb - wa, 2),
+        })
+
+    return {
+        "portfolio_id": str(portfolio_id),
+        "version_a": {
+            "version_id": str(ver_a.portfolio_version_id),
+            "version_number": ver_a.version_number,
+            "investment_amount": float(ver_a.investment_amount),
+            "expected_return_pct": ver_a.expected_return_pct,
+            "expected_volatility_pct": ver_a.expected_volatility_pct,
+            "diversification_score": ver_a.diversification_score,
+        },
+        "version_b": {
+            "version_id": str(ver_b.portfolio_version_id),
+            "version_number": ver_b.version_number,
+            "investment_amount": float(ver_b.investment_amount),
+            "expected_return_pct": ver_b.expected_return_pct,
+            "expected_volatility_pct": ver_b.expected_volatility_pct,
+            "diversification_score": ver_b.diversification_score,
+        },
+        "deltas": {
+            "delta_return_pct": round((ver_b.expected_return_pct or 0.0) - (ver_a.expected_return_pct or 0.0), 2),
+            "delta_volatility_pct": round((ver_b.expected_volatility_pct or 0.0) - (ver_a.expected_volatility_pct or 0.0), 2),
+            "delta_diversification": round((ver_b.diversification_score or 0.0) - (ver_a.diversification_score or 0.0), 2),
+        },
+        "holdings_comparison": holdings_comp,
+    }
+

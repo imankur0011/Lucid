@@ -1,10 +1,12 @@
 """
 Authentication dependencies for FastAPI.
-Provides request-scoped AppUser authentication with strict isolation and development fallbacks.
+Provides request-scoped AppUser authentication with strict isolation,
+JWT verification, token creation, and development fallbacks.
 """
 
 import uuid
 from typing import Optional
+from datetime import datetime, timedelta, timezone
 from fastapi import Depends, HTTPException, Security, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
@@ -25,6 +27,23 @@ DEMO_USER_ID = uuid.UUID("10000000-0000-4000-8000-000000000001")
 security_bearer = HTTPBearer(auto_error=False)
 
 
+def create_access_token(
+    user_id: uuid.UUID,
+    email: Optional[str] = None,
+    expires_delta: Optional[timedelta] = None,
+) -> str:
+    """Creates a cryptographically signed JWT access token."""
+    now = datetime.now(timezone.utc)
+    expire = now + (expires_delta or timedelta(days=7))
+    payload = {
+        "sub": str(user_id),
+        "email": email or "",
+        "iat": int(now.timestamp()),
+        "exp": int(expire.timestamp()),
+    }
+    return jwt.encode(payload, settings.jwt_secret_key, algorithm="HS256")
+
+
 async def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Security(security_bearer),
     db: Session = Depends(get_db),
@@ -32,7 +51,9 @@ async def get_current_user(
     """
     Retrieves the authenticated AppUser.
     - Decodes JWT bearer token if present.
-    - In development mode (settings.app_env != 'production'), allows fallback to demo user if no token is provided.
+    - In staging and production (settings.app_env in ['staging', 'production']),
+      strictly rejects unauthenticated requests (fail-closed).
+    - In development mode only, allows fallback to seeded demo user if no token is provided.
     - Strictly isolates all operations to the authenticated user's user_id.
     """
     user_id: Optional[uuid.UUID] = None
@@ -44,11 +65,17 @@ async def get_current_user(
                 token,
                 settings.jwt_secret_key,
                 algorithms=["HS256"],
-                options={"verify_signature": settings.app_env == "production"},
+                options={"verify_exp": True},
             )
             sub = payload.get("sub") or payload.get("user_id")
             if sub:
                 user_id = uuid.UUID(str(sub))
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication token has expired. Please log in again.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
         except (jwt.PyJWTError, ValueError) as exc:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -56,16 +83,17 @@ async def get_current_user(
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-    # In development mode, allow fallback to seeded demo user
+    # In non-development environments, require explicit authentication (fail-closed)
     if not user_id:
-        if settings.app_env != "production":
-            user_id = DEMO_USER_ID
-        else:
+        if settings.app_env in ["staging", "production"]:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Authentication required",
+                detail="Authentication required. Bearer token missing.",
                 headers={"WWW-Authenticate": "Bearer"},
             )
+        else:
+            # Development-only fallback to seeded demo user
+            user_id = DEMO_USER_ID
 
     user = db.query(AppUser).filter(AppUser.user_id == user_id).first()
     if not user:
