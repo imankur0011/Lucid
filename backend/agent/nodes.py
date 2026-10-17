@@ -60,6 +60,33 @@ except ImportError:
         DataSource,
     )
 
+try:
+    from backend.config import settings
+except ImportError:
+    try:
+        from config import settings
+    except ImportError:
+        settings = None
+
+
+def get_llm():
+    """Returns ChatGoogleGenerativeAI instance if API key is provided, else None."""
+    if not settings:
+        return None
+    api_key = getattr(settings, "gemini_api_key", None)
+    if api_key and api_key != "your_gemini_api_key_here" and len(api_key) > 10:
+        try:
+            from langchain_google_genai import ChatGoogleGenerativeAI
+            return ChatGoogleGenerativeAI(
+                model=getattr(settings, "llm_model", "gemini-2.5-flash") or "gemini-2.5-flash",
+                google_api_key=api_key,
+                temperature=0.2,
+                timeout=15,
+            )
+        except Exception:
+            return None
+    return None
+
 
 def manager_node(state: PortfolioAgentState) -> Dict[str, Any]:
     """1. Manager / Orchestrator: Initializes workflow, logs request parameters."""
@@ -121,30 +148,80 @@ def suitability_check_node(state: PortfolioAgentState, db: Session) -> Dict[str,
 
 
 def analyst_node(state: PortfolioAgentState) -> Dict[str, Any]:
-    """3. Analyst / Strategist: Analyzes eligible candidates and aligns with risk profile."""
+    """3. Analyst / Strategist: Analyzes eligible candidates, investor prompt, and aligns with risk profile."""
     trace = state.get("execution_trace", [])
     risk = state.get("risk_category", "moderate")
     candidates = state.get("eligible_candidates", [])
+    user_prompt = state.get("user_prompt", "") or ""
+    amount = float(state.get("investment_amount", 100000))
+    horizon = int(state.get("investment_horizon_months", 60))
 
     sector_counts = {}
     for c in candidates:
         sec = c.get("sector_name", "General")
         sector_counts[sec] = sector_counts.get(sec, 0) + 1
 
+    # Attempt dynamic LLM reasoning if configured
+    llm = get_llm()
+    llm_reasoning = None
+    if llm:
+        try:
+            from langchain_core.messages import SystemMessage, HumanMessage
+            prompt_content = (
+                f"You are an Indian SEBI-registered portfolio strategist.\n"
+                f"Investor Risk Profile: {risk}, Investment Horizon: {horizon} months, Capital: ₹{amount:,.2f}.\n"
+                f"Investor Custom Request: '{user_prompt}'\n"
+                f"Candidate Universe: {len(candidates)} stocks across sectors: {list(sector_counts.keys())}.\n"
+                f"Provide a concise strategy theme, recommended market stance, and priority focus."
+            )
+            resp = llm.invoke([
+                SystemMessage(content="You are an expert quantitative Indian equities strategist. Return concise actionable insights."),
+                HumanMessage(content=prompt_content),
+            ])
+            llm_reasoning = str(resp.content)
+        except Exception:
+            llm_reasoning = None
+
+    # Contextual dynamic rule-based synthesis
+    prompt_lower = user_prompt.lower()
+    themes = []
+    if "dividend" in prompt_lower or "yield" in prompt_lower:
+        themes.append("High Dividend Yield & Cash Generation")
+    if "tech" in prompt_lower or "it" in prompt_lower or "software" in prompt_lower:
+        themes.append("Technology & Digital Transformation")
+    if "bank" in prompt_lower or "finan" in prompt_lower:
+        themes.append("Core Banking & Financial Deepening")
+    if "growth" in prompt_lower:
+        themes.append("High Return-on-Equity Secular Growth")
+    if "defensive" in prompt_lower or "preserv" in prompt_lower:
+        themes.append("Defensive Capital Preservation")
+
+    theme_str = " & ".join(themes) if themes else f"Active {risk.capitalize()} Disciplined Equity"
+
+    if horizon <= 24:
+        stance = f"Near-term ({horizon}m) liquidity with focus on low-beta cash-rich bluechips"
+    elif horizon >= 60:
+        stance = f"Long-term ({horizon}m) compounding across high-ROE market leaders"
+    else:
+        stance = f"Medium-term ({horizon}m) balanced risk-adjusted equity expansion"
+
+    if user_prompt:
+        trunc_prompt = user_prompt[:80] + "..." if len(user_prompt) > 80 else user_prompt
+        stance += f" aligned with: '{trunc_prompt}'"
+
     research_notes = {
-        "strategy_theme": f"Active {risk.capitalize()} Equity Allocation",
+        "strategy_theme": theme_str,
         "target_sectors": list(sector_counts.keys()),
         "diversification_breadth": len(sector_counts),
-        "recommended_stance": (
-            "Capital preservation with defensive sector bias" if risk in ["very_conservative", "conservative"]
-            else "Balanced growth across core banking, technology, and industry leaders"
-        ),
+        "recommended_stance": stance,
+        "llm_reasoning_summary": llm_reasoning,
+        "investor_custom_prompt": user_prompt,
     }
 
     trace.append({
         "step": "analyst",
         "timestamp": datetime.now().isoformat(),
-        "summary": f"Completed research for {len(candidates)} candidates across {len(sector_counts)} sectors",
+        "summary": f"Analyzed {len(candidates)} candidates across {len(sector_counts)} sectors with theme '{theme_str}'",
     })
 
     return {
@@ -155,9 +232,11 @@ def analyst_node(state: PortfolioAgentState) -> Dict[str, Any]:
 
 
 def critic_node(state: PortfolioAgentState) -> Dict[str, Any]:
-    """4. Critic: Validates analyst assumptions, checks constraint consistency."""
+    """4. Critic: Validates analyst assumptions, checks constraint consistency, cash drag, and prompt alignment."""
     trace = state.get("execution_trace", [])
     candidates = state.get("eligible_candidates", [])
+    amount = float(state.get("investment_amount", 100000))
+    user_prompt = state.get("user_prompt", "") or ""
     iteration = state.get("critic_iteration", 0) + 1
 
     findings = []
@@ -167,8 +246,34 @@ def critic_node(state: PortfolioAgentState) -> Dict[str, Any]:
         approved = False
         findings.append({
             "code": "INSUFFICIENT_BREADTH",
-            "message": f"Only {len(candidates)} candidates available. Minimum recommended is 3.",
+            "message": f"Only {len(candidates)} candidates available. Minimum recommended is 3 for regulatory diversification.",
             "severity": "critical",
+        })
+
+    # Cash drag check
+    if amount < 15000:
+        findings.append({
+            "code": "HIGH_CASH_DRAG_RISK",
+            "message": f"Investment capital of ₹{amount:,.2f} may experience higher percentage cash drag due to whole-share purchases of large-cap stocks.",
+            "severity": "info",
+        })
+
+    # Sector breadth check
+    sectors = {c.get("sector_name") for c in candidates if c.get("sector_name")}
+    if len(sectors) < 2:
+        findings.append({
+            "code": "LIMITED_SECTOR_VARIETY",
+            "message": "Universe has limited sector diversity; single-sector exposure limit of 40% must be monitored strictly.",
+            "severity": "warning",
+        })
+
+    # Prompt alignment check
+    prompt_lower = user_prompt.lower()
+    if ("tech" in prompt_lower or "it" in prompt_lower) and not any("tech" in s.lower() or "information" in s.lower() for s in sectors):
+        findings.append({
+            "code": "PROMPT_SECTOR_UNAVAILABLE",
+            "message": "Investor requested technology focus, but active candidate universe contains limited technology listings.",
+            "severity": "info",
         })
 
     trace.append({
@@ -260,35 +365,67 @@ def deterministic_optimizer_node(state: PortfolioAgentState) -> Dict[str, Any]:
 
 
 def moderator_explanation_node(state: PortfolioAgentState) -> Dict[str, Any]:
-    """6. Moderator / Explanation Generator: Translates mathematical results into investor explanations."""
+    """6. Moderator / Explanation Generator: Translates mathematical results and user prompt into structured explanations."""
     trace = state.get("execution_trace", [])
     holdings = state.get("allocations", [])
     risk = state.get("risk_category", "moderate")
     metrics = state.get("risk_metrics", {})
     unallocated = state.get("unallocated_cash", 0.0)
+    user_prompt = state.get("user_prompt", "") or ""
+    analyst_notes = state.get("analyst_research_notes", {})
+    theme = analyst_notes.get("strategy_theme", f"Active {risk.capitalize()} Disciplined Equity")
 
     explanations = []
 
+    # Attempt dynamic LLM explanation generation if configured
+    llm = get_llm()
+    custom_macro_text = None
+    if llm:
+        try:
+            from langchain_core.messages import SystemMessage, HumanMessage
+            holdings_summary = ", ".join([f"{h['symbol']} ({h['target_weight_pct']:.1f}%)" for h in holdings[:5]])
+            prompt_content = (
+                f"You are a SEBI-registered portfolio manager explaining an investment recommendation to a client.\n"
+                f"Strategy: {theme}, Risk: {risk}, Expected Return: {metrics.get('expected_return_pct', 0):.2f}%, Volatility: {metrics.get('expected_volatility_pct', 0):.2f}%.\n"
+                f"Allocations: {holdings_summary}.\n"
+                f"Client Prompt: '{user_prompt}'.\n"
+                f"Provide a 2-sentence executive summary explaining how this allocation directly achieves the client's stated intent."
+            )
+            resp = llm.invoke([
+                SystemMessage(content="You are a transparent, disciplined portfolio manager in India."),
+                HumanMessage(content=prompt_content),
+            ])
+            custom_macro_text = str(resp.content).strip()
+        except Exception:
+            custom_macro_text = None
+
     # Portfolio Strategy Overview
+    if custom_macro_text:
+        strategy_desc = custom_macro_text
+    else:
+        strategy_desc = (
+            f"Constructed an allocation across {len(holdings)} equity securities targeting {metrics.get('expected_return_pct', 0):.2f}% "
+            f"annualized return with {metrics.get('expected_volatility_pct', 0):.2f}% expected volatility, "
+            f"optimized for a {risk} risk posture under the theme '{theme}'."
+        )
+        if user_prompt:
+            strategy_desc += f" Directly addresses investor guidance: '{user_prompt}'."
+
     explanations.append({
         "explanation_type": "portfolio",
-        "title": f"Disciplined {risk.capitalize()} Portfolio Architecture",
-        "explanation_text": (
-            f"Allocated across {len(holdings)} equity securities targeting {metrics.get('expected_return_pct', 0):.2f}% "
-            f"annualized return with {metrics.get('expected_volatility_pct', 0):.2f}% expected volatility, "
-            f"optimized for a {risk} risk profile."
-        ),
+        "title": f"Disciplined {risk.capitalize()} Strategy: {theme}",
+        "explanation_text": strategy_desc,
         "display_order": 1,
     })
 
     # Diversification Overview
     explanations.append({
         "explanation_type": "diversification",
-        "title": "Sector and Risk Concentration Control",
+        "title": "Sector Concentration & SEBI Risk Guardrails",
         "explanation_text": (
-            f"Diversification score is {metrics.get('diversification_score', 0):.1f}/100. "
-            f"Maximum single stock weight capped at 25% and sector weights capped at 40% to maintain "
-            f"resilience against sector-specific downturns."
+            f"Portfolio achieves a normalized diversification score of {metrics.get('diversification_score', 0):.1f}/100. "
+            f"Maximum individual stock weight is strictly capped at 25% and all sector weights remain within the 40% limit "
+            f"to protect against idiosyncratic drawdowns."
         ),
         "display_order": 2,
     })
@@ -297,10 +434,10 @@ def moderator_explanation_node(state: PortfolioAgentState) -> Dict[str, Any]:
     for idx, h in enumerate(holdings, start=3):
         explanations.append({
             "explanation_type": "selection",
-            "title": f"Holding: {h['symbol']} ({h['security_name']})",
+            "title": f"Selected: {h['symbol']} ({h['security_name']})",
             "explanation_text": (
-                f"Assigned target weight of {h['target_weight_pct']:.2f}% (₹{h['target_amount']:,.2f}, {h['shares_quantity']} shares "
-                f"at ₹{h['latest_price']:,.2f}). Anchors exposure in the {h['sector_name']} sector."
+                f"Assigned {h['target_weight_pct']:.2f}% allocation (₹{h['target_amount']:,.2f}, {h['shares_quantity']} shares "
+                f"at ₹{h['latest_price']:,.2f}). Selected for superior risk-adjusted contribution in the {h['sector_name']} sector."
             ),
             "display_order": idx,
             "security_id": str(h["security_id"]),
@@ -312,8 +449,8 @@ def moderator_explanation_node(state: PortfolioAgentState) -> Dict[str, Any]:
             "explanation_type": "constraint",
             "title": "Whole Share Integer Cash Reserve",
             "explanation_text": (
-                f"₹{unallocated:,.2f} preserved in liquid reserve as Indian equities require integer-share purchases. "
-                f"Available for subsequent SIP or rebalancing increments."
+                f"₹{unallocated:,.2f} preserved in liquid unallocated cash. Indian stock exchanges (NSE/BSE) require integer-share "
+                f"execution with no fractional shares. This cash remains uninvested to maintain liquidity for subsequent SIP increments."
             ),
             "display_order": len(explanations) + 1,
         })
