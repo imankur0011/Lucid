@@ -1,0 +1,50 @@
+flowchart TD
+    classDef step fill:#e3f2fd,stroke:#1565c0,stroke-width:2px;
+    classDef user fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
+    classDef final fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+
+    User([User Request: Create portfolio]):::user --> S1
+
+    S1[1. INPUT PROCESSING<br/>FastAPI]:::step --> S2
+    
+    S2[2. ORCHESTRATOR<br/>LangGraph Supervisor]:::step --> S3
+    
+    subgraph S3 [3. DATA INGESTION]
+        direction LR
+        M[Market Agent]
+        N[News Agent]
+        Ma[Macro Agent]
+        V[VIX Agent]
+    end
+    S2 --> S3
+    
+    S3 --> S4
+    
+    S4[4. DATA VALIDATION<br/>Freshness & Regime Check]:::step --> S5
+    
+    S5[5. KNOWLEDGE RETRIEVAL<br/>Neo4j & FAISS]:::step --> S6
+    
+    subgraph S6 [6. REASONING & DEBATE]
+        direction TB
+        subgraph Strat [STRATEGIST AGENT]
+            direction LR
+            P1(Short Term)
+            P2(Mid Term)
+            P3(Long Term)
+        end
+        Crit[CRITIC<br/>CoVe + M-SAEA Probes]
+        Mod[MODERATOR<br/>Final synthesis]
+        
+        Strat <-->|Debate Loop| Crit
+        Crit --> Mod
+    end
+    S5 --> S6
+    
+    S6 --> S7
+    
+    S7[7. MATHEMATICAL EXECUTION<br/>Python Constraints & Math]:::step --> S8
+    S7 -.->|Validation Fails| S6
+    
+    S8[8. RESPONSE GENERATION<br/>JSON Formatting]:::step --> S9
+    
+    S9[9. FRONTEND PRESENTATION<br/>Next.js UI]:::final

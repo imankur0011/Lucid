@@ -1,0 +1,88 @@
+graph TD
+    classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px;
+    classDef layer fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,font-weight:bold;
+    classDef agent fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
+    classDef external fill:#e8f5e9,stroke:#388e3c,stroke-width:2px;
+    classDef db fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
+
+    %% 1. Presentation Layer
+    subgraph L1 [1. PRESENTATION LAYER]
+        UI[Next.js Frontend UI]:::layer
+    end
+
+    %% 2. API Layer
+    subgraph L2 [2. API LAYER]
+        API[FastAPI REST + WebSocket]:::layer
+    end
+
+    %% 3. Orchestration Layer
+    subgraph L3 [3. ORCHESTRATION LAYER]
+        Orchestrator[LangGraph State Machine]:::layer
+    end
+
+    %% 4. Agentic Core
+    subgraph L4 [4. AGENTIC CORE]
+        subgraph Data [Data Ingestion]
+            DA1[Market Agent]:::agent
+            DA2[News Agent]:::agent
+            DA3[Macro Agent]:::agent
+        end
+        
+        subgraph Debate [Reasoning & Debate]
+            subgraph RA1 [Strategist Agent]
+                P1[Short Term]:::agent
+                P2[Mid Term]:::agent
+                P3[Long Term]:::agent
+            end
+            RA2[Critic]:::agent
+            RA3[Moderator]:::agent
+        end
+        
+        subgraph Safety [Safety & Rules]
+            SA1[M-SAEA Probes]:::agent
+            SA2[VIX Thresholds]:::agent
+        end
+    end
+
+    %% 5. Computational Layer
+    subgraph L5 [5. COMPUTATIONAL LAYER]
+        Math[Python: NumPy, Pandas, SciPy]:::layer
+    end
+
+    %% 6. Knowledge Layer
+    subgraph L6 [6. KNOWLEDGE LAYER]
+        Neo4j[(Neo4j MFKG)]:::db
+        FAISS[(FAISS News)]:::db
+        PG[(PostgreSQL)]:::db
+    end
+
+    %% 7. External Data
+    subgraph L7 [7. EXTERNAL DATA LAYER]
+        YF[yfinance API]:::external
+        News[News APIs]:::external
+        RBI[RBI DBIE Data]:::external
+    end
+
+    %% Connections
+    UI <-->|JSON / Streams| API
+    API <-->|State Dictionary| Orchestrator
+    
+    Orchestrator --> DA1
+    Orchestrator --> DA2
+    Orchestrator --> DA3
+    
+    DA1 & DA2 & DA3 --> RA1
+    RA1 <-->|Debate Loop| RA2
+    RA2 --> SA1
+    SA1 --> RA2
+    RA2 --> RA3
+    
+    RA3 --> Math
+    
+    DA1 --> YF
+    DA2 --> News
+    DA3 --> RBI
+    
+    RA1 -.-> Neo4j
+    DA2 -.-> FAISS
+    API -.-> PG

@@ -1,0 +1,52 @@
+flowchart TD
+    classDef orchestrator fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
+    classDef agent fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
+    classDef func fill:#e3f2fd,stroke:#1565c0,stroke-width:2px;
+    classDef debate fill:#fce4ec,stroke:#c2185b,stroke-width:2px;
+
+    O[ORCHESTRATOR<br/>LangGraph Supervisor]:::orchestrator
+    
+    O --> A1
+    O --> A2
+    O --> A3
+    
+    A1[Market Data Agt]:::agent
+    A2[News Sent Agt]:::agent
+    A3[Macro Agent]:::agent
+    
+    A1 --> DV
+    A2 --> DV
+    A3 --> DV
+    
+    DV[DATA VALIDATION<br/>Func Node]:::func --> MFKG
+    
+    MFKG[MFKG KNOWLEDGE AGENT]:::agent --> DL_Start
+    
+    subgraph DEBATE_LOOP [DEBATE LOOP]
+        direction TB
+        DL_Start(( )):::debate
+        
+        subgraph STRAT [STRATEGIST]
+            direction LR
+            P1(Short Term)
+            P2(Mid Term)
+            P3(Long Term)
+        end
+        
+        CRITIC[CRITIC<br/>CoVe+M-SAEA]:::agent
+        MODERATOR[MODERATOR]:::agent
+        
+        DL_Start --> STRAT
+        STRAT --> CRITIC
+        CRITIC -->|Revision Loop| STRAT
+        CRITIC --> MODERATOR
+    end
+    
+    DEBATE_LOOP --> ME
+    
+    ME[MATHEMATICAL EXECUTION<br/>Func Node]:::func --> RG
+    
+    RG[RESPONSE GENERATION]:::func
+
+    %% Hide the invisible start node styling
+    style DL_Start display:none;
