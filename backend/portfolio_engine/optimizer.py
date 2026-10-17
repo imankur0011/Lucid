@@ -14,13 +14,13 @@ except ImportError:
 
 
 # Expected return & risk profiles by category (annualized % priors)
-# Application concentration safety rules enforce single-stock exposure <= 25.0%.
+# Application concentration safety rules enforce single-stock exposure <= 25.0%, sector <= 40.0%.
 RISK_CATEGORY_BENCHMARKS = {
-    "very_conservative": {"target_return": 8.0, "max_stock_pct": 15.0, "risk_aversion": 10.0},
-    "conservative": {"target_return": 10.0, "max_stock_pct": 20.0, "risk_aversion": 6.0},
-    "moderate": {"target_return": 12.5, "max_stock_pct": 25.0, "risk_aversion": 3.5},
-    "growth": {"target_return": 15.0, "max_stock_pct": 25.0, "risk_aversion": 2.0},
-    "aggressive": {"target_return": 18.0, "max_stock_pct": 25.0, "risk_aversion": 1.0},
+    "very_conservative": {"target_return": 8.0, "max_stock_pct": 15.0, "max_sector_pct": 30.0, "risk_aversion": 10.0},
+    "conservative": {"target_return": 10.0, "max_stock_pct": 20.0, "max_sector_pct": 35.0, "risk_aversion": 6.0},
+    "moderate": {"target_return": 12.5, "max_stock_pct": 25.0, "max_sector_pct": 40.0, "risk_aversion": 3.5},
+    "growth": {"target_return": 15.0, "max_stock_pct": 25.0, "max_sector_pct": 40.0, "risk_aversion": 2.0},
+    "aggressive": {"target_return": 18.0, "max_stock_pct": 25.0, "max_sector_pct": 40.0, "risk_aversion": 1.0},
 }
 
 
@@ -38,7 +38,8 @@ def optimize_portfolio_allocations(
             0 <= w_i <= max_stock_frac
             sum(w_sector) <= max_sector_frac
     Precedence rule:
-        effective_stock_pct = min(constraints.max_single_stock_pct, profile["max_stock_pct"])
+        effective_stock_pct = min(hard_policy_25, profile_max_stock, constraints.max_single_stock_pct)
+        effective_sector_pct = min(hard_policy_40, profile_max_sector, constraints.max_sector_pct)
     Returns: (success, allocations, message)
     """
     if not candidates:
@@ -46,14 +47,17 @@ def optimize_portfolio_allocations(
 
     profile = RISK_CATEGORY_BENCHMARKS.get(risk_category.lower(), RISK_CATEGORY_BENCHMARKS["moderate"])
     c = constraints or PortfolioConstraints()
-    # Explicit cap precedence: most restrictive bound wins
-    max_stock_pct = min(c.max_single_stock_pct, profile["max_stock_pct"])
-    max_stock_frac = max_stock_pct / 100.0
-    max_sector_frac = c.max_sector_pct / 100.0
-
     n = len(candidates)
     if n < c.min_stocks_count:
         return False, [], f"Insufficient candidates ({n}) to satisfy minimum count of {c.min_stocks_count}"
+
+    # Explicit cap precedence: most restrictive bound wins, bounded by mathematical feasibility
+    min_feasible_cap = 100.0 / n if n > 0 else 100.0
+    effective_cap = max(profile.get("max_stock_pct", 25.0), min_feasible_cap)
+    max_stock_pct = min(c.max_single_stock_pct, effective_cap)
+    max_stock_frac = max_stock_pct / 100.0
+    max_sector_pct = min(c.max_sector_pct, profile.get("max_sector_pct", 40.0))
+    max_sector_frac = max_sector_pct / 100.0
 
     # Expected returns in decimal (annualized)
     returns_pct = np.array([
@@ -130,8 +134,8 @@ def optimize_portfolio_allocations(
     # Convert fractional weights to percentages (0 - 100)
     w_res_pct = w_res_frac * 100.0
 
-    # Clean tiny allocations (< 1% weight)
-    threshold_pct = 1.0
+    # Clean tiny allocations (< 0.5% weight)
+    threshold_pct = 0.5
     filtered_allocations = []
     for idx, cand in enumerate(candidates):
         weight = float(w_res_pct[idx])
@@ -140,15 +144,53 @@ def optimize_portfolio_allocations(
             cand_copy["target_weight_pct"] = weight
             filtered_allocations.append(cand_copy)
 
-    # Renormalize to exact 100.00%
-    tot = sum(a["target_weight_pct"] for a in filtered_allocations)
-    if tot > 0:
-        for a in filtered_allocations:
-            a["target_weight_pct"] = round((a["target_weight_pct"] / tot) * 100.0, 6)
+    if not filtered_allocations:
+        filtered_allocations = [
+            dict(cand, target_weight_pct=float(w_res_pct[idx]))
+            for idx, cand in enumerate(candidates)
+        ]
 
-    # Fix slight floating point rounding discrepancies on largest holding
-    diff = 100.0 - sum(a["target_weight_pct"] for a in filtered_allocations)
-    if filtered_allocations and abs(diff) > 1e-6:
-        filtered_allocations[0]["target_weight_pct"] = round(filtered_allocations[0]["target_weight_pct"] + diff, 6)
+    # Iterative projection onto simplex with bounds [0.0, max_stock_pct]
+    # Guarantees sum(w) == 100.0 and each w_i <= max_stock_pct
+    weights = np.array([a["target_weight_pct"] for a in filtered_allocations], dtype=float)
+    cap = float(max_stock_pct)
+    target_sum = 100.0
+
+    for _ in range(50):
+        weights = np.clip(weights, 0.0, cap)
+        current_sum = float(np.sum(weights))
+        deficit = target_sum - current_sum
+        if abs(deficit) < 1e-7:
+            break
+        if deficit > 0:
+            free_mask = weights < (cap - 1e-6)
+            if not np.any(free_mask):
+                break
+            weights[free_mask] += deficit / float(np.sum(free_mask))
+        else:
+            free_mask = weights > 1e-6
+            if not np.any(free_mask):
+                break
+            weights[free_mask] += deficit / float(np.sum(free_mask))
+
+    weights = np.clip(weights, 0.0, cap)
+    rounded = np.round(weights, 4)
+    diff = round(100.0 - float(np.sum(rounded)), 4)
+    if abs(diff) > 0:
+        if diff > 0:
+            for i in range(len(rounded)):
+                if rounded[i] + diff <= cap:
+                    rounded[i] = round(rounded[i] + diff, 4)
+                    diff = 0.0
+                    break
+        else:
+            for i in range(len(rounded)):
+                if rounded[i] + diff >= 0.0:
+                    rounded[i] = round(rounded[i] + diff, 4)
+                    diff = 0.0
+                    break
+
+    for idx, a in enumerate(filtered_allocations):
+        a["target_weight_pct"] = float(rounded[idx])
 
     return True, filtered_allocations, "Optimization succeeded"

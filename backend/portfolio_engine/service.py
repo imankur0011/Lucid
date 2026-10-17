@@ -11,14 +11,14 @@ from sqlalchemy.orm import Session
 
 try:
     from backend.portfolio_engine.candidate_selection import CandidateUniverseSelector
-    from backend.portfolio_engine.constraints import PortfolioConstraints
+    from backend.portfolio_engine.constraints import PortfolioConstraints, get_effective_constraints
     from backend.portfolio_engine.optimizer import optimize_portfolio_allocations
     from backend.portfolio_engine.allocation_rounding import calculate_integer_shares_and_amounts
     from backend.portfolio_engine.risk_metrics import compute_portfolio_metrics
     from backend.portfolio_engine.validators import PortfolioValidator
 except ImportError:
     from portfolio_engine.candidate_selection import CandidateUniverseSelector
-    from portfolio_engine.constraints import PortfolioConstraints
+    from portfolio_engine.constraints import PortfolioConstraints, get_effective_constraints
     from portfolio_engine.optimizer import optimize_portfolio_allocations
     from portfolio_engine.allocation_rounding import calculate_integer_shares_and_amounts
     from portfolio_engine.risk_metrics import compute_portfolio_metrics
@@ -62,10 +62,12 @@ class PortfolioEngineService:
                 "validation": {"validation_status": "failed"},
             }
 
-        # 2. Build mathematical constraints
-        constraints = PortfolioConstraints(
-            max_single_stock_pct=max_single_stock_pct,
-            max_sector_pct=max_sector_pct,
+        # 2. Build mathematical constraints with deterministic precedence hierarchy:
+        # effective_limit = min(HARD_POLICY_CEILING, RISK_PROFILE_CEILING, INVESTOR_REQUESTED_LIMIT)
+        constraints = get_effective_constraints(
+            risk_category=risk_category,
+            requested_max_stock_pct=max_single_stock_pct,
+            requested_max_sector_pct=max_sector_pct,
             min_stocks_count=min(3, len(candidates)),
         )
 

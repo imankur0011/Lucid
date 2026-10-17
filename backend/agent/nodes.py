@@ -19,6 +19,7 @@ try:
         compute_portfolio_metrics,
         PortfolioValidator,
     )
+    from backend.portfolio_engine.constraints import get_effective_constraints
     from backend.models import (
         PortfolioGenerationRequest,
         InvestorPortfolio,
@@ -164,6 +165,8 @@ def analyst_node(state: PortfolioAgentState) -> Dict[str, Any]:
     # Attempt dynamic LLM reasoning if configured
     llm = get_llm()
     llm_reasoning = None
+    fallback_reason = None
+
     if llm:
         try:
             from langchain_core.messages import SystemMessage, HumanMessage
@@ -178,9 +181,23 @@ def analyst_node(state: PortfolioAgentState) -> Dict[str, Any]:
                 SystemMessage(content="You are an expert quantitative Indian equities strategist. Return concise actionable insights."),
                 HumanMessage(content=prompt_content),
             ])
-            llm_reasoning = str(resp.content)
-        except Exception:
-            llm_reasoning = None
+            raw_text = str(resp.content).strip() if resp and resp.content else ""
+            if len(raw_text) >= 10:
+                llm_reasoning = raw_text
+            else:
+                fallback_reason = "malformed_or_empty_response"
+        except TimeoutError:
+            fallback_reason = "timeout_exceeded"
+        except Exception as e:
+            err_str = str(e).lower()
+            if "quota" in err_str or "429" in err_str or "resource_exhausted" in err_str:
+                fallback_reason = "quota_exceeded"
+            elif "timeout" in err_str or "timed out" in err_str:
+                fallback_reason = "timeout_exceeded"
+            else:
+                fallback_reason = f"error: {type(e).__name__}"
+    else:
+        fallback_reason = "no_api_key_configured"
 
     # Contextual dynamic rule-based synthesis
     prompt_lower = user_prompt.lower()
@@ -221,14 +238,17 @@ def analyst_node(state: PortfolioAgentState) -> Dict[str, Any]:
     ai_provider = "gemini" if llm_reasoning else "dynamic_heuristic_fallback"
     model_name = getattr(settings, "llm_model", "gemini-2.5-flash") if llm_reasoning else "builtin-rule-synthesizer"
 
-    trace.append({
+    trace_data = {
         "step": "analyst",
         "timestamp": datetime.now().isoformat(),
         "summary": f"Analyzed {len(candidates)} candidates across {len(sector_counts)} sectors with theme '{theme_str}'",
         "ai_provider": ai_provider,
         "model_name": model_name,
         "prompt_version": "v1.2",
-    })
+    }
+    if fallback_reason:
+        trace_data["fallback_reason"] = fallback_reason
+    trace.append(trace_data)
 
     return {
         "analyst_research_notes": research_notes,
@@ -310,9 +330,10 @@ def deterministic_optimizer_node(state: PortfolioAgentState) -> Dict[str, Any]:
     risk = state.get("risk_category", "moderate")
     prefs = state.get("preferences", {})
 
-    constraints = PortfolioConstraints(
-        max_single_stock_pct=prefs.get("max_single_stock_weight_pct", 25.0),
-        max_sector_pct=prefs.get("max_sector_weight_pct", 40.0),
+    constraints = get_effective_constraints(
+        risk_category=risk,
+        requested_max_stock_pct=prefs.get("max_single_stock_weight_pct"),
+        requested_max_sector_pct=prefs.get("max_sector_weight_pct"),
         min_stocks_count=min(3, len(candidates)),
     )
 

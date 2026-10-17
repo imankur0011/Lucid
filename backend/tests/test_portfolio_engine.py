@@ -17,6 +17,11 @@ from backend.portfolio_engine import (
     PortfolioValidator,
     PortfolioEngineService,
 )
+from backend.portfolio_engine.constraints import (
+    get_effective_constraints,
+    HARD_POLICY_MAX_STOCK_PCT,
+    HARD_POLICY_MAX_SECTOR_PCT,
+)
 
 
 def test_candidate_selection_exclusions():
@@ -269,5 +274,34 @@ def test_post_rounding_integer_allocation_validation():
     res_valid = validator.validate_portfolio(valid_allocs, Decimal("100000.00"))
     assert res_valid["all_passed"]
     assert any(r["rule_code"] == "POST_ROUNDING_BUDGET_VERIFIED" and r["result_status"] == "pass" for r in res_valid["results"])
+
+
+def test_effective_stock_allocation_limits_and_precedence():
+    """Verify that effective allocation limits enforce min(HARD_POLICY, RISK_PROFILE, USER_REQUEST)."""
+    # 1. Hard policy ceiling clamping: 35% requested is clamped to 25%
+    c_clamped = PortfolioConstraints(max_single_stock_pct=35.0, max_sector_pct=50.0)
+    assert c_clamped.max_single_stock_pct == HARD_POLICY_MAX_STOCK_PCT
+    assert c_clamped.max_sector_pct == HARD_POLICY_MAX_SECTOR_PCT
+
+    # 2. Risk profile ceiling takes precedence when stricter than hard policy:
+    # 'very_conservative' has max_stock_pct=15.0%, max_sector_pct=30.0%
+    eff_vc = get_effective_constraints("very_conservative", requested_max_stock_pct=25.0)
+    assert eff_vc.max_single_stock_pct == 15.0
+    assert eff_vc.max_sector_pct == 30.0
+
+    # 3. User requested ceiling takes precedence when stricter than risk profile:
+    eff_user_strict = get_effective_constraints("moderate", requested_max_stock_pct=12.0)
+    assert eff_user_strict.max_single_stock_pct == 12.0
+
+    # 4. Final validator strictly rejects allocations breaching effective risk-profile ceiling
+    # Even if stock is <= 25%, for very_conservative it exceeds 15.0%
+    validator_vc = PortfolioValidator(eff_vc)
+    breach_vc_allocs = [
+        {"symbol": "STOCK_A", "target_weight_pct": 20.0, "shares_quantity": 20, "latest_price": 1000.0, "sector_name": "Tech"}, # 20% > 15%
+        {"symbol": "STOCK_B", "target_weight_pct": 20.0, "shares_quantity": 20, "latest_price": 1000.0, "sector_name": "Finance"},
+    ]
+    res_vc = validator_vc.validate_portfolio(breach_vc_allocs, Decimal("100000.00"))
+    assert not res_vc["all_passed"]
+    assert any(r["rule_code"] == "POST_ROUNDING_STOCK_CAP" and r["result_status"] == "fail" for r in res_vc["results"])
 
 

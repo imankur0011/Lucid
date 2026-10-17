@@ -26,6 +26,7 @@ try:
         PortfolioEngineService,
         compute_portfolio_metrics,
     )
+    from backend.portfolio_engine.constraints import get_effective_constraints
 except ImportError:
     from models import (
         ExistingPortfolio,
@@ -40,6 +41,7 @@ except ImportError:
         PortfolioEngineService,
         compute_portfolio_metrics,
     )
+    from portfolio_engine.constraints import get_effective_constraints
 
 
 class PortfolioDiagnosisService:
@@ -135,16 +137,26 @@ class PortfolioDiagnosisService:
             sec = ch["sector_name"]
             sector_weights[sec] = sector_weights.get(sec, Decimal("0.0")) + weight
 
-            if weight > Decimal("25.0"):
+        eff_constraints = get_effective_constraints(risk_category=target_risk_category)
+        stock_cap = Decimal(str(eff_constraints.max_single_stock_pct))
+        sector_cap = Decimal(str(eff_constraints.max_sector_pct))
+
+        for ch in current_holdings:
+            weight = (ch["current_value"] / total_market_val) * Decimal("100.0")
+            ch["weight_pct"] = float(round(weight, 2))
+            sec = ch["sector_name"]
+            sector_weights[sec] = sector_weights.get(sec, Decimal("0.0")) + weight
+
+            if weight > stock_cap:
                 warnings.append(
                     f"Excessive single-stock concentration: {ch['symbol']} represents {weight:.1f}% "
-                    f"of total capital (SEBI limit: 25.0%)."
+                    f"of total capital (Effective limit: {stock_cap}% for {target_risk_category})."
                 )
 
         for sec_name, sec_wt in sector_weights.items():
-            if sec_wt > Decimal("40.0"):
+            if sec_wt > sector_cap:
                 warnings.append(
-                    f"High sector concentration: '{sec_name}' represents {sec_wt:.1f}% of total portfolio (limit: 40.0%)."
+                    f"High sector concentration: '{sec_name}' represents {sec_wt:.1f}% of total portfolio (Effective limit: {sector_cap}%)."
                 )
 
         current_metrics = compute_portfolio_metrics(current_holdings)
@@ -154,8 +166,8 @@ class PortfolioDiagnosisService:
         target_res = engine.generate_portfolio(
             investment_amount=total_market_val,
             risk_category=target_risk_category,
-            max_single_stock_pct=25.0,
-            max_sector_pct=40.0,
+            max_single_stock_pct=eff_constraints.max_single_stock_pct,
+            max_sector_pct=eff_constraints.max_sector_pct,
         )
 
         target_holdings_by_id = {

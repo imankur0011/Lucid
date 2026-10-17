@@ -99,6 +99,18 @@ All services, schemas, database columns, and frontend modules conform strictly t
 
 *Fiduciary Rule:* Investor risk category is constrained by loss capacity: `final_rank = min(tolerance_rank, capacity_rank)`.
 
+### Effective Allocation Ceiling Precedence Hierarchy:
+Under no circumstances can any generated or rebalanced portfolio breach systemic risk boundaries. The effective constraint is deterministically computed via:
+$$\text{Effective Stock Cap} = \min(\text{HARD\_POLICY\_MAX\_STOCK\_PCT (25.0\%)}, \text{Risk Category Ceiling}, \text{Investor Requested Cap})$$
+$$\text{Effective Sector Cap} = \min(\text{HARD\_POLICY\_MAX\_SECTOR\_PCT (40.0\%)}, \text{Risk Category Sector Ceiling}, \text{Investor Requested Sector Cap})$$
+
+This exact effective ceiling is enforced across:
+1. **Continuous SLSQP Optimization:** Bounds $0 \le w_i \le \text{Effective Stock Cap}$ and $\sum w_{\text{sector}} \le \text{Effective Sector Cap}$.
+2. **Post-Rounding Realized Integer Validation:** Re-checks $(q_i \cdot P_i) / A_{\text{total}} \le \text{Effective Stock Cap}$ and realized sector weights (`POST_ROUNDING_STOCK_CAP` & `POST_ROUNDING_SECTOR_CAP`).
+3. **Core 06 Existing Portfolio Diagnosis:** Flags existing holdings breaching the effective risk-adjusted ceiling.
+4. **Simulated Rebalancing Previews:** Generates target allocations strictly respecting the effective risk-category limits.
+5. **Macroeconomic Stress Testing & Version Comparison:** Ensures all comparison and stress outputs preserve regulatory guardrails.
+
 ---
 
 ## 3. Automated Test Suite Verification

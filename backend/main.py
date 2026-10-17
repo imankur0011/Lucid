@@ -23,6 +23,7 @@ try:
         AppUser,
     )
     from backend.api.v1 import api_v1_router
+    from backend.middleware.rate_limit import InMemoryRateLimiterMiddleware
 except ImportError:
     from config import settings
     from database import engine, get_db
@@ -36,6 +37,7 @@ except ImportError:
         AppUser,
     )
     from api.v1 import api_v1_router
+    from middleware.rate_limit import InMemoryRateLimiterMiddleware
 
 
 @asynccontextmanager
@@ -82,6 +84,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# In-Memory Rate Limiting middleware (protects auth and expensive AI generation)
+app.add_middleware(InMemoryRateLimiterMiddleware, enabled=True)
 
 # Mount API v1 Routes
 app.include_router(api_v1_router)

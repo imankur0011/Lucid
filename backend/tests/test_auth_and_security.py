@@ -147,3 +147,20 @@ def test_insecure_jwt_secret_rejected_in_staging(monkeypatch):
     )
     with pytest.raises(ValueError, match="CRITICAL SECURITY CONFIGURATION ERROR"):
         insecure_settings.validate_security_keys()
+
+
+def test_rate_limiting_on_auth_endpoint():
+    """Verify that excessive authentication requests are rate limited with HTTP 429."""
+    from backend.middleware.rate_limit import InMemoryRateLimiterMiddleware
+    InMemoryRateLimiterMiddleware.reset()
+
+    for _ in range(20):
+        res = client.post("/api/v1/auth/token", json={"demo_user": True})
+        assert res.status_code == 200
+
+    # 21st request should trigger HTTP 429 Too Many Requests
+    limit_res = client.post("/api/v1/auth/token", json={"demo_user": True})
+    assert limit_res.status_code == 429
+    assert "rate limit exceeded" in limit_res.json()["detail"].lower()
+    assert "retry-after" in limit_res.headers
+
