@@ -38,12 +38,13 @@ class Settings(BaseSettings):
     fred_api_key: Optional[str] = None
     news_api_key: Optional[str] = None
 
-    # --- Application ---
+    # --- Application & Financial Constants ---
     app_env: str = "development"
     app_port: int = 8000
     app_secret_key: str = "change-me-in-production"
     jwt_secret_key: str = "change-me-in-production-jwt-key-32-chars-minimum"
     cors_origins: str = "http://localhost:3000"
+    risk_free_rate_pct: float = 7.0  # Configurable benchmark yield (India 10Y G-Sec)
 
     # --- Data Paths ---
     data_raw_dir: str = "../data/raw"

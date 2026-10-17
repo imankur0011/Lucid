@@ -3,13 +3,19 @@ Portfolio Risk and Diversification Metrics Calculator.
 Computes Expected Return, Annualized Volatility, Sharpe Ratio, and Herfindahl Diversification Score.
 """
 
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import numpy as np
+
+try:
+    from backend.config import settings
+    DEFAULT_RF = getattr(settings, "risk_free_rate_pct", 7.0)
+except ImportError:
+    DEFAULT_RF = 7.0
 
 
 def compute_portfolio_metrics(
     allocations: List[Dict[str, Any]],
-    risk_free_rate_pct: float = 7.0,  # India 10-Yr Benchmark G-Sec ~ 7.0%
+    risk_free_rate_pct: Optional[float] = None,
 ) -> Dict[str, float]:
     """
     Computes key risk and return metrics for a set of allocations.
@@ -21,6 +27,7 @@ def compute_portfolio_metrics(
         'herfindahl_index': float
     }
     """
+    rf = DEFAULT_RF if risk_free_rate_pct is None else float(risk_free_rate_pct)
     if not allocations:
         return {
             "expected_return_pct": 0.0,
@@ -53,7 +60,7 @@ def compute_portfolio_metrics(
     port_volatility = float(np.sqrt(max(0.0001, port_variance)))
 
     # Sharpe Ratio
-    sharpe = (port_return - risk_free_rate_pct) / port_volatility if port_volatility > 0 else 0.0
+    sharpe = (port_return - rf) / port_volatility if port_volatility > 0 else 0.0
 
     # Herfindahl-Hirschman Index (HHI) for Concentration
     # HHI = sum(w_i^2) where w_i is fraction in [0, 1]

@@ -20,25 +20,37 @@ To solve this, our architecture enforces a strict **separation of concerns**:
 
 ## 2. Mathematical Formulations & Algorithms
 
-### 2.1 Constrained Mean-Variance Optimization (Sharpe Maximization)
+### 2.1 Constrained Mean-Variance Quadratic Utility Optimization
 
-The optimizer maximizes the portfolio's expected excess return per unit of volatility:
+The mathematical optimizer solves a Markowitz Mean-Variance Quadratic Utility model using SciPy's Sequential Least Squares Programming (SLSQP) algorithm:
 
-$$\max_{w} \quad \text{Sharpe}(w) = \frac{w^T \mu - R_f}{\sqrt{w^T \Sigma w}}$$
+$$\min_{w} \quad \mathcal{L}(w) = \frac{1}{2} \lambda w^T \Sigma w - w^T \mu$$
 
-Subject to:
-1. **Full Investment Constraint:**  
-   $$\sum_{i=1}^N w_i = 1$$
-2. **Long-Only Bounds:**  
-   $$0 \le w_i \le w_{\max} \quad (\text{default } w_{\max} = 0.25)$$
-3. **Sector Diversification Constraints:**  
-   $$\sum_{i \in \text{Sector}_k} w_i \le S_{\max} \quad (\text{default } S_{\max} = 0.40), \quad \forall k$$
+Subject to the following Karush-Kuhn-Tucker (KKT) constraints:
+1. **Full Investment Budget Equality:**  
+   $$\sum_{i=1}^n w_i = 100.0\%$$
+2. **Long-Only Security Bounds:**  
+   $$0 \le w_i \le w_{\max} \quad (\text{default } w_{\max} = 25.0\%)$$
+3. **Sector Diversification Inequality Constraints:**  
+   $$\sum_{j \in \text{Sector}_k} w_j \le S_{\max} \quad (\text{default } S_{\max} = 40.0\%), \quad \forall k$$
 
 Where:
-- $w \in \mathbb{R}^N$: Allocation weight vector.
-- $\mu \in \mathbb{R}^N$: Expected annualized asset return vector.
-- $\Sigma \in \mathbb{R}^{N \times N}$: Sample covariance matrix of historical daily returns annualized by $\sqrt{252}$.
-- $R_f$: Indian risk-free rate assumption (7.0% based on 10-year Indian Government Bond yield).
+- $w \in \mathbb{R}^n$: Allocation percentage vector summing to 100.0%.
+- $\lambda > 0$: Risk-aversion penalty parameter mapped to the canonical 5-tier risk scale:
+  - Very Conservative: $\lambda = 10.0$
+  - Conservative: $\lambda = 6.0$
+  - Moderate: $\lambda = 3.5$
+  - Growth: $\lambda = 2.0$
+  - Aggressive: $\lambda = 1.0$
+- $\Sigma \in \mathbb{R}^{n \times n}$: Annualized sample covariance matrix computed from asset return volatilities and cross-asset correlation.
+- $\mu \in \mathbb{R}^n$: Annualized expected asset return vector centered around the category benchmark return ($\mu \in [8\%, 18\%]$).
+
+#### Post-Hoc Risk & Performance Metrics:
+Following optimization, the engine evaluates key risk metrics:
+- **Annualized Return:** $\mu_p = \frac{w^T \mu}{100}$
+- **Annualized Volatility:** $\sigma_p = \frac{\sqrt{w^T \Sigma w}}{100}$
+- **Sharpe Ratio:** $\text{Sharpe} = \frac{\mu_p - R_f}{\sigma_p}$  
+  Where $R_f$ is the configurable risk-free benchmark yield (`settings.risk_free_rate_pct`, default 7.0% based on the India 10-Year Benchmark Government Security yield).
 
 ### 2.2 Herfindahl-Hirschman Index (HHI) Diversification Score
 
@@ -195,13 +207,21 @@ npm run dev
 
 ---
 
-## 6. Regulatory Scope & Compliance Notice
+## 6. Regulatory Scope & Academic Boundaries Notice
 
-This software is developed strictly for **academic demonstration and educational research**. 
+This software is developed strictly for **academic demonstration and educational research**.
 
-In India, providing commercial personalized investment recommendations requires registration as a Registered Investment Adviser (RIA) with the **Securities and Exchange Board of India (SEBI)** under the *SEBI (Investment Advisers) Regulations, 2013* (as amended through November 25, 2025, and governed by the *Investment Adviser Master Circular* dated February 6, 2026). 
+1. **Safety Limits vs Regulatory Mandates:**  
+   The application's 25% single-stock ceiling and 40% sector ceiling are application-defined portfolio safety guardrails inspired by Indian mutual fund diversification norms (SEBI Mutual Funds Regulations Schedule VII). They represent internal deterministic engineering safety gates and must not be represented as an official regulatory compliance certification.
 
-Prior to any commercial deployment:
-1. A formal regulatory and legal audit must be completed.
-2. Certified market data feeds with appropriate commercial distribution licenses from NSE/BSE must be integrated.
-3. Explicit client risk profiling agreements and audit trails compliant with SEBI record-keeping regulations must be enforced.
+2. **Investor Risk Profiling:**  
+   The 5-question psychometric survey constitutes the application's internal risk-scoring method. While modeled on standard fiduciary capacity-and-tolerance factors, commercial advisory use mandates adherence to Regulation 16 of the *SEBI (Investment Advisers) Regulations, 2013* and the *Investment Adviser Master Circular* (dated February 6, 2026), including formal risk profile documentation, triennial reviews, and client consent.
+
+3. **Simulated Previews vs Execution:**  
+   All generated asset allocations, integer-share rounding previews, rebalancing suggestions, and scenario stress tests are simulated previews. They do not constitute registered investment advice or financial order execution.
+
+4. **Commercial Deployment Prerequisites:**  
+   Prior to any commercial operation:
+   - Registration as a Registered Investment Adviser (RIA) with SEBI is legally mandatory.
+   - Formal commercial market data redistribution licensing from the National Stock Exchange (NSE) and Bombay Stock Exchange (BSE) must be secured.
+   - A comprehensive compliance and fiduciary legal audit must be completed.

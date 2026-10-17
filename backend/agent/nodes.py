@@ -218,10 +218,16 @@ def analyst_node(state: PortfolioAgentState) -> Dict[str, Any]:
         "investor_custom_prompt": user_prompt,
     }
 
+    ai_provider = "gemini" if llm_reasoning else "dynamic_heuristic_fallback"
+    model_name = getattr(settings, "llm_model", "gemini-2.5-flash") if llm_reasoning else "builtin-rule-synthesizer"
+
     trace.append({
         "step": "analyst",
         "timestamp": datetime.now().isoformat(),
         "summary": f"Analyzed {len(candidates)} candidates across {len(sector_counts)} sectors with theme '{theme_str}'",
+        "ai_provider": ai_provider,
+        "model_name": model_name,
+        "prompt_version": "v1.2",
     })
 
     return {
@@ -455,10 +461,16 @@ def moderator_explanation_node(state: PortfolioAgentState) -> Dict[str, Any]:
             "display_order": len(explanations) + 1,
         })
 
+    ai_provider = "gemini" if custom_macro_text else "dynamic_heuristic_fallback"
+    model_name = getattr(settings, "llm_model", "gemini-2.5-flash") if custom_macro_text else "builtin-rule-synthesizer"
+
     trace.append({
         "step": "moderator_explanation",
         "timestamp": datetime.now().isoformat(),
         "explanations_count": len(explanations),
+        "ai_provider": ai_provider,
+        "model_name": model_name,
+        "prompt_version": "v1.2",
     })
 
     return {

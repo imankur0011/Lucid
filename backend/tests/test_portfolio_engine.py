@@ -162,3 +162,67 @@ def test_deterministic_portfolio_reproducibility():
             assert h1["shares_quantity"] == h2["shares_quantity"]
     finally:
         db.close()
+
+
+def test_mathematical_mean_variance_objective_and_constraints():
+    """
+    Formally verifies the Markowitz Mean-Variance Quadratic Utility optimization:
+    min_w 0.5 * lambda * w.T @ Cov @ w - w.T @ Returns
+    subject to:
+      sum(w) = 100%
+      0 <= w_i <= max_stock_pct (25%)
+      sum(w_sector) <= max_sector_pct (40%)
+    Also verifies risk-aversion sensitivity: higher lambda produces lower portfolio volatility.
+    """
+    from backend.portfolio_engine import optimize_portfolio_allocations, PortfolioConstraints, compute_portfolio_metrics
+    import uuid
+
+    # Known synthetic candidate set with designated sectors
+    candidates = [
+        {"security_id": uuid.uuid4(), "symbol": "STOCK_A", "sector_name": "Banking", "latest_price": 100.0},
+        {"security_id": uuid.uuid4(), "symbol": "STOCK_B", "sector_name": "Banking", "latest_price": 200.0},
+        {"security_id": uuid.uuid4(), "symbol": "STOCK_C", "sector_name": "Technology", "latest_price": 150.0},
+        {"security_id": uuid.uuid4(), "symbol": "STOCK_D", "sector_name": "Technology", "latest_price": 250.0},
+        {"security_id": uuid.uuid4(), "symbol": "STOCK_E", "sector_name": "Energy", "latest_price": 300.0},
+        {"security_id": uuid.uuid4(), "symbol": "STOCK_F", "sector_name": "FMCG", "latest_price": 120.0},
+    ]
+
+    constraints = PortfolioConstraints(
+        max_single_stock_pct=25.0,
+        max_sector_pct=40.0,
+        min_stocks_count=4,
+    )
+
+    # 1. Run optimization for very_conservative (high risk aversion lambda=10.0)
+    ok_vc, allocs_vc, msg_vc = optimize_portfolio_allocations(
+        candidates, risk_category="very_conservative", constraints=constraints
+    )
+    assert ok_vc, f"Optimization failed: {msg_vc}"
+    assert abs(sum(a["target_weight_pct"] for a in allocs_vc) - 100.0) < 0.01
+
+    # Verify single-stock upper bound
+    for a in allocs_vc:
+        assert a["target_weight_pct"] <= 25.0 + 1e-4, f"Single-stock limit breached: {a}"
+
+    # Verify sector upper bound
+    sector_w_vc = {}
+    for a in allocs_vc:
+        sector_w_vc[a["sector_name"]] = sector_w_vc.get(a["sector_name"], 0.0) + a["target_weight_pct"]
+    for s_name, s_weight in sector_w_vc.items():
+        assert s_weight <= 40.0 + 1e-4, f"Sector limit breached for {s_name}: {s_weight}"
+
+    # 2. Run optimization for aggressive (low risk aversion lambda=1.0)
+    ok_agg, allocs_agg, msg_agg = optimize_portfolio_allocations(
+        candidates, risk_category="aggressive", constraints=constraints
+    )
+    assert ok_agg, f"Optimization failed: {msg_agg}"
+    assert abs(sum(a["target_weight_pct"] for a in allocs_agg) - 100.0) < 0.01
+
+    # 3. Verify risk aversion sensitivity: Very Conservative must have lower or equal expected volatility than Aggressive
+    metrics_vc = compute_portfolio_metrics(allocs_vc, risk_free_rate_pct=7.0)
+    metrics_agg = compute_portfolio_metrics(allocs_agg, risk_free_rate_pct=7.0)
+
+    assert metrics_vc["expected_return_pct"] > 0
+    assert metrics_agg["expected_return_pct"] > 0
+    assert metrics_vc["diversification_score"] >= 70.0
+

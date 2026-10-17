@@ -7,6 +7,19 @@ from typing import Optional, List, Dict, Any, Literal
 from datetime import datetime, date
 from uuid import UUID
 from decimal import Decimal
+from enum import Enum
+
+
+# ============================================================
+# Canonical Risk Classification (5-tier scale)
+# ============================================================
+
+class RiskCategory(str, Enum):
+    VERY_CONSERVATIVE = "very_conservative"
+    CONSERVATIVE = "conservative"
+    MODERATE = "moderate"
+    GROWTH = "growth"
+    AGGRESSIVE = "aggressive"
 
 
 # ============================================================

@@ -78,11 +78,18 @@ export interface RiskQuestion {
   options: RiskOption[];
 }
 
+export type CanonicalRiskCategory =
+  | 'very_conservative'
+  | 'conservative'
+  | 'moderate'
+  | 'growth'
+  | 'aggressive';
+
 export interface RiskAssessment {
   risk_assessment_id: string;
   risk_tolerance_score: number;
   risk_capacity_score: number;
-  risk_category: string;
+  risk_category: CanonicalRiskCategory;
   assessment_status: string;
   completed_at: string;
 }

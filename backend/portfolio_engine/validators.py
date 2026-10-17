@@ -17,7 +17,7 @@ except ImportError:
 class PortfolioValidator:
     """Validates candidate allocations against all mathematical, diversification, and regulatory constraints."""
 
-    RULE_SET_VERSION = "sebi-in-diversified-v1.0"
+    RULE_SET_VERSION = "in-diversified-safety-v1.0"
     CALCULATION_ENGINE_VERSION = "scipy-slsqp-v1.0"
 
     def __init__(self, constraints: Optional[PortfolioConstraints] = None):

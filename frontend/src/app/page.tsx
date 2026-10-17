@@ -542,12 +542,12 @@ export default function Home() {
                     <div className="p-4 rounded-xl bg-slate-950 border border-slate-800">
                       <div className="text-xs text-slate-400">Max Single Stock Exposure</div>
                       <div className="text-lg font-bold text-white mt-1">≤ {maxStockWeight}%</div>
-                      <p className="text-[10px] text-slate-500 mt-0.5">Enforces hard SEBI concentration limits</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">Application concentration safety cap</p>
                     </div>
                     <div className="p-4 rounded-xl bg-slate-950 border border-slate-800">
                       <div className="text-xs text-slate-400">Max Sector Exposure</div>
                       <div className="text-lg font-bold text-white mt-1">≤ {maxSectorWeight}%</div>
-                      <p className="text-[10px] text-slate-500 mt-0.5">Guarantees cross-industry diversification</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">Application sector diversification cap</p>
                     </div>
                   </div>
 
@@ -608,7 +608,7 @@ export default function Home() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-emerald-400">✓</span>
-                    <span><strong>SEBI Alignment:</strong> Single-stock exposure capped at 25%, sector exposure at 40%.</span>
+                    <span><strong>Concentration Safety:</strong> Single-stock exposure capped at 25%, sector exposure at 40% (modeled on Indian mutual fund diversification norms).</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-emerald-400">✓</span>
@@ -1114,10 +1114,10 @@ export default function Home() {
           <div className="max-w-3xl mx-auto space-y-6">
             <div className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800">
               <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                <span>🎯</span> SEBI-Aligned Investor Risk Assessment
+                <span>🎯</span> Investor Risk Assessment Questionnaire (5-Tier Profiling)
               </h2>
               <p className="text-sm text-slate-400">
-                Deterministic mathematical scoring mapping answers to Conservative, Moderate, Growth, or Aggressive categories.
+                Application risk-assessment scoring mapping answers to Very Conservative, Conservative, Moderate, Growth, or Aggressive categories.
               </p>
             </div>
 
@@ -1161,6 +1161,19 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        {/* Academic & Regulatory Scope Footer */}
+        <footer className="mt-16 pt-8 border-t border-slate-800/60 text-center text-xs text-slate-500 space-y-2">
+          <p className="font-semibold text-slate-400">
+            Intelligent Portfolio Creation Application &bull; Academic Research &amp; Educational Prototype
+          </p>
+          <p className="max-w-3xl mx-auto text-[11px] text-slate-500 leading-relaxed">
+            All portfolio models, stress scenarios, and rebalancing suggestions are simulated previews for academic demonstration. 
+            They do not constitute registered investment advice. Commercial operation in India requires formal registration as an 
+            Investment Adviser (RIA) with SEBI under the SEBI (Investment Advisers) Regulations, 2013 (Master Circular dated February 6, 2026) 
+            and licensed market data feeds.
+          </p>
+        </footer>
       </main>
     </div>
   );
