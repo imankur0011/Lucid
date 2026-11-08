@@ -18,7 +18,7 @@ All tests and empirical evaluations were conducted in the standardized environme
 \centering
 \caption{Lucid Verification and Test Environment Specification}
 \label{tab:test_env}
-\begin{tabular}{ll}
+\begin{tabularx}{\textwidth}{lX}
 \toprule
 \textbf{Environment Parameter} & \textbf{Specification / Value} \\
 \midrule
@@ -31,7 +31,7 @@ All tests and empirical evaluations were conducted in the standardized environme
 \textbf{API Testing Tool} & Postman Desktop 11.20 with Newman CLI \\
 \textbf{Browser Automation} & Puppeteer 24.4 (Headless Chrome) \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \section{Automated Test Suite Execution Evidence}
@@ -85,9 +85,10 @@ Table~\ref{tab:backtest_results} summarizes the verified comparative performance
 \centering
 \caption{Quantitative Performance Evaluation: Lucid vs. Baseline Benchmarks}
 \label{tab:backtest_results}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{lccc}
 \toprule
-\textbf{Performance Metric} & \textbf{Strategy A (Lucid AI SLSQP)} & \textbf{Strategy B (Equal-Weight 1/N)} & \textbf{Strategy C (Market Index)} \\
+\textbf{Performance Metric} & \textbf{\makecell{Strategy A\\(Lucid AI SLSQP)}} & \textbf{\makecell{Strategy B\\(Equal-Weight 1/N)}} & \textbf{\makecell{Strategy C\\(Market Index)}} \\
 \midrule
 \textbf{Holdings Count} & 13 Stocks & 25 Stocks & 25 Stocks \\
 \textbf{Annualized Return} & \textbf{10.72\%} & 10.45\% & 9.13\% \\
@@ -99,7 +100,8 @@ Table~\ref{tab:backtest_results} summarizes the verified comparative performance
 \textbf{Ending Portfolio Value (Rs.)} & \textbf{Rs.~2,76,794.76} & Rs.~2,76,117.05 & Rs.~2,72,831.94 \\
 \textbf{Portfolio Turnover} & 0.0\% & 0.0\% & 0.0\% \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
 \subsection{Backtest Analysis and Findings}
@@ -109,13 +111,15 @@ Table~\ref{tab:backtest_results} summarizes the verified comparative performance
     \item \textbf{Concentration Balance}: While the Market Index exhibits high concentration skews in top heavyweights (Reliance, HDFC Bank, TCS, Infosys) reflected in an HHI of 0.2155, Lucid maintains an optimal HHI of 0.1183, achieving high diversification (95.51/100) across 13 carefully curated equities.
 \end{itemize}
 
+\clearpage
 \section{Repository Consistency and Architecture Verification}
-The repository includes an automated consistency validator (\texttt{scripts/validate\_documentation.py}) that checks the codebase, database schema, active dependencies, and documentation. The validator executes eight automated checks:
+The repository includes an automated consistency validator (\path{scripts/validate_documentation.py}) that checks the codebase, database schema, active dependencies, and documentation. The validator executes eight automated checks:
 
 \begin{table}[H]
 \centering
 \caption{Repository Consistency and Architectural Validation Results}
 \label{tab:validator_results}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{clcc}
 \toprule
 \textbf{Check ID} & \textbf{Verification Target} & \textbf{Expected Standard} & \textbf{Result} \\
@@ -131,7 +135,8 @@ The repository includes an automated consistency validator (\texttt{scripts/vali
 \midrule
 \textbf{Overall} & \textbf{Master Consistency Suite} & \textbf{8 / 8 Verification Checks Passed} & \textbf{100\% PASSED} \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
 \section{System Performance and Latency Benchmarks}

@@ -85,6 +85,7 @@ The implementation of Lucid translates the architectural blueprints and low-leve
     \end{enumerate}
 \end{itemize}
 
+\clearpage
 \section{Comprehensive Requirements Traceability Matrix}
 Table~\ref{tab:traceability_matrix} establishes complete end-to-end traceability from functional requirement IDs to frontend components, backend routers, database tables, and automated test suites.
 
@@ -93,26 +94,37 @@ Table~\ref{tab:traceability_matrix} establishes complete end-to-end traceability
 \caption{Comprehensive Functional Requirements Traceability Matrix}
 \label{tab:traceability_matrix}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{lp{3.5cm}p{3cm}p{3.5cm}p{3cm}c}
+\begin{tabular}{llllll}
 \toprule
-\textbf{Req ID} & \textbf{Frontend UI Component} & \textbf{Backend Router} & \textbf{Database Tables} & \textbf{Test Suite File} & \textbf{Status} \\
+\textbf{Req ID} & \textbf{Frontend UI Component} & \textbf{Backend Router} & \textbf{Database Tables} & \textbf{Automated Test Suite} & \textbf{Status} \\
 \midrule
-\textbf{FR-C01} & \texttt{OnboardingWizard.tsx} & \texttt{api/v1/risk.py} & \texttt{app\_users}, \texttt{risk\_assessments} & \texttt{test\_auth\_and\_security.py} & \textbf{Implemented} \\
-\textbf{FR-C02} & \texttt{ConversationalAssistant.tsx} & \texttt{api/v1/portfolios.py} & \texttt{financial\_goals}, \texttt{user\_profiles} & \texttt{test\_natural\_language\_onboarding.py} & \textbf{Implemented} \\
-\textbf{FR-C03} & \texttt{HoldingsView.tsx} & \texttt{api/v1/market\_data.py} & \texttt{economic\_observations}, \texttt{market\_prices} & \texttt{test\_market\_regime\_and\_universe.py} & \textbf{Implemented} \\
-\textbf{FR-C04} & \texttt{HoldingsView.tsx} & \texttt{api/v1/market\_data.py} & \texttt{securities}, \texttt{instrument\_listings} & \texttt{test\_full\_universe\_sync.py} & \textbf{Implemented} \\
-\textbf{FR-C05} & \texttt{StockWhyModal.tsx} & \texttt{agents/graph.py} & \texttt{agent\_execution\_runs}, \texttt{evidence\_items} & \texttt{test\_multi\_agent\_llm\_execution.py} & \textbf{Implemented} \\
-\textbf{FR-C06} & \texttt{AllocationVisualizer.tsx} & \texttt{portfolio\_engine/} & \texttt{portfolio\_versions}, \texttt{portfolio\_security\_decisions} & \texttt{test\_portfolio\_engine.py} & \textbf{Implemented} \\
-\textbf{FR-C07} & \texttt{HoldingsView.tsx} & \texttt{api/v1/monitoring.py} & \texttt{portfolio\_performance\_snapshots} & \texttt{test\_portfolio\_monitoring\_and\_rebalance.py} & \textbf{Implemented} \\
-\textbf{FR-C08} & \texttt{RebalancePreviewModal.tsx} & \texttt{api/v1/rebalancing.py} & \texttt{rebalance\_suggestions}, \texttt{broker\_orders} & \texttt{test\_diagnosis\_and\_rebalance.py} & \textbf{Implemented} \\
-\textbf{FR-C09} & \texttt{NotificationsPanel.tsx} & \texttt{api/v1/notifications.py} & \texttt{notifications} & \texttt{test\_notifications\_system.py} & \textbf{Implemented} \\
-\textbf{FR-C10} & \texttt{DiagnosisView.tsx} & \texttt{api/v1/diagnosis.py} & \texttt{existing\_portfolios}, \texttt{portfolio\_diagnoses} & \texttt{test\_diagnosis\_copilot.py} & \textbf{Implemented} \\
-\textbf{FR-D01} & \texttt{StockWhyModal.tsx} & \texttt{api/v1/portfolios.py} & \texttt{recommendation\_explanations}, \texttt{evidence\_items} & \texttt{test\_stock\_why\_experience.py} & \textbf{Implemented} \\
+\textbf{FR-C01} & \makecell[l]{\texttt{Onboarding}\\\texttt{Wizard.tsx}} & \texttt{api/v1/risk.py} & \makecell[l]{\texttt{app\_users},\\\texttt{risk\_assessments}} & \makecell[l]{\texttt{test\_auth\_and\_}\\\texttt{security.py}} & \textbf{Verified} \\
+\addlinespace[3pt]
+\textbf{FR-C02} & \makecell[l]{\texttt{Conversational}\\\texttt{Assistant.tsx}} & \makecell[l]{\texttt{api/v1/}\\\texttt{portfolios.py}} & \makecell[l]{\texttt{financial\_goals},\\\texttt{user\_profiles}} & \makecell[l]{\texttt{test\_natural\_}\\\texttt{language\_}\\\texttt{onboarding.py}} & \textbf{Verified} \\
+\addlinespace[3pt]
+\textbf{FR-C03} & \texttt{HoldingsView.tsx} & \makecell[l]{\texttt{api/v1/}\\\texttt{market\_data.py}} & \makecell[l]{\texttt{economic\_}\\\texttt{observations},\\\texttt{market\_prices}} & \makecell[l]{\texttt{test\_market\_}\\\texttt{regime\_and\_}\\\texttt{universe.py}} & \textbf{Verified} \\
+\addlinespace[3pt]
+\textbf{FR-C04} & \texttt{HoldingsView.tsx} & \makecell[l]{\texttt{api/v1/}\\\texttt{market\_data.py}} & \makecell[l]{\texttt{securities},\\\texttt{instrument\_}\\\texttt{listings}} & \makecell[l]{\texttt{test\_full\_}\\\texttt{universe\_sync.py}} & \textbf{Verified} \\
+\addlinespace[3pt]
+\textbf{FR-C05} & \texttt{StockWhyModal.tsx} & \texttt{agents/graph.py} & \makecell[l]{\texttt{agent\_execution\_}\\\texttt{runs},\\\texttt{evidence\_items}} & \makecell[l]{\texttt{test\_multi\_agent\_}\\\texttt{llm\_execution.py}} & \textbf{Verified} \\
+\addlinespace[3pt]
+\textbf{FR-C06} & \makecell[l]{\texttt{Allocation}\\\texttt{Visualizer.tsx}} & \texttt{portfolio\_engine/} & \makecell[l]{\texttt{portfolio\_versions},\\\texttt{portfolio\_security\_}\\\texttt{decisions}} & \makecell[l]{\texttt{test\_portfolio\_}\\\texttt{engine.py}} & \textbf{Verified} \\
+\addlinespace[3pt]
+\textbf{FR-C07} & \texttt{HoldingsView.tsx} & \makecell[l]{\texttt{api/v1/}\\\texttt{monitoring.py}} & \makecell[l]{\texttt{portfolio\_}\\\texttt{performance\_}\\\texttt{snapshots}} & \makecell[l]{\texttt{test\_portfolio\_}\\\texttt{monitoring\_and\_}\\\texttt{rebalance.py}} & \textbf{Verified} \\
+\addlinespace[3pt]
+\textbf{FR-C08} & \makecell[l]{\texttt{Rebalance}\\\texttt{PreviewModal.tsx}} & \makecell[l]{\texttt{api/v1/}\\\texttt{rebalancing.py}} & \makecell[l]{\texttt{rebalance\_}\\\texttt{suggestions},\\\texttt{broker\_orders}} & \makecell[l]{\texttt{test\_diagnosis\_}\\\texttt{and\_rebalance.py}} & \textbf{Verified} \\
+\addlinespace[3pt]
+\textbf{FR-C09} & \makecell[l]{\texttt{Notifications}\\\texttt{Panel.tsx}} & \makecell[l]{\texttt{api/v1/}\\\texttt{notifications.py}} & \texttt{notifications} & \makecell[l]{\texttt{test\_notifications\_}\\\texttt{system.py}} & \textbf{Verified} \\
+\addlinespace[3pt]
+\textbf{FR-C10} & \texttt{DiagnosisView.tsx} & \makecell[l]{\texttt{api/v1/}\\\texttt{diagnosis.py}} & \makecell[l]{\texttt{existing\_portfolios},\\\texttt{portfolio\_diagnoses}} & \makecell[l]{\texttt{test\_diagnosis\_}\\\texttt{copilot.py}} & \textbf{Verified} \\
+\addlinespace[3pt]
+\textbf{FR-D01} & \texttt{StockWhyModal.tsx} & \makecell[l]{\texttt{api/v1/}\\\texttt{portfolios.py}} & \makecell[l]{\texttt{recommendation\_}\\\texttt{explanations},\\\texttt{evidence\_items}} & \makecell[l]{\texttt{test\_stock\_why\_}\\\texttt{experience.py}} & \textbf{Verified} \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
+\clearpage
 \section{Application User Interface Demonstrations}
 Figures~\ref{fig:ui_landing} and \ref{fig:ui_portfolio} show live application screens captured from the running Next.js web application (\texttt{http://localhost:3000}):
 
