@@ -6,7 +6,6 @@ While the High-Level Design described the broad architecture of Lucid, the Low-L
 This chapter breaks down the system into understandable parts:
 \begin{itemize}
     \item How the web screens are structured in the frontend.
-    \item How the backend organizes its files, security checks, and database connections.
     \item How the thirteen specialized AI agents collaborate step by step.
     \item How the mathematical engine calculates whole shares and taxes.
     \item How the sequence flows handle user logins, portfolio generation, background monitoring, and statement analysis.
@@ -38,40 +37,6 @@ When a user clicks a button, the web screen does not talk directly to the databa
     \item Converts technical server responses into clear, helpful error messages (such as reminding the user if an entered investment amount is below Rs.~5,000).
 \end{itemize}
 
-\section{Backend Architecture and Directory Structure}
-The backend is built with \textbf{FastAPI 0.115+}, a modern, high-speed Python web framework. The files are organized cleanly under \texttt{backend/} as follows:
-
-\begin{footnotesize}
-\begin{verbatim}
-backend/
-|-- api/
-|   `-- v1/                 # 82 endpoints across 9 routers
-|       |-- auth.py         # Registration, login, and JWT
-|       |-- users.py        # Profiles and settings
-|       |-- risk.py         # Risk scoring & suitability
-|       |-- goals.py        # Goal tracking and targets
-|       |-- market_data.py  # Stock quotes & regime data
-|       |-- portfolios.py   # Portfolio creation & Stock-Why
-|       |-- diagnosis.py    # Demat PDF statement parsing
-|       |-- monitoring.py   # Valuation & drift tracking
-|       |-- rebalancing.py  # Rebalance preview & taxes
-|       |-- notifications.py# Real-time investor alerts
-|       `-- broker.py       # Simulated broker execution
-|-- models/                 # 62 database tables (SQLAlchemy)
-|-- schemas/                # Request schemas (Pydantic v2)
-|-- services/               # Core business logic helpers
-|-- portfolio_engine/       # SLSQP optimizer & lot rounding
-|-- agents/                 # 13-node LangGraph agent team
-|-- database/               # DB connection & session pool
-|-- middleware/             # Security, rate limits, CORS
-|-- alembic/                # Database migration scripts
-`-- config.py               # Application configuration
-\end{verbatim}
-\end{footnotesize}
-
-\subsection{Database Session Management}
-To ensure the backend never runs out of database connections, FastAPI uses a mechanism called \textbf{Dependency Injection} (\texttt{get\_db}). 
-Think of this like borrowing a book from a library: when an API request arrives, the server borrows an active database connection from a managed pool (size of 10 connections, up to 20 overflow). As soon as the request finishes, the connection is immediately returned so other users can use it. This prevents the application from slowing down or crashing under heavy traffic.
 
 \section{Agent-Level Design: The 13-Node AI Research Team}
 Rather than relying on a single AI prompt, Lucid coordinates thirteen specialized digital agents organized in a structured sequence using \textbf{LangGraph 0.4}. 
