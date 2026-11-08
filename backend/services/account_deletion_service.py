@@ -547,8 +547,11 @@ def delete_user_account(
                 detail="Password is required to confirm account deletion.",
             )
         try:
-            import bcrypt
-            is_valid = bcrypt.checkpw(password.encode("utf-8"), user.password_hash.encode("utf-8"))
+            try:
+                from backend.api.v1.auth import verify_password
+            except ImportError:
+                from api.v1.auth import verify_password
+            is_valid = verify_password(password, user.password_hash)
         except Exception:
             is_valid = False
 

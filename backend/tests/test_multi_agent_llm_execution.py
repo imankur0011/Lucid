@@ -144,10 +144,10 @@ class MockLangChainLLM:
             return MockLLMResponse("Indian macroeconomic backdrop demonstrates resilient domestic GDP growth amidst steady policy rates and moderated headline CPI.")
         elif "breadth" in prompt_str.lower() or "technical" in prompt_str.lower():
             return MockLLMResponse("Market breadth exhibits broad-market accumulation above the 50-DMA with moderate dispersion and favorable risk-reward.")
-        elif "balance sheet" in prompt_str.lower() or "equity research" in prompt_str.lower():
-            return MockLLMResponse("Candidate equity universe displays robust return on equity, prudent net debt-to-EBITDA, and durable competitive moats.")
         elif "governance" in prompt_str.lower() or "disclosures" in prompt_str.lower():
             return MockLLMResponse("Regulatory disclosures and corporate filings reflect clean auditor certifications with zero adverse statutory observations.")
+        elif "balance sheet" in prompt_str.lower() or "equity research" in prompt_str.lower():
+            return MockLLMResponse("Candidate equity universe displays robust return on equity, prudent net debt-to-EBITDA, and durable competitive moats.")
         elif "strategist" in prompt_str.lower() or "strategy" in prompt_str.lower():
             return MockLLMResponse("Recommend core-satellite asset allocation with high-conviction large-cap leaders balancing growth and defensiveness.")
         elif "critic" in prompt_str.lower() or "compliance" in prompt_str.lower():

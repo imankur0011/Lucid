@@ -1,8 +1,9 @@
-# Lucid — System Architecture Documentation
+# Lucid — Complete System Architecture Specification
 
 **Document Version:** 2026.11-v2.0  
 **Authoritative Date:** 2026-11-08  
-**Scope:** Authoritative 8-Layer Architectural Blueprint of **Lucid**, an intelligent investment portfolio creation, monitoring, and rebalancing platform for Indian retail equities listed on the National Stock Exchange (NSE) and Bombay Stock Exchange (BSE).
+**Target Audience:** System Architects, Principal Engineers, Security Auditors, DevOps & Infrastructure Leads  
+**Scope:** Authoritative 8-layer architectural blueprint of **Lucid**, an intelligent investment portfolio creation, monitoring, and rebalancing platform for Indian retail equities listed on NSE and BSE.
 
 ---
 
@@ -58,170 +59,180 @@ graph TD
         A_Rewk["Strategist Bounded Rework Node (Max 2 Loops)"]:::l4
         A_Opt["Deterministic SLSQP Optimizer Node"]:::l4
         A_CritFin["Critic Final Validation Node (Constraint Audit)"]:::l4
-        A_Mod["Fiduciary Moderator Node (Two-Level Explanations)"]:::l4
-        A_Pers["ACID PostgreSQL Persistence Node"]:::l4
+        A_Mod["Fiduciary Moderator Node (Two-Level Stock-Why)"]:::l4
+        A_Persist["ACID Persistence Node (PostgreSQL Transaction)"]:::l4
     end
 
-    subgraph L5 ["Layer 5: Quantitative & Mathematical Engine Layer (SciPy & NumPy)"]
-        M_Opt["Deterministic SLSQP Optimizer (Markowitz Quadratic Utility)"]:::l5
-        M_Int["Whole-Share Integer Allocation & Cash Conservation Engine"]:::l5
-        M_Drift["Asset & Sector Allocation Drift Engine (Threshold: 5%/8%)"]:::l5
-        M_Cost["Statutory Indian Equity Transaction Costs Engine (STT, GST)"]:::l5
-        M_Fact["Multi-Factor Scoring & Winsorized Z-Score Normalizer"]:::l5
-        M_Risk["Risk Engine (Sharpe, Sortino, Beta, Max Drawdown)"]:::l5
+    subgraph L5 ["Layer 5: Quantitative & Mathematical Engine Layer"]
+        Q_SLSQP["SciPy SLSQP Optimizer (Markowitz Mean-Variance)"]:::l5
+        Q_Lots["Whole-Share Integer Allocator & Cash Conservator"]:::l5
+        Q_ZScore["Winsorized Z-Score Factor Models (Val/Qual/Mom/Vol)"]:::l5
+        Q_Drift["Multi-Dimensional Drift Monitor (Asset & Sector)"]:::l5
+        Q_Tax["Indian Statutory Friction Engine (STT, GST, Stamp)"]:::l5
+        Q_HHI["Herfindahl-Hirschman Demat Concentration Analyzer"]:::l5
     end
 
-    subgraph L6 ["Layer 6: Operational Services & Scheduler Layer"]
-        S_Cron["Background Monitoring Scheduler (300s, 09:15-15:30 IST)"]:::l6
-        S_Notif["Notification Service (In-App Unread Alerts)"]:::l6
-        S_Diag["Demat Diagnosis Service (HHI Concentration & Overlap)"]:::l6
-        S_Why["Stock-Why Service (Institutional Citations & Proofs)"]:::l6
-        S_Reb["Rebalancing Service (Trade Preview & Invariant Checks)"]:::l6
-        S_Sync["Security Universe Sync Service (NSE/BSE Ingestion)"]:::l6
+    subgraph L6 ["Layer 6: Operational Services & Background Schedulers"]
+        S_Sched["Unattended Monitoring Daemon (300s Cycle, Market Hours)"]:::l6
+        S_Resolve["Levenshtein & Trigram Company Resolver"]:::l6
+        S_Notify["Multi-Channel Notification Generator"]:::l6
+        S_Parser["Indian Financial Number Parser (Cr, L, K, %)"]:::l6
     end
 
-    subgraph L7 ["Layer 7: Data Access & Persistence Layer (PostgreSQL 16 Master)"]
-        DB_Engine["SQLAlchemy 2.0 ORM & Connection Pooling"]:::l7
-        DB_Master[("PostgreSQL 16 Database (majorproject)<br/>62 Domain Tables + alembic_version")]:::l7
-        DB_Sec["Security Master (2,639 Securities, 2,715 Listings)"]:::l7
-        DB_Port["Portfolio Store (Versions, Decisions, Trades)"]:::l7
-        DB_Audit["Telemetry & System Audit Logs"]:::l7
+    subgraph L7 ["Layer 7: Data Access & Persistence Layer (PostgreSQL 16)"]
+        DB_Core["PostgreSQL 16 Relational Engine (Port 5432)"]:::l7
+        DB_Schema["62 Domain Application Tables (SQLAlchemy 2.0 ORM)"]:::l7
+        DB_Auth["Argon2id Hashes & Revoked JWT Blacklist"]:::l7
+        DB_Sec["Complete Security Master (2,639 Stored Equities)"]:::l7
     end
 
     subgraph L8 ["Layer 8: External Integrations & Market Data Layer"]
-        EXT_NSE["NSE India Archives (Official EQUITY_L Master)"]:::l8
-        EXT_BSE["BSE India Corporate Directory (ISIN Cross-Reference)"]:::l8
-        EXT_YF["Yahoo Finance API (yfinance Live Quotes & History)"]:::l8
-        EXT_RBI["Reserve Bank of India Bulletins (Policy Repo Rate)"]:::l8
-        EXT_News["NewsAPI & RSS Financial News Feeds"]:::l8
-        EXT_LLM["Google Gemini API (gemini-3.8-flash / Local Fallback)"]:::l8
+        EXT_NSE["NSE India Official Master (EQUITY_L.csv Bulk Feed)"]:::l8
+        EXT_BSE["BSE India Corporate Filings & Disclosures"]:::l8
+        EXT_YF["Yahoo Finance API (yfinance - Quotes & Historical Bars)"]:::l8
+        EXT_GEM["Google Gemini 3.8 Flash (LLM Research & Synthesis)"]:::l8
+        EXT_RBI["RBI & MoSPI (Macroeconomic Indicators)"]:::l8
     end
 
-    L1 <--> L2
-    L2 <--> L3
-    L3 <--> L4
-    L4 <--> L5
-    L3 <--> L5
-    L2 <--> L6
-    L6 <--> L5
-    L4 <--> L7
-    L5 <--> L7
-    L6 <--> L7
-    L6 <--> L8
-    L7 <--> L8
-    L4 <--> L8
+    L1 -->|REST HTTP / Bearer JWT| L2
+    L2 -->|Dependency Injection| L3
+    L3 -->|State Ingestion & Edge Evaluation| L4
+    L4 -->|Quadratic Programming & Share Rounding| L5
+    L2 -->|Direct RPC Invocation| L5
+    L2 -->|Service Delegation| L6
+    L6 -->|Continuous Drift Radar| L5
+    L4 -->|SQLAlchemy Scoped Sessions| L7
+    L5 -->|Historical Covariance & Pricing| L7
+    L6 -->|Entity Matching & Notifications| L7
+    L7 -->|Scheduled Sync & Ingestion Runs| L8
+    L4 -->|Prompt Synthesis Context| L8
 ```
 
 ---
 
-## Detailed Architectural Breakdown by Layer
+## Table of Contents
 
-### Layer 1: Client Presentation Layer
-- **Framework**: Next.js 16.4.2 using React 19.3.0 and TypeScript 5.
-- **Styling**: Tailwind CSS v4 with accessible, high-contrast financial palettes.
-- **Key Modules**:
-  - `Investor Dashboard`: High-level asset allocation, sector weights, and comparative benchmark performance against NIFTY 50.
-  - `Portfolio Wizard`: Interactive SEBI-aligned risk questionnaire determining risk capacity, investment horizon, and capital feasibility.
-  - `Drift Radar & Live Monitoring`: Visual asset drift (>5%) and sector drift (>8%) tracking.
-  - `Rebalance Execution Preview`: Interactive breakdown of proposed whole-share BUY, SELL, and HOLD orders with statutory transaction fee estimates.
-  - `Demat Statement Diagnostic View`: Portfolio overlap, Herfindahl-Hirschman Index (HHI) concentration metrics, and stock-specific health flags.
-  - `Copilot Chat & Fiduciary Stock-Why`: Natural-language portfolio assistant and institutional-grade explanation modals.
-
----
-
-### Layer 2: API Gateway & Middleware Layer
-- **Gateway**: FastAPI 0.115+ running on Uvicorn ASGI server.
-- **Routing**: 9 modular REST routers aggregating 82 unique API paths across 88 distinct HTTP operations under the `/api/v1` namespace.
-- **Middleware Infrastructure**:
-  - `In-Memory Sliding-Window Rate Limiter`: Implements client IP-scoped rate limiting via `collections.deque` timestamps, returning HTTP 429 upon threshold breach.
-  - `JWT Bearer Authentication`: Cryptographically signed JSON Web Tokens (HS256) enforcing user data isolation and session tracking.
-  - `Token Revocation Check`: Cross-references token SHA256 hashes against the `revoked_tokens` table on every protected request.
-  - `Strict Security Headers`: Enforces `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Strict-Transport-Security`, and Content Security Policy (CSP).
-  - `CORS Validation`: Restricts cross-origin requests to configured trusted frontend origins (`http://localhost:3000`).
+1. [Architecture Overview](#51-architecture-overview)
+2. [Presentation Architecture](#52-presentation-architecture)
+3. [Backend Architecture](#53-backend-architecture)
+4. [Data Integration Architecture](#54-data-integration-architecture)
+5. [Portfolio-Intelligence Architecture](#55-portfolio-intelligence-architecture)
+6. [Quantitative Architecture](#56-quantitative-architecture)
+7. [Monitoring & Rebalancing Architecture](#57-monitoring--rebalancing-architecture)
+8. [Runtime Architecture](#58-runtime-architecture)
+9. [Security Architecture](#59-security-architecture)
+10. [Architecture Diagrams](#510-architecture-diagrams)
 
 ---
 
-### Layer 3: Orchestration & State Management Layer
-- **Orchestrator**: LangGraph `StateGraph` compiled with request-scoped database session injection.
-- **Central State**: `PortfolioAgentState` TypedDict maintaining 35 state fields including investor profile, candidate equities, factor scores, critic verdicts, optimizer weights, integer shares, and telemetry traces.
-- **Fiduciary Invariants**:
-  - Missing, malformed, or unverified outputs strictly abort workflow execution (fail-closed).
-  - Bounded iteration caps: Maximum 2 rework cycles allowed between Lead Strategist and Independent Critic.
-  - Execution traces, agent prompt timestamps, and LLM latencies are recorded to `agent_execution_runs`.
+## 5.1 Architecture Overview
+
+Lucid implements a decoupled, event-driven, 8-layer architecture designed specifically for the regulatory, economic, and computational realities of Indian retail investing.
+
+### Authoritative Technology Stack
+- **Frontend Presentation:** Next.js 16.4.2 (App Router), React 19, TypeScript, TailwindCSS, Recharts.
+- **API Gateway & Core Backend:** FastAPI 0.115+, Uvicorn ASGI Server, Pydantic 2.0+.
+- **Multi-Agent Orchestration:** LangGraph 0.2+, `langchain-google-genai`.
+- **Primary LLM Model:** Google Gemini 3.8 Flash (`gemini-3.8-flash`) with deterministic rule fallbacks.
+- **Quantitative Engine:** SciPy (`scipy.optimize.minimize` with SLSQP solver), NumPy, Pandas.
+- **Database & Persistence:** PostgreSQL 16 via SQLAlchemy 2.0 and Alembic.
+- **Authentication:** Canonical Argon2id password hashing (`argon2-cffi>=25.1.0`), HMAC-SHA256 JWT tokens.
 
 ---
 
-### Layer 4: Agentic AI & Intelligence Layer (13 Specialized Nodes)
-1. **`manager_node`**: Decomposes user request, initializes state, and validates capital bounds.
-2. **`suitability_check_node`**: Deterministic SEBI gate verifying investor risk capacity and capital adequacy ($\ge$ ₹10,000).
-3. **`macro_analyst_node`**: Evaluates RBI repo rate, CPI inflation, and fiscal deficit.
-4. **`market_analyst_node`**: Classifies NIFTY 50 regime (Bull/Bear/Sideways) using 50-day and 200-day moving averages.
-5. **`fundamental_analyst_node`**: Audits candidate equity P/E, ROE, Earnings Yield, and factor Z-scores.
-6. **`news_analyst_node`**: Analyzes corporate governance, regulatory filings, and recent sentiment (30-day cutoff).
-7. **`analyst_node` (Lead Strategist)**: Synthesizes tactical candidate weights and alpha scores.
-8. **`critic_node` (Independent Risk Critic)**: Evaluates strategy against mandate, concentration caps, and ESG/sector exclusions.
-9. **`strategist_rework_node`**: Re-allocates candidate weights if Critic issues a bounded rework order (max 2 loops).
-10. **`deterministic_optimizer_node`**: Executes SciPy SLSQP optimization and integer whole-share lot allocation.
-11. **`critic_final_validation_node`**: Audits final integer-share weights against hard single-stock and sector caps.
-12. **`moderator_explanation_node`**: Synthesizes two-level institutional rationales and stock-why explanations.
-13. **`persistence_node`**: Commits all portfolio versions, allocations, and telemetry to PostgreSQL in an atomic ACID transaction.
+## 5.2 Presentation Architecture
+
+The client presentation layer is implemented in Next.js 16.4.2 using the modern React 19 App Router paradigm:
+- **`app/page.tsx`:** Single-Page Application (SPA) shell orchestrating modular views via client-side state.
+- **Modular Component Tree:** 24 reusable UI components (`HoldingsView`, `AllocationVisualizer`, `ExplainabilityView`, `StockWhyModal`, `RebalancePreviewModal`, `DiagnosisView`, `NotificationsPanel`).
+- **State & Data Management:** Central Axios singleton (`lib/api.ts`) managing Bearer JWT lifecycle, request signing, and graceful 401 token refresh/eviction.
 
 ---
 
-### Layer 5: Quantitative & Mathematical Engine Layer
-- **SLSQP Optimizer**: Solves $\min_{\mathbf{w}} 0.5 \lambda \mathbf{w}^T \boldsymbol{\Sigma} \mathbf{w} - \mathbf{w}^T \boldsymbol{\mu}$ subject to $\sum w_i = 1$ and individual/sector bounds.
-- **Integer Allocation Engine**: Converts continuous weights $w_i$ to discrete share counts $N_i = \lfloor \frac{w_i C}{P_i} \rfloor$ and tracks residual cash balance.
-- **Statutory Fee Engine**: Computes exact delivery charges on Indian exchanges:
-  - STT: 0.1% on delivery turnover
-  - Exchange Charges: 0.00297% (NSE)
-  - SEBI Charges: ₹10 / Crore
-  - GST: 18% on exchange and brokerage fees
-  - Stamp Duty: 0.015% on BUY delivery turnover
-- **Multi-Factor Normalizer**: Winsorizes raw ratios at the 5th and 95th percentiles and computes sector-relative Z-scores for Value, Quality, Momentum, and Low Volatility.
-- **Risk Engine**: Computes annualized Sharpe ratio, Sortino ratio, systematic Beta, and Historical Value-at-Risk (VaR 95%).
+## 5.3 Backend Architecture
+
+The backend layer is built on FastAPI and organized into:
+- **`backend/main.py`:** Application factory configuring CORS policies, sliding-window rate limiters, security headers, and async lifespan background scheduler loops.
+- **Modular Router Layer:** 9 versioned routers (`auth`, `diagnosis`, `goals`, `links`, `market_data`, `notifications`, `portfolios`, `profile`, `risk_assessments`) handling exactly 82 unique REST endpoints.
+- **Service Layer:** 13 specialized Python services isolating business logic and database transactions.
 
 ---
 
-### Layer 6: Operational Services & Background Schedulers
-- **Monitoring Scheduler**: Async daemon polling active portfolios every 300 seconds during Indian market hours (09:15 to 15:30 IST), detecting asset drift (>5%) and sector drift (>8%).
-- **Notification Service**: Manages in-app unread alert queues and persists audit notifications.
-- **Demat Diagnosis Service**: Calculates portfolio diversification metrics (HHI concentration index) and generates integer rebalancing previews.
-- **Fiduciary Stock-Why Service**: Produces grounded investment rationales with verified source citations.
-- **Security Master Sync Service**: Synchronizes the 2,639 listed equity universe from official NSE and BSE repositories.
+## 5.4 Data Integration Architecture
+
+Lucid integrates official exchange masters, real-time market feeds, and economic observations:
+- **NSE Security Master:** Full exchange universe synchronization (`exchange_universe_sync.py`) ingesting 2,639 listed stocks from `EQUITY_L.csv`.
+- **Market Data Retrieval:** Historical daily OHLCV price bars and intraday quotes retrieved via `yfinance` and cached in PostgreSQL `market_prices`.
+- **Macro Data:** RBI repo rates, CPI inflation, and yield curves ingested into `economic_indicators`.
+- **News & Filings:** BSE/NSE corporate disclosures and earnings announcements ingested into `market_news_articles`.
 
 ---
 
-### Layer 7: Data Access & Persistence Layer (PostgreSQL 16)
-- **Database Engine**: PostgreSQL 16+ via SQLAlchemy 2.0 ORM with connection pooling.
-- **Schema Scale**: 62 relational application tables across 8 functional domains:
-  1. User & Authentication (7 tables)
-  2. Investor & Goals (5 tables)
-  3. Security Master (9 tables)
-  4. Market Data & Fundamentals (11 tables)
-  5. Portfolio Generation & Constraints (13 tables)
-  6. Diagnosis & Rebalancing (4 tables)
-  7. Agent Telemetry & Notifications (7 tables)
-  8. Broker & Performance Snapshots (6 tables)
-- **Schema Migrations**: Managed declaratively through Alembic (`alembic.ini`).
+## 5.5 Portfolio-Intelligence Architecture
+
+The intelligence pipeline employs a **13-node LangGraph StateGraph** enforcing fiduciary responsibility:
+- **Task Decomposition:** The `manager` node initializes state and sets audit traces.
+- **Suitability Gate:** Validates client risk profile against SEBI investor protection regulations and filters candidate universe (~504 liquid stocks).
+- **Specialist Research:** Dedicated agents evaluate Macro, Market Breadth, Fundamentals, and News Filings.
+- **Independent Risk Critic:** Audits the Lead Strategist's proposed allocations against single-stock (20%) and sector (30%) caps.
+- **Bounded Rework:** Critic objections trigger bounded revisions (`max_rework_count = 2`).
 
 ---
 
-### Layer 8: External Integrations & Market Data Layer
-- **Official NSE India Archives**: Daily security master (`EQUITY_L.csv`) providing ISINs, listed symbols, and trading statuses.
-- **BSE Corporate Directory**: ISIN resolution and corporate action split mappings.
-- **Yahoo Finance API (`yfinance`)**: Adjusted close prices, volume, intraday quotes, and 3-year historical series.
-- **Reserve Bank of India Bulletins**: Monetary policy repo rates, CPI inflation figures, and macro baselines.
-- **Google Gemini API (`gemini-3.8-flash`)**: Cloud-based qualitative multi-agent reasoning, with automatic deterministic fallback to local dynamic reasoning when offline.
-- **NewsAPI & RSS Feeds**: Corporate announcements, financial news sentiment, and filings.
+## 5.6 Quantitative Architecture
+
+To ensure mathematical precision and eliminate LLM hallucinations:
+- **Convex Mean-Variance Optimization:** Uses SciPy Sequential Least Squares Programming (`SLSQP`) to maximize the Sharpe ratio subject to hard weight bounds.
+- **Whole-Share Discrete Lot Sizing:** Converts continuous weights into whole share lots ($N_i \in \mathbb{Z}^+$).
+- **Cash Conservation Invariant:** Enforces $\text{Residual Cash} \ge 0$ with zero fractional shares and zero leverage.
+- **Statutory Friction Engine:** Computes Indian delivery taxes (STT 0.1%, GST 18%, exchange turnover fees, stamp duty 0.015%).
+
+---
+
+## 5.7 Monitoring & Rebalancing Architecture
+
+- **Unattended Background Scheduler:** `BackgroundMonitoringScheduler` daemon wakes up every 300 seconds during market hours (09:15-15:30 IST).
+- **Drift Radar:** Evaluates individual asset drift ($|w_{current} - w_{target}|$) and sector drift.
+- **Alert Generation:** If asset drift $\ge 5\%$ or total drift $\ge 15\%$, creates in-app notifications and pending rebalancing proposals.
+- **Order Preview:** Generates minimum-turnover BUY/SELL orders with transaction cost previews.
+
+---
+
+## 5.8 Runtime Architecture
+
+Lucid runs as a clean, two-process runtime topology:
+1. **Frontend Server:** Next.js Node.js server running on `http://localhost:3000`.
+2. **Backend API Server:** FastAPI Uvicorn ASGI server running on `http://localhost:8000`.
+3. **Database Engine:** PostgreSQL 16 running on port `5432`.
+4. **Daemon Threads:** Background monitoring loop operating within the backend process space.
+
+---
+
+## 5.9 Security Architecture
+
+- **Cryptographic Password Hashing:** Canonical Argon2id ($m=65536, t=3, p=4$) via `argon2-cffi`.
+- **JWT Authorization:** HMAC-SHA256 tokens signed with a 64-character secret; invalidation tracked via PostgreSQL `revoked_tokens` table.
+- **Multi-Tenant Isolation:** All database reads and writes enforce explicit `user_id` filtering.
+- **Defensive Headers:** Strict Content-Security-Policy (CSP), HSTS, nosniff, and X-Frame-Options DENY headers on all responses.
+
+---
+
+## 5.10 Architecture Diagrams
+
+The complete architecture diagrams are rendered and maintained in:
+- [SYSTEM_ARCHITECTURE.mmd](file:///Users/ankur/Documents/MajorProject/app/SYSTEM_ARCHITECTURE.mmd)
+- [SYSTEM_ARCHITECTURE.png](file:///Users/ankur/Documents/MajorProject/app/SYSTEM_ARCHITECTURE.png)
+- [SYSTEM_ARCHITECTURE.svg](file:///Users/ankur/Documents/MajorProject/app/SYSTEM_ARCHITECTURE.svg)
+- [COMPLETE_DATA_FLOW.mmd](file:///Users/ankur/Documents/MajorProject/app/COMPLETE_DATA_FLOW.mmd)
+- [COMPLETE_DATA_FLOW.png](file:///Users/ankur/Documents/MajorProject/app/COMPLETE_DATA_FLOW.png)
 
 ---
 
 ## Architectural Exclusions
 
-To eliminate legacy documentation drift, the following components are **explicitly excluded from the active runtime**:
-- **Neo4j**: Lucid utilizes PostgreSQL 16 relational queries for entity relationships; no graph database is in the runtime path.
-- **Redis**: Sliding-window rate limiting and market caching operate in memory and in PostgreSQL.
-- **Celery**: Background monitoring tasks are scheduled using native Python asyncio and background threads.
-- **FAISS**: Multi-agent reasoning queries structured relational models directly without external vector database dependencies.
-- **Ollama**: Local LLM execution is replaced by Google Gemini with deterministic qualitative rule-based fallbacks.
-- **Live Custodial Broker Routing**: Lucid is strictly non-custodial; orders are generated as advisory previews for investor execution.
+The following legacy infrastructure components have been **completely excised** from the active runtime:
+- **No Neo4j Graph Database:** Company relations and sectors are normalized in PostgreSQL 16.
+- **No Redis In-Memory Cache:** Handled via PostgreSQL memory buffers and in-memory rate-limiter middleware.
+- **No Celery Distributed Queue:** Replaced with asyncio background tasks and daemon threads.
+- **No FAISS Vector Index:** Handled via PostgreSQL relational queries.
+- **No Local Ollama Daemon:** Primary LLM inference is standard Google Gemini 3.8 Flash (`gemini-3.8-flash`).

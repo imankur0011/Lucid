@@ -298,3 +298,4 @@ Transaction costs are deterministically calculated for delivery equity trades on
 | **Direct Account Aggregator (AA)** | `backend/diagnosis/service.py` | **PLANNED / NOT IMPLEMENTED** | Holdings currently entered manually or via CAS JSON |
 | **SMS/WhatsApp Gateways** | `backend/services/notification_service.py` | **MOCKED IN DEV / OPTIONAL** | Internal notifications stored in PostgreSQL |
 | **Neo4j / Redis / Celery / FAISS** | N/A | **UNUSED / EXCLUDED** | Excluded from runtime |
+
