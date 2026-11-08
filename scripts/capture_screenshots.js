@@ -39,3 +39,4 @@ capture().catch(err => {
   console.error('Screenshot error:', err);
   process.exit(0);
 });
+
