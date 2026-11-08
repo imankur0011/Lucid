@@ -1,17 +1,18 @@
 \chapter{Datasets Used and External Data Sources}
 
-\section{Dataset Overview and Ingestion Pipeline}
-Lucid integrates multiple disparate data sources spanning exchange security directories, daily financial market quotes, corporate balance sheets, central bank macroeconomic policy publications, and financial news feeds. The ingestion pipeline transforms raw external data feeds into standardized relational structures across five primary data tiers:
+\section{Overview of Data Sources: What Information Lucid Uses}
+To make intelligent investment recommendations, a financial system needs reliable, up-to-date information about companies, market prices, and the broader economy. Just as a human investor reads newspapers, reviews company annual reports, and checks stock exchange prices, Lucid collects data from verified official sources.
 
+Lucid relies on five primary categories of data:
 \begin{enumerate}
-    \item \textbf{Exchange Security Masters}: Canonical exchange archives from the NSE and BSE cataloging 2,639 listed corporate equities, ISIN mappings, and listing metadata.
-    \item \textbf{Historical Market Quotes}: Daily OHLCV trading bars (252 sessions) and volume statistics per qualified equity retrieved via Yahoo Finance.
-    \item \textbf{Corporate Fundamentals}: Point-in-time balance sheet ratios (P/E, P/B, ROE, Debt/Equity, Operating Margins) extracted from quarterly filings.
-    \item \textbf{Macroeconomic Benchmarks}: Central bank policy rates from the RBI DBIE (policy repo rate, India 10-year bond yields, CPI inflation).
-    \item \textbf{Financial News and Sentiment}: Curated articles parsed from financial feeds and Google News RSS, scored for polarity and entity-ISIN linkage.
+    \item \textbf{Stock Exchange Directories (NSE and BSE)}: The official registers of actively traded companies in India, including company names, exchange ticker symbols, and unique international identification numbers (called \textbf{ISINs}).
+    \item \textbf{Historical Market Prices}: Daily trading prices (Open, High, Low, Close, and Volume) over the past 252 trading sessions (one full year) for every listed company.
+    \item \textbf{Corporate Financial Fundamentals}: Vital balance sheet health metrics retrieved from quarterly financial reports, such as Return on Equity (ROE), Debt-to-Equity ratios, and Price-to-Earnings (P/E) ratios.
+    \item \textbf{Macroeconomic Benchmarks from the Reserve Bank of India (RBI)}: Crucial national economic numbers, including the official RBI policy repo rate (6.50\%), inflation rates, and 10-year Indian government bond yields.
+    \item \textbf{Financial News and Corporate Announcements}: Curated headlines and articles from recognized Indian business publications to identify company developments, legal risks, or management changes.
 \end{enumerate}
 
-Figure~\ref{fig:api_to_agent} illustrates how raw external data is ingested, validated, normalized in PostgreSQL, and selectively structured before being delivered to specific LangGraph agent nodes:
+Figure~\ref{fig:api_to_agent} illustrates how raw external information is downloaded, cleaned, stored in PostgreSQL, and converted into structured summaries for the AI agents:
 
 \clearpage
 \begin{figure}[p]
@@ -22,72 +23,84 @@ Figure~\ref{fig:api_to_agent} illustrates how raw external data is ingested, val
 \end{figure}
 \clearpage
 
-\section{External Data-Source Inventory}
-Table~\ref{tab:external_data_sources} provides an exhaustive inventory of every external data source integrated into Lucid, detailing the endpoint, retrieved fields, refresh frequency, and failure fallbacks.
+\section{Inventory of External Data Sources}
+Table~\ref{tab:external_data_sources} provides a comprehensive overview of every external data source integrated into Lucid, explaining what information is retrieved, how often it is refreshed, and what fallback safety measure is used if a provider is temporarily unavailable:
 
 \begin{table}[H]
 \centering
 \caption{Lucid External Data-Source Inventory and Ingestion Parameters}
 \label{tab:external_data_sources}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{llllll}
+\begin{tabular}{lllll}
 \toprule
-\textbf{Provider / Source} & \textbf{Endpoint / Archive} & \textbf{Data Retrieved} & \textbf{Format} & \textbf{Refresh Schedule} & \textbf{Fallback Behavior} \\
+\textbf{Data Source / Authority} & \textbf{Data Retrieved} & \textbf{Update Frequency} & \textbf{Primary Purpose} & \textbf{Offline Fallback Safety} \\
 \midrule
-\textbf{National Stock Exchange (NSE)} & \texttt{archives.nseindia.com/content/equities/EQUITY\_L.csv} & Symbol, Name, ISIN, Face Value, Listing Date & CSV & Weekly / Manual trigger & Cached database master \\
-\textbf{Bombay Stock Exchange (BSE)} & BSE Equity Scrip Master & Scrip Code, Scrip Name, ISIN & CSV/JSON & Monthly & Direct NSE primary ticker \\
-\textbf{Yahoo Finance (\texttt{yfinance})} & \texttt{/v8/finance/chart/{symbol}} & 1-Yr Daily OHLCV Quotes, Adj Close, Volume & JSON/Pandas & Daily post-market (16:30 IST) & Stored \texttt{market\_prices} records \\
-\textbf{Yahoo Finance Fundamentals} & \texttt{/v10/finance/quoteSummary/{symbol}} & P/E, P/B, ROE, Debt/Equity, Market Cap & JSON & Weekly & Point-in-time \texttt{fundamental\_metrics} \\
-\textbf{Reserve Bank of India (RBI)} & RBI DBIE Macro Bulletin & Policy Repo Rate, Reverse Repo, MSF Rate & REST/HTML & Bi-monthly MPC meeting & Seeded baseline (6.50\% Repo Rate) \\
-\textbf{NSE Market Indices} & NSE Index Stream & India VIX, Nifty 50 Index Value & REST/JSON & Real-time (15-min delayed) & Historical moving average \\
-\textbf{Google Gemini API} & \texttt{gemini-3.8-flash} via LangChain & Qualitative reasoning, thesis synthesis & JSON & On-demand per request & Deterministic rule-based models \\
+\textbf{National Stock Exchange (NSE)} & Active stock list, ISINs, and tickers & Weekly / On Demand & Security master catalog & Cached PostgreSQL records \\
+\textbf{Bombay Stock Exchange (BSE)} & Dual-listed company tickers and scrip codes & Monthly & Cross-exchange ticker mapping & Primary NSE ticker records \\
+\textbf{Yahoo Finance (\texttt{yfinance})} & 1-Year daily price bars (OHLCV) & Daily after 16:30 IST & Volatility and covariance matrix & Stored historical price database \\
+\textbf{Yahoo Finance Fundamentals} & P/E, P/B, ROE, Debt/Equity, Market Cap & Weekly & Balance sheet health screening & Cached \texttt{fundamental\_metrics} \\
+\textbf{Reserve Bank of India (RBI)} & Official Repo Rate, CPI Inflation & Bi-monthly (MPC meeting) & Macroeconomic regime score & Seeded 6.50\% baseline \\
+\textbf{NSE Index Stream} & India VIX and Nifty 50 Index quotes & 15-Minute Delayed Feed & Market volatility tiering & Historical 20-day moving average \\
+\textbf{Google Gemini API} & Qualitative analysis and thesis synthesis & On-Demand per request & Contextual reasoning & Deterministic rule fallbacks \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
 \section{Exchange Universe Coverage and Synchronization}
-The canonical equity universe is managed by \texttt{sync\_full\_exchange\_universe()} in \texttt{backend/market\_data/exchange\_universe\_sync.py}.
 
-\subsection{ISIN Collision Resolution and Split Mappings}
-During full-universe ingestion from official exchange archives, corporate actions such as stock splits and ISIN changes can introduce duplicate records or foreign key constraint collisions. For instance:
+\subsection{Why Unique Company Identification (ISIN) Matters}
+In India, a single company can have different names and ticker symbols across different platforms. For example, Tata Consultancy Services is traded as \texttt{TCS} on the National Stock Exchange (NSE) and as scrip code \texttt{532540} on the Bombay Stock Exchange (BSE). Furthermore, companies occasionally split their shares or change their corporate names.
+
+To prevent confusion and eliminate duplicate entries, Lucid uses the \textbf{International Securities Identification Number (ISIN)}. An ISIN is a globally standardized 12-character alphanumeric code (such as \texttt{INE467B01029} for TCS) that permanently and uniquely identifies a security, regardless of which exchange it is traded on or what nickname it has.
+
+\subsection{Resolving Corporate Splits and Duplicate Codes}
+When corporate actions occur, companies may update their ISINs. Lucid's synchronization service (\texttt{exchange\_universe\_sync.py}) includes automated conflict resolution logic (\texttt{ON CONFLICT (isin) DO UPDATE}):
 \begin{itemize}
-    \item \textbf{Bajaj Finance Ltd. (BAJFINANCE)}: Historical split from face value Rs.~10 to Rs.~2 changed the primary ISIN from \texttt{INE296A01016} to \texttt{INE296A01024}.
-    \item \textbf{Dr. Reddy's Laboratories (DRREDDY)}: Face value modification from Rs.~5 to Rs.~1 updated the security ISIN.
-    \item \textbf{Hindustan Aeronautics Ltd. (HAL)}: Sub-division from Rs.~10 to Rs.~5 generated a new active ISIN.
-\end{itemize}
-The synchronization service resolves these collisions through unique upsert logic (\texttt{ON CONFLICT (isin) DO UPDATE}), ensuring that historical price data references the correct, active scrip listing.
-
-\subsection{Active Universe Scale}
-As verified in PostgreSQL 16:
-\begin{itemize}
-    \item \textbf{Total Stored Securities}: Exactly \textbf{2,639 listed equities} spanning large-cap, mid-cap, small-cap, and emerging enterprise segments.
-    \item \textbf{Total Exchange Listings}: Exactly \textbf{2,715 trading listings} (accounting for dual-listed equities across NSE and BSE).
-    \item \textbf{Active Recommendation Universe}: All \textbf{2,639 listed exchange equities} across NSE and BSE, dynamically eligible for portfolio recommendation and construction based on investor risk profiles, liquidity tier thresholds, and market freshness.
-    \item \textbf{Complete Coverage for Search and Import}: All \textbf{2,639 securities} are simultaneously available for instant search, direct portfolio creation, and automated Demat CAS statement diagnostics.
-
+    \item When \textbf{Bajaj Finance Ltd.} underwent a stock split from a face value of Rs.~10 to Rs.~2, its ISIN changed from \texttt{INE296A01016} to \texttt{INE296A01024}. Lucid recognized the corporate event, updated the active security identifier, and preserved all previous historical price records seamlessly.
+    \item Similar split events for \textbf{Dr.~Reddy's Laboratories} and \textbf{Hindustan Aeronautics Ltd. (HAL)} were handled automatically without creating orphan records or crashing the database.
 \end{itemize}
 
-\section{Historical Market Pricing and Lookback Analysis}
-Historical pricing records are maintained in the \texttt{market\_prices} table. 
+\subsection{Scale of the Active Investment Universe}
+As verified in PostgreSQL:
 \begin{itemize}
-    \item \textbf{Lookback Horizon}: 252 trading sessions (representing one full financial year).
-    \item \textbf{Granularity}: Daily Open, High, Low, Close, Adjusted Close, and Volume.
-    \item \textbf{Continuous Returns}: Logarithmic daily returns are calculated as:
+    \item \textbf{Total Cataloged Listed Equities}: Exactly \textbf{2,639 listed Indian companies} stored in the \texttt{securities} table.
+    \item \textbf{Total Exchange Trading Listings}: Exactly \textbf{2,715 trading listings} in the \texttt{instrument\_listings} table (including dual listings across the NSE and BSE).
+    \item \textbf{Active Recommendation Eligibility}: All 2,639 listed equities are dynamically screened based on investor risk capacity, institutional liquidity thresholds, and price data freshness.
+    \item \textbf{Complete Coverage for Search and Statement Diagnostics}: All 2,639 stocks are instantly searchable in the user interface and fully recognized when users upload monthly Demat CAS statements.
+\end{itemize}
+
+\section{Historical Price Data and Statistical Calculations}
+To calculate investment risks and expected returns, Lucid analyzes 252 consecutive trading sessions (one standard financial year) stored in the \texttt{market\_prices} table:
+
+\begin{enumerate}
+    \item \textbf{Daily Logarithmic Returns}:
+    Instead of simple percentage changes, quantitative finance uses logarithmic returns because they are additive across time:
     \begin{equation}
-    r_{i,t} = \ln \left( \frac{P_{i,t}^{\text{adj}}}{P_{i,t-1}^{\text{adj}}} \right)
+    r_{i,t} = \ln \left( \frac{P_{i,t}^{\text{adjusted}}}{P_{i,t-1}^{\text{adjusted}}} \right)
     \end{equation}
-    \item \textbf{Covariance Matrix ($\mathbf{\Sigma}$)}: The sample pairwise covariance matrix between all candidate assets is computed using NumPy:
+    where $P_{i,t}^{\text{adjusted}}$ is the closing stock price adjusted for any dividends or stock splits.
+    \item \textbf{Covariance Matrix ($\mathbf{\Sigma}$)}:
+    To measure how different stocks move in relation to one another, Lucid calculates the sample covariance matrix across all shortlisted candidates:
     \begin{equation}
     \Sigma_{ij} = \frac{1}{T-1} \sum_{t=1}^{T} (r_{i,t} - \bar{r}_i)(r_{j,t} - \bar{r}_j)
     \end{equation}
-    Annualized covariance is obtained by scaling by $\sqrt{252}$.
-\end{itemize}
+    To convert daily covariance into annual terms, the matrix is multiplied by the annual trading day factor ($\sqrt{252}$).
+\end{enumerate}
 
-\section{Exact Data Payloads Delivered to Multi-Agent Nodes}
-A critical requirement of Lucid's architecture is that \textbf{raw external API responses are never dumped directly into the LLM context}. Dumping raw JSON wastes context tokens, slows response latency, and increases the likelihood of model confusion.
+\section{Data Delivery: Feeding Clean Information to AI Agents}
+A foundational architectural rule in Lucid is that \textbf{raw, unstructured API data is never dumped directly into the AI language model}.
 
-Instead, backend services transform and filter raw API data, delivering clean, structured JSON payloads to specific agent nodes. Table~\ref{tab:agent_payloads} specifies the exact fields provided to each agent:
+Dumping raw website data or huge JSON files into an AI prompt causes three serious problems:
+\begin{enumerate}
+    \item It wastes expensive AI context tokens.
+    \item It significantly slows down response times for the end user.
+    \item It overwhelms the AI model with irrelevant information, increasing the risk of hallucinated or inaccurate conclusions.
+\end{enumerate}
+
+Instead, Lucid acts as a strict filter. Backend Python services process, clean, and verify external market data first, packaging only the essential, relevant fields into compact JSON payloads for each specialist agent.
+
+Table~\ref{tab:agent_payloads} lists the exact structured data delivered to each agent:
 
 \begin{table}[H]
 \centering
@@ -96,25 +109,26 @@ Instead, backend services transform and filter raw API data, delivering clean, s
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{lllp{6cm}}
 \toprule
-\textbf{Agent Node} & \textbf{Data Source} & \textbf{Raw Data Type} & \textbf{Exact Structured Payload Fields Delivered to Agent} \\
+\textbf{Agent Node} & \textbf{Data Source} & \textbf{Raw Data Format} & \textbf{Exact Structured Fields Delivered to Agent} \\
 \midrule
-\textbf{Input Validator} & User HTTP Request & JSON & \texttt{capital\_inr}, \texttt{risk\_category}, \texttt{time\_horizon\_years}, \texttt{goal\_name}, \texttt{excluded\_sectors} \\
-\textbf{Macro Analyst} & RBI DBIE / Policy Bulletins & HTML / Reports & \texttt{rbi\_repo\_rate\_pct}, \texttt{inflation\_cpi\_pct}, \texttt{gdp\_growth\_forecast}, \texttt{monetary\_stance} \\
-\textbf{Market Regime} & NSE India Index Feeds & Live Quotes & \texttt{india\_vix\_value}, \texttt{vix\_tier}, \texttt{nifty\_current}, \texttt{nifty\_50\_dma}, \texttt{nifty\_200\_dma}, \texttt{regime\_trend} \\
-\textbf{Universe Selector} & PostgreSQL Master & SQL Records & Filtered list of candidate tickers: \texttt{symbol}, \texttt{company\_name}, \texttt{sector}, \texttt{industry}, \texttt{market\_cap\_tier} \\
-\textbf{Fundamental Analyst} & Yahoo Finance / DB & Financial Statements & Per Candidate: \texttt{symbol}, \texttt{pe\_ratio}, \texttt{pb\_ratio}, \texttt{roe\_pct}, \texttt{debt\_to\_equity}, \texttt{operating\_margin} \\
-\textbf{Sentiment / News} & Curated Ingested News & Text Articles & Per Candidate: \texttt{symbol}, \texttt{recent\_headlines\_count}, \texttt{net\_sentiment\_score}, \texttt{regulatory\_flags} \\
-\textbf{Adversarial Critic} & Preceding Node State & Python Dictionary & Candidate shortlist, proposed sector weights, aggregate conviction scores, identified risk factors \\
-\textbf{SLSQP Optimizer} & Quant Service & Vectorized Arrays & Covariance matrix $\mathbf{\Sigma}$, expected return vector $\boldsymbol{\mu}$, risk-free rate $R_f$, budget/sector bounds \\
-\textbf{Explainability Node} & Portfolio Decisions & DB Records & Final chosen symbols, allocated weights, whole shares, Sharpe score, marginal risk contribution \\
+\textbf{Input Validator} & User Web Form & JSON Payload & \texttt{capital\_inr}, \texttt{risk\_category}, \texttt{time\_horizon\_years}, \texttt{goal\_name}, \texttt{excluded\_sectors} \\
+\textbf{Macro Analyst} & RBI Policy Bulletins & HTML / Reports & \texttt{rbi\_repo\_rate\_pct}, \texttt{inflation\_cpi\_pct}, \texttt{gdp\_forecast}, \texttt{monetary\_stance} \\
+\textbf{Market Regime} & NSE Index Streams & Live Quotes & \texttt{india\_vix\_value}, \texttt{vix\_tier}, \texttt{nifty\_current}, \texttt{nifty\_50\_dma}, \texttt{regime\_trend} \\
+\textbf{Universe Selector} & PostgreSQL Master & SQL Records & Filtered candidates: \texttt{symbol}, \texttt{company\_name}, \texttt{sector}, \texttt{liquidity\_tier} \\
+\textbf{Fundamental Analyst} & Yahoo Finance / DB & Balance Sheets & Per Candidate: \texttt{symbol}, \texttt{pe\_ratio}, \texttt{pb\_ratio}, \texttt{roe\_pct}, \texttt{debt\_to\_equity} \\
+\textbf{News Analyst} & Curated Ingested News & Text Articles & Per Candidate: \texttt{symbol}, \texttt{headline\_count}, \texttt{sentiment\_score}, \texttt{legal\_risk\_flags} \\
+\textbf{Adversarial Critic} & Preceding Agent State & Python Dictionary & Candidate shortlist, proposed sector weights, identified risk factors \\
+\textbf{SLSQP Optimizer} & Quant Service & Math Arrays & Covariance matrix $\mathbf{\Sigma}$, expected returns $\boldsymbol{\mu}$, risk-free rate $R_f$, budget bounds \\
+\textbf{Explainability Node} & Portfolio Decisions & DB Records & Final chosen symbols, allocated shares, weights, Sharpe score, risk contributions \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
-\subsection{Sanitized Agent Context Example}
-Below is a representative sanitized payload delivered to the \textbf{Fundamental Analyst Node}:
+\subsection{Example of a Sanitized Agent Payload}
+Below is a real example of the clean, focused data package sent to the \textbf{Fundamental Analyst Agent}:
 
+\begin{footnotesize}
 \begin{verbatim}
 {
   "macro_context": {
@@ -128,28 +142,20 @@ Below is a representative sanitized payload delivered to the \textbf{Fundamental
       "company": "Tata Consultancy Services Ltd.",
       "sector": "Information Technology",
       "pe_ratio": 28.4,
-      "pb_ratio": 12.1,
       "roe_pct": 46.2,
-      "debt_to_equity": 0.08,
-      "beta": 0.72
+      "debt_to_equity": 0.08
     },
     {
       "symbol": "HDFCBANK",
       "company": "HDFC Bank Ltd.",
       "sector": "Financial Services",
-      "pe_ratio": 18.2,
-      "pb_ratio": 2.6,
+      "pe_ratio": 18.9,
       "roe_pct": 16.8,
-      "debt_to_equity": 0.85,
-      "beta": 1.05
+      "debt_to_equity": 1.12
     }
   ]
 }
 \end{verbatim}
+\end{footnotesize}
 
-\section{Dataset Quality, Limitations and Fallbacks}
-\begin{itemize}
-    \item \textbf{Rate Limits on External APIs}: Free market data tiers enforce rate limits (typically 2,000 requests/hour). Lucid mitigates this through caching in PostgreSQL (\texttt{market\_prices}), updating quotes only post-market.
-    \item \textbf{Corporate Action Adjustments}: Yahoo Finance quotes reflect historical dividend and split adjustments (\texttt{adj\_close}), ensuring that return calculations reflect genuine capital compounding.
-    \item \textbf{Deterministic Rule Fallback}: In the event of a Google Gemini API outage or timeout, Lucid activates its deterministic rule engine, scoring fundamentals using pre-calculated econometric weights with zero service disruption.
-\end{itemize}
+By providing only verified, essential numbers, the AI agent can complete its evaluation quickly, reliably, and without confusion.

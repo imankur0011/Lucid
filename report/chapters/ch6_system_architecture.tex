@@ -1,9 +1,11 @@
 \chapter{System Architecture and Runtime Topology}
 
 \section{System Architecture Overview}
-The system architecture of Lucid is engineered as an eight-layer decoupled topology, balancing computational performance, mathematical reliability, and modular extensibility. The platform is designed to operate seamlessly across development, local containerized, and institutional cloud deployment environments.
+The system architecture of Lucid describes how all the software tools, servers, AI models, and databases are organized so that the application runs smoothly, safely, and quickly.
 
-Figure~\ref{fig:sys_arch_diagram} illustrates the complete architectural topology spanning client presentation, security middleware, multi-agent orchestration, quantitative mathematical solvers, and relational persistence.
+To understand the architecture, imagine a modern, well-organized office building with eight specialized floors. Work starts on the top floor where the client arrives, travels down through security, passes through the research and math departments, and reaches the central file archive on the ground floor. 
+
+Figure~\ref{fig:sys_arch_diagram} shows the complete eight-layer structure of Lucid:
 
 \begin{figure}[!htbp]
     \centering
@@ -12,20 +14,21 @@ Figure~\ref{fig:sys_arch_diagram} illustrates the complete architectural topolog
     \label{fig:sys_arch_diagram}
 \end{figure}
 
-\section{The Eight Architectural Layers}
+\section{The Eight Architectural Layers: Floor by Floor}
+Here is how each layer works in simple, clear language:
 \begin{enumerate}
-    \item \textbf{Layer 1: Client Presentation Layer}: Implemented using Next.js 16.4.2 and React 19.3.0. Employs modern Server and Client Components, responsive Tailwind CSS v4 styling, and Lucide React iconography. Provides an interactive investor experience across mobile, tablet, and desktop viewports.
-    \item \textbf{Layer 2: API Gateway and Security Middleware Layer}: Implemented using FastAPI 0.115+ on the Uvicorn ASGI server. Enforces CORS policies, JWT bearer token validation (HS256), in-memory sliding-window rate limiting, and enterprise HTTP security headers.
-    \item \textbf{Layer 3: Orchestration and State Management Layer}: Powered by LangGraph 0.4. Manages the cyclical state graph, tracking typed state dictionaries (\texttt{TypedDict AgentState}), handling retries, and enforcing structured JSON validation.
-    \item \textbf{Layer 4: Agentic AI and Intelligence Layer}: Houses the specialized cognitive agent nodes. Integrates Google Gemini 3.8 Flash (\texttt{gemini-3.8-flash}) via LangChain Google GenAI, backed by a deterministic rule-based model fallback engine.
-    \item \textbf{Layer 5: Quantitative and Mathematical Engine Layer}: Built on SciPy 1.15.2 and NumPy 2.2.3. Executes constrained Markowitz mean-variance SLSQP optimization, discrete whole-share lot rounding, and statutory Indian transaction friction modeling.
-    \item \textbf{Layer 6: Operational Services and Background Scheduler Layer}: Implements asynchronous background tasks, including the 5-minute market-hours drift radar (\texttt{BackgroundMonitoringScheduler}), CAS statement parsers (\texttt{pdfplumber}), and real-time notification dispatchers.
-    \item \textbf{Layer 7: Data Access and Persistence Layer}: Powered by PostgreSQL 16 and SQLAlchemy 2.0.38 ORM with Alembic schema migration tracking. Houses 62 domain application tables (+1 alembic tracking table) with connection pooling (10 base connections, 20 max overflow).
-    \item \textbf{Layer 8: External Integrations and Market Data Feeds Layer}: Manages data ingestion from NSE archives (\texttt{EQUITY\_L.csv}), BSE scrip master, Yahoo Finance API (\texttt{yfinance}), RBI macroeconomic releases, and Google Gemini APIs.
+    \item \textbf{Layer 1: Client Presentation Layer (The Front Office)}: Built using modern web technologies (\textbf{Next.js 16.4.2} and \textbf{React 19.3.0}). This is the visual interface that investors see and interact with on their smartphones, tablets, or computers. It renders clean dashboards, interactive risk questionnaires, colorful sector allocation charts, and instant alert pop-ups.
+    \item \textbf{Layer 2: API Gateway and Security Layer (The Security Gate)}: Built using \textbf{FastAPI 0.115+}. Every request from the web screen passes through this security checkpoint. It inspects digital login badges (JSON Web Tokens), blocks suspicious traffic, and enforces rate limits so no single user can accidentally overload the server.
+    \item \textbf{Layer 3: Orchestration and Workflow Layer (The Project Manager)}: Powered by \textbf{LangGraph 0.4}. This layer acts as the coordinator of the research process. It ensures that data moves smoothly from one research agent to the next in the proper order and handles retries if an external network connection is temporarily slow.
+    \item \textbf{Layer 4: Agentic AI and Intelligence Layer (The Research Team)}: Houses the thirteen specialized AI agents. Using Google Gemini 3.8 Flash, this layer reads news articles, reviews corporate earnings announcements, evaluates central bank interest rate policies, and challenges potential investment selections.
+    \item \textbf{Layer 5: Quantitative and Mathematical Layer (The Math Department)}: Built with proven scientific Python libraries (\textbf{SciPy 1.15} and \textbf{NumPy 2.2}). Completely separated from the AI text models, this layer calculates exact portfolio percentage weights using Markowitz Modern Portfolio Theory, rounds weights into executable whole shares, and calculates Indian taxes and exchange fees.
+    \item \textbf{Layer 6: Operational Services and Background Scheduler (The Maintenance Crew)}: An automated background program that runs quietly during stock market hours (09:15 to 15:30 IST). Every 5 minutes, it checks live stock prices to see if an investor's portfolio has drifted away from its target balance and prepares rebalancing alerts. It also handles PDF statement reading and notification delivery.
+    \item \textbf{Layer 7: Data Persistence Layer (The Central Archive)}: Powered by \textbf{PostgreSQL 16}. Stores all 62 application tables securely. It ensures that user logins, portfolio version histories, stock prices, and audit records are permanently preserved and protected against corruption.
+    \item \textbf{Layer 8: External Integrations and Data Feeds (The External Couriers)}: Manages connections to outside data sources. It downloads official stock lists from the National Stock Exchange of India (NSE) and Bombay Stock Exchange (BSE), fetches market prices from Yahoo Finance, checks monetary policies from the Reserve Bank of India (RBI), and communicates with Google Gemini AI services.
 \end{enumerate}
 
-\section{Technology Stack Manifest}
-Table~\ref{tab:tech_stack} documents the verified technology stack actively utilized by Lucid, detailing the specific version, purpose, and technical justification for each component.
+\section{Technology Stack Manifest: What Tools Were Chosen and Why}
+Table~\ref{tab:tech_stack} documents the verified software libraries and frameworks used to build Lucid, along with the simple reason why each tool was chosen:
 
 \begin{table}[H]
 \centering
@@ -34,72 +37,71 @@ Table~\ref{tab:tech_stack} documents the verified technology stack actively util
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{llll}
 \toprule
-\textbf{Technology / Library} & \textbf{Verified Version} & \textbf{Purpose in Lucid} & \textbf{Technical Justification} \\
+\textbf{Technology / Library} & \textbf{Verified Version} & \textbf{What It Does in Lucid} & \textbf{Why It Was Chosen (Simple English)} \\
 \midrule
-\textbf{Next.js} & 16.4.2 & Frontend Web Framework & App Router architecture, React Server Components, fast hydration \\
-\textbf{React} & 19.3.0 & UI Component Library & Concurrent rendering, server actions, dynamic client UI state \\
-\textbf{TypeScript} & 5.8.2 & Frontend Programming Language & Static type safety, strict interface contracts with backend schemas \\
-\textbf{Tailwind CSS} & 4.1.1 & Styling & Utility-first CSS, high rendering performance, zero runtime overhead \\
-\textbf{Python} & 3.11 -- 3.14 & Backend Programming Language & Standard for quantitative finance, scientific computing, and AI \\
-\textbf{FastAPI} & 0.115.8 & Backend REST API Framework & Asynchronous ASGI architecture, automatic OpenAPI docs, high RPS \\
-\textbf{Uvicorn} & 0.34.0 & ASGI Web Server & Low-latency async event-loop handling for FastAPI routes \\
-\textbf{Pydantic} & 2.10.6 & Request/Response Validation & High-speed Rust-backed data validation and schema enforcement \\
-\textbf{PostgreSQL} & 16+ & Master Relational Database & ACID transactions, relational integrity, JSONB support, advisory locks \\
-\textbf{SQLAlchemy} & 2.0.38 & Object-Relational Mapper (ORM) & Declarative 2.0 syntax, connection pooling, typed SQL expressions \\
-\textbf{Alembic} & 1.14.1 & Database Migration Manager & Version-controlled schema evolutions, rollback support \\
-\textbf{SciPy} & 1.15.2 & Scientific Computing & Sequential Least Squares Programming (SLSQP) numerical solver \\
-\textbf{NumPy} & 2.2.3 & Vectorized Numerical Operations & High-performance covariance matrix calculations and array slicing \\
-\textbf{Pandas} & 2.2.3 & Financial Data Analysis & Time-series price lookback handling and CSV universe ingestion \\
-\textbf{LangGraph} & 0.4.0 & Multi-Agent Orchestration & Cyclical state graphs, typed state management, conditional branching \\
-\textbf{Google Gemini} & gemini-3.8-flash & Large Language Model & Sub-second financial document synthesis and fiduciary explanation \\
-\textbf{Argon2-cffi} & 25.1.0 & Password Hashing & Memory-hard cryptographic hashing complying with RFC 9106 \\
-\textbf{PyJWT} & 2.10.1 & Token Authentication & Stateless, digitally signed JSON Web Tokens for API sessions \\
-\textbf{yfinance} & 0.2.54 & Market Data Feed & 1-year daily historical OHLCV quotes and company fundamental ratios \\
-\textbf{pdfplumber} & 0.11.5 & Statement Parsing & Precise text and table extraction from CDSL/NSDL Demat CAS PDFs \\
-\textbf{Bash / PowerShell} & Native & Local Lifecycle Scripts & One-command automated installation, status, and service shutdown \\
+\textbf{Next.js} & 16.4.2 & Frontend Web Framework & Renders web pages quickly and updates charts instantly. \\
+\textbf{React} & 19.3.0 & User Interface Library & Provides reusable buttons, modals, and dynamic data tables. \\
+\textbf{TypeScript} & 5.8.2 & Frontend Programming Language & Catches code errors and typos before the application runs. \\
+\textbf{Tailwind CSS} & 4.1.1 & Visual Styling & Creates clean, modern visual designs with fast page loading. \\
+\textbf{Python} & 3.11 -- 3.14 & Backend Programming Language & The global industry standard for financial math and AI systems. \\
+\textbf{FastAPI} & 0.115.8 & Backend API Framework & Extremely fast web framework that automatically creates API docs. \\
+\textbf{Uvicorn} & 0.34.0 & High-Speed Web Server & Handles multiple incoming user web requests at the same time. \\
+\textbf{Pydantic} & 2.10.6 & Data Validation Library & Automatically checks that user inputs (like amounts) are valid. \\
+\textbf{PostgreSQL} & 16+ & Master Relational Database & Stores financial data permanently with zero risk of loss. \\
+\textbf{SQLAlchemy} & 2.0.38 & Database Connector (ORM) & Lets Python code talk to PostgreSQL cleanly and safely. \\
+\textbf{Alembic} & 1.14.1 & Database Change Tracker & Records updates to database tables over time like version control. \\
+\textbf{SciPy} & 1.15.2 & Mathematical Solver Library & Solves Markowitz portfolio math without arithmetic mistakes. \\
+\textbf{NumPy} & 2.2.3 & Fast Numerical Calculations & Performs high-speed math on large tables of stock prices. \\
+\textbf{Pandas} & 2.2.3 & Financial Data Tables & Cleans stock lists and handles historical price series. \\
+\textbf{LangGraph} & 0.4.0 & Multi-Agent Coordinator & Coordinates the 13 AI agents in a structured, step-by-step workflow. \\
+\textbf{Google Gemini} & gemini-3.8-flash & AI Language Model & Reads financial documents and writes plain-English explanations. \\
+\textbf{Argon2-cffi} & 25.1.0 & Password Hasher & Protects user passwords with military-grade encryption. \\
+\textbf{PyJWT} & 2.10.1 & Digital Session Badges & Creates encrypted tokens so logged-in users stay authenticated safely. \\
+\textbf{yfinance} & 0.2.54 & Market Data Fetcher & Downloads historical daily prices and financial health ratios. \\
+\textbf{pdfplumber} & 0.11.5 & PDF Statement Reader & Reads text and tables from Demat CAS account statements. \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
-\clearpage
-\section{Data Pipeline and Ingestion Architecture}
-Figure~\ref{fig:nse_bse_flow} illustrates the data ingestion and transformation architecture responsible for synchronizing the Indian exchange universe:
+\section{Data Pipeline: How Indian Stock Data is Collected and Cleaned}
+Figure~\ref{fig:nse_bse_flow} illustrates the four-step data ingestion pipeline that keeps Lucid synchronized with Indian stock exchanges:
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.88\textwidth, height=0.72\textheight, keepaspectratio]{NSE_BSE_DATA_FLOW.pdf}
+    \includegraphics[width=0.85\textwidth, height=0.55\textheight, keepaspectratio]{NSE_BSE_DATA_FLOW.pdf}
     \caption{NSE/BSE Exchange Universe Ingestion and Pipeline Architecture}
     \label{fig:nse_bse_flow}
 \end{figure}
 
-The pipeline executes through four sequential phases:
+The data pipeline runs through four clear stages:
 \begin{enumerate}
-    \item \textbf{Universe Ingestion}: The synchronization service (\texttt{sync\_full\_exchange\_universe()}) downloads the official NSE equity master (\texttt{EQUITY\_L.csv}) and queries the BSE scrip directory. It resolves ISIN collisions resulting from historical corporate splits (e.g., BAJFINANCE, DRREDDY, HAL) and persists \textbf{2,639 canonical equities} into \texttt{securities}.
-    \item \textbf{Historical Price Retrieval}: A 1-year historical lookback window (252 trading sessions) is retrieved via Yahoo Finance for each security, validated for trading day continuity, and stored in \texttt{market\_prices}.
-    \item \textbf{Fundamental Metric Normalization}: Balance sheet ratios (P/E, P/B, ROE, Debt-to-Equity, Operating Margin, Market Cap) are extracted and recorded in \texttt{fundamental\_metrics}.
-    \item \textbf{Liquidity Tier Categorization}: Securities are partitioned into four institutional tiers based on Average Daily Traded Volume (ADTV) and daily turnover, dynamically qualifying equities across the full 2,639 listed exchange universe for portfolio recommendation and risk-aligned allocation.
+    \item \textbf{Stage 1: Downloading the Stock Lists}: The pipeline downloads the official list of actively traded companies from the National Stock Exchange (\texttt{EQUITY\_L.csv}) and cross-checks them against the Bombay Stock Exchange (BSE) directory. It resolves conflicts (such as when companies change their names or split their shares) and saves \textbf{2,639 listed Indian companies} into the master security database.
+    \item \textbf{Stage 2: Fetching 1 Year of Price History}: For every active stock, the pipeline fetches one full year of daily trading prices (252 market sessions). It checks that there are no missing days and stores the prices in the \texttt{market\_prices} table.
+    \item \textbf{Stage 3: Recording Financial Health Ratios}: Lucid downloads company balance sheet ratios—including Return on Equity (ROE), Debt-to-Equity, Price-to-Earnings (P/E), and Market Capitalization—and saves them in the \texttt{fundamental\_metrics} table.
+    \item \textbf{Stage 4: Liquidity Tier Screening}: Companies are categorized into four institutional \textbf{Liquidity Tiers} based on their average daily trading volume. This ensures that the portfolio creation engine only selects companies that can be easily bought and sold on the market without unexpected price slippage.
 \end{enumerate}
 
-\section{Runtime Execution Flow: Portfolio Generation Request}
-When an investor clicks ``Generate Portfolio'' on the web interface, the following execution lifecycle occurs across the architecture:
+\section{Runtime Execution: What Happens When a User Clicks ``Generate''}
+When an investor clicks ``Generate Portfolio'' on the web interface, the application completes the following ten-step journey in less than 2.5 seconds:
 \begin{enumerate}
-    \item \textbf{Input Validation}: FastAPI validates incoming JSON against \texttt{PortfolioGenerationRequestCreate}. The user's JWT token is authenticated, and the rate limiter checks available tokens.
-    \item \textbf{Investor Profile \& Goal Resolution}: The service fetches the investor's active risk category (Conservative, Moderate, Aggressive) and investment capital from \texttt{user\_profiles} and \texttt{financial\_goals}.
-    \item \textbf{Universe Filtering}: The \texttt{CandidateUniverseSelector} extracts eligible liquid stocks from \texttt{securities}, removing user-specified sector exclusions (e.g., tobacco, fossil fuels).
-    \item \textbf{LangGraph State Initialization}: The backend instantiates an \texttt{AgentState} dictionary and launches the 13-node LangGraph StateGraph.
-    \item \textbf{Macro \& Regime Analysis}: Nodes assess RBI repo rates and India VIX volatility, setting risk aversion coefficients.
-    \item \textbf{Fundamental \& Sentiment Screening}: Balance sheet criteria and news sentiment are scored for each candidate stock.
-    \item \textbf{Adversarial Critique}: The Critic node challenges candidate allocations, pruning high-risk or over-concentrated positions.
-    \item \textbf{SciPy SLSQP Optimization}: The quantitative engine executes numerical optimization in an external worker threadpool (\texttt{anyio.to\_thread.run\_sync}), finding the optimal weight vector $\mathbf{w}^*$.
-    \item \textbf{Integer Lot Sizing}: The lot rounder converts $\mathbf{w}^*$ into discrete share counts and calculates residual cash.
-    \item \textbf{Database Persistence \& API Response}: The versioned portfolio is persisted across \texttt{portfolio\_versions} and \texttt{portfolio\_security\_decisions}. The API returns HTTP 201 Created with the full portfolio payload in under 2.5 seconds.
+    \item \textbf{Step 1: Input Check}: The backend server checks that the user's investment amount is at least Rs.~5,000 and verifies their digital login badge.
+    \item \textbf{Step 2: Fetching User Goals}: The server loads the investor's risk profile (Conservative, Moderate, or Aggressive) and savings timeline from the database.
+    \item \textbf{Step 3: Screening Candidates}: The system filters the 2,639 listed companies to find healthy stocks, removing any industries the user asked to avoid (such as tobacco or defense).
+    \item \textbf{Step 4: Starting the AI Team}: Lucid creates the digital workspace and starts the LangGraph agent workflow.
+    \item \textbf{Step 5: Macroeconomic Check}: The macro agent checks current Reserve Bank of India interest rates and the market volatility level (India VIX).
+    \item \textbf{Step 6: Financial Analysis}: The fundamental and news agents evaluate balance sheets, profit consistency, and recent corporate news.
+    \item \textbf{Step 7: The Critic Challenge}: The risk critic agent reviews the shortlisted candidates, challenging any stocks that have high debt or valuation red flags.
+    \item \textbf{Step 8: Mathematical Optimization}: The SciPy SLSQP solver calculates the exact percentage weights that balance return and safety.
+    \item \textbf{Step 9: Whole Shares Calculation}: The lot-rounding algorithm converts percentages into exact full share counts and keeps leftover money in the investor's cash account.
+    \item \textbf{Step 10: Saving and Display}: The completed portfolio, full share counts, and plain-English ``Stock-Why'' explanations are saved to the database and displayed on the user's screen.
 \end{enumerate}
 
 \section{Security and Privacy Architecture}
+Financial software requires strict security to protect investor privacy:
 \begin{itemize}
-    \item \textbf{Canonical Password Hashing}: Passwords are hashed using the \textbf{Argon2id} algorithm (\texttt{\$argon2id\$v=19\$m=65536,t=3,p=4}), utilizing 64 MB of RAM and 3 iterations to prevent GPU-based brute-force attacks.
-    \item \textbf{Token Security \& Revocation}: JWT access tokens have a 60-minute lifespan. Logged-out token signatures are immediately stored in the \texttt{revoked\_tokens} table; any subsequent request with a blacklisted signature is rejected with HTTP 401 Unauthorized.
-    \item \textbf{In-Memory Rate Limiting}: The sliding-window rate limiter enforces strict request ceilings on sensitive endpoints: 20 requests/minute for login, 10 requests/minute for registration, and 20 requests/minute for portfolio generation.
-    \item \textbf{Enterprise HTTP Security Headers}: All HTTP responses enforce strict transport security, prevent MIME-type sniffing (\texttt{nosniff}), block clickjacking (\texttt{X-Frame-Options: DENY}), and restrict cross-site scripting.
+    \item \textbf{High-Security Password Hashing (Argon2id)}: When a user creates a password, Lucid never stores the actual password. Instead, it scrambles it using \textbf{Argon2id}, the international gold standard in password protection. It requires 64 megabytes of computer memory to verify, making it practically impossible for hackers to crack using automated guessing tools.
+    \item \textbf{Digital Badges with Instant Logout (JWT Revocation)}: When an investor logs in, they receive an encrypted digital badge (JSON Web Token) valid for 60 minutes. When the investor logs out, the badge is immediately added to a cancellation list (\texttt{revoked\_tokens}). Any future attempt to use that badge is instantly rejected.
+    \item \textbf{Anti-Abuse Rate Limiting}: To prevent malicious bots from overwhelming the server, Lucid limits how many requests can be sent per minute (for example, a maximum of 20 login attempts per minute and 20 portfolio generation requests per minute).
+    \item \textbf{Standard Web Protections}: The server automatically includes standard web security headers in every response to block website cloning (clickjacking) and prevent unauthorized script injection.
 \end{itemize}

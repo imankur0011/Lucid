@@ -1,52 +1,69 @@
 \chapter{API Contract and Integration Design}
 
-\section{API Architecture and Design Principles}
-The Lucid backend exposes a comprehensive RESTful API built on \textbf{FastAPI 0.115+}. The API layer conforms to strict architectural design standards:
+\section{What is an API and Why Does Lucid Use One?}
+To understand how Lucid's website communicates with its calculation engine, it helps to use the analogy of a restaurant:
 \begin{itemize}
-    \item \textbf{Base URL and Versioning}: All resource routes are anchored under \texttt{/api/v1/}, ensuring backwards compatibility for future client iterations.
-    \item \textbf{Stateless Token Authentication}: Protected routes require an \texttt{Authorization: Bearer <JWT>} header. Tokens are signed using HMAC-SHA256 (HS256) with a 60-minute expiry window.
-    \item \textbf{Strict Schema Enforcement}: Incoming requests and outgoing responses are validated using Pydantic v2 schemas. Malformed payloads are rejected immediately with HTTP 422 Unprocessable Entity.
-    \item \textbf{Predictable HTTP Status Codes}: Standardized HTTP status codes indicate transaction outcomes: 200 OK, 201 Created, 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 429 Too Many Requests, and 500 Internal Server Error.
+    \item \textbf{The Customer (The User Interface / Frontend)}: The investor interacts with buttons, forms, and charts displayed in their web browser (built with Next.js and React).
+    \item \textbf{The Kitchen (The Backend Server and Database)}: The backend server runs the 13 AI agents, accesses 2,639 listed Indian companies, and executes mathematical solvers to optimize portfolios.
+    \item \textbf{The Waiter (The API)}: An \textbf{Application Programming Interface (API)} acts as the professional waiter. When the investor clicks ``Generate Portfolio,'' the waiter takes the customer's order to the kitchen, ensures the kitchen prepares it according to the customer's rules, and brings the final dish (the recommended portfolio) back to the table in a clean, organized format.
 \end{itemize}
 
+Because Lucid's frontend and backend are decoupled, the website never touches the database directly. Every interaction occurs through secure, standardized API messages.
+
+\section{Core Rules of Lucid's API Communication}
+Lucid follows four foundational design principles to ensure fast, secure, and reliable communication:
+\begin{enumerate}
+    \item \textbf{Standardized Base URL and Versioning}: All API routes begin with the prefix \texttt{/api/v1/}. Versioning ensures that if new features are added in the future (such as \texttt{/api/v2/}), existing apps continue working without breaking.
+    \item \textbf{Secure Digital Session Badges (JWT Tokens)}: When a user logs in, the server gives them a temporary, cryptographically signed digital pass (called a \textbf{JSON Web Token} or JWT). For every subsequent action (such as saving a goal or checking holdings), the browser presents this badge in the request header (\texttt{Authorization: Bearer <token>}). This proves the user's identity without requiring them to re-enter their password for every click. Tokens expire after 60 minutes for safety.
+    \item \textbf{Strict Input Inspection (Pydantic v2)}: The server inspects every incoming message before processing it. If a user tries to enter negative money, an invalid email address, or an unrecognized stock ticker, the server immediately stops the request and returns a friendly error message, protecting the system from bad data.
+    \item \textbf{Predictable Status Codes}: Lucid uses standard international web response codes:
+    \begin{itemize}
+        \item \texttt{200 OK}: The request was successful, and the requested information is returned.
+        \item \texttt{201 Created}: A new record (such as a newly generated portfolio or saved financial goal) was created successfully.
+        \item \texttt{400 Bad Request}: The request contained invalid information (such as entering an investment amount below the minimum Rs.~5,000 threshold).
+        \item \texttt{401 Unauthorized}: The user has not logged in or their session token has expired.
+        \item \texttt{429 Too Many Requests}: The user is sending requests too quickly, activating rate-limiting protections.
+        \item \texttt{500 Internal Server Error}: An unexpected technical error occurred on the server.
+    \end{itemize}
+\end{enumerate}
+
 \section{Complete API Inventory: 82 Active Endpoints}
-The application registers exactly \textbf{82 unique API endpoints} across eleven functional modules:
+The Lucid backend provides exactly \textbf{82 unique API endpoints} organized into eleven functional groups, as detailed in Table~\ref{tab:api_domain_inventory}:
 
 \begin{table}[H]
 \centering
 \caption{Lucid Complete API Endpoint Domain Inventory (82 Endpoints)}
 \label{tab:api_domain_inventory}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{lll}
+\begin{tabular}{lcl}
 \toprule
-\textbf{Functional API Domain} & \textbf{Count} & \textbf{Key Endpoint Routes} \\
+\textbf{Functional API Domain} & \textbf{Routes} & \textbf{Primary Routes and Key Operations} \\
 \midrule
-\textbf{1. Authentication \& Security} & 8 & \texttt{/auth/login}, \texttt{/auth/register}, \texttt{/auth/logout}, \texttt{/auth/refresh}, \texttt{/auth/me}, \texttt{/auth/change-password} \\
+\textbf{1. Authentication \& Security} & 8 & \texttt{/auth/login}, \texttt{/auth/register}, \texttt{/auth/logout}, \texttt{/auth/me}, \texttt{/auth/change-password} \\
 \textbf{2. User Profile \& Preferences} & 6 & \texttt{/profile}, \texttt{/profile/preferences}, \texttt{/profile/security-preferences}, \texttt{/profile/sector-preferences} \\
-\textbf{3. Financial Goal Management} & 5 & \texttt{/goals}, \texttt{/goals/{goal\_id}}, \texttt{/goals/{goal\_id}/progress}, \texttt{/goals/{goal\_id}/link-portfolio} \\
-\textbf{4. Risk Questionnaire \& Scoring} & 5 & \texttt{/risk-questions}, \texttt{/risk-questions/{id}}, \texttt{/risk-assessments}, \texttt{/risk-assessments/latest} \\
-\textbf{5. Security Master \& Search} & 10 & \texttt{/securities}, \texttt{/securities/search}, \texttt{/securities/{isin}}, \texttt{/securities/sectors}, \texttt{/securities/tickers} \\
-\textbf{6. Market Data, Prices \& Regime} & 8 & \texttt{/market-data/prices/{symbol}}, \texttt{/market-data/regime}, \texttt{/market-data/indicators}, \texttt{/market-data/universe-stats} \\
-\textbf{7. Portfolio Engine \& Generation} & 12 & \texttt{/portfolio-generation-requests}, \texttt{/portfolios}, \texttt{/portfolios/{id}}, \texttt{/portfolios/{id}/versions/{v\_id}/stocks/{sym}/why} \\
-\textbf{8. Demat Statement Diagnosis} & 6 & \texttt{/diagnosis/upload-cas}, \texttt{/diagnosis/analyze/{id}}, \texttt{/diagnosis/{id}/chat}, \texttt{/diagnosis/{id}/holdings} \\
-\textbf{9. Continuous Monitoring \& Drift} & 6 & \texttt{/monitoring/{portfolio\_id}}, \texttt{/monitoring/{id}/drift}, \texttt{/monitoring/scheduler/status}, \texttt{/monitoring/run-cycle} \\
-\textbf{10. Rebalancing \& Orders} & 8 & \texttt{/rebalancing/evaluate/{id}}, \texttt{/rebalancing/preview/{id}}, \texttt{/rebalancing/orders/generate}, \texttt{/broker/orders} \\
-\textbf{11. Notifications \& System} & 8 & \texttt{/notifications}, \texttt{/notifications/unread-count}, \texttt{/notifications/{id}/read}, \texttt{/api/health}, \texttt{/health} \\
+\textbf{3. Financial Goal Management} & 5 & \texttt{/goals}, \texttt{/goals/\{id\}}, \texttt{/goals/\{id\}/progress}, \texttt{/goals/\{id\}/link-portfolio} \\
+\textbf{4. Risk Questionnaire \& Scoring} & 5 & \texttt{/risk-questions}, \texttt{/risk-questions/\{id\}}, \texttt{/risk-assessments}, \texttt{/risk-assessments/latest} \\
+\textbf{5. Security Master \& Search} & 10 & \texttt{/securities}, \texttt{/securities/search}, \texttt{/securities/\{isin\}}, \texttt{/securities/sectors}, \texttt{/securities/tickers} \\
+\textbf{6. Market Data, Prices \& Regime} & 8 & \texttt{/market-data/prices/\{symbol\}}, \texttt{/market-data/regime}, \texttt{/market-data/indicators} \\
+\textbf{7. Portfolio Engine \& Generation} & 12 & \texttt{/portfolio-generation-requests}, \texttt{/portfolios}, \texttt{/portfolios/\{id\}/versions/\{v\}/stocks/\{sym\}/why} \\
+\textbf{8. Demat Statement Diagnosis} & 6 & \texttt{/diagnosis/upload-cas}, \texttt{/diagnosis/analyze/\{id\}}, \texttt{/diagnosis/\{id\}/chat}, \texttt{/diagnosis/\{id\}/holdings} \\
+\textbf{9. Continuous Monitoring \& Drift} & 6 & \texttt{/monitoring/\{portfolio\_id\}}, \texttt{/monitoring/\{id\}/drift}, \texttt{/monitoring/scheduler/status} \\
+\textbf{10. Rebalancing \& Orders} & 8 & \texttt{/rebalancing/evaluate/\{id\}}, \texttt{/rebalancing/preview/\{id\}}, \texttt{/rebalancing/orders/generate} \\
+\textbf{11. Notifications \& System Health} & 8 & \texttt{/notifications}, \texttt{/notifications/unread-count}, \texttt{/notifications/\{id\}/read}, \texttt{/api/health} \\
 \bottomrule
-\textbf{Total Active API Routes} & \textbf{82} & \textbf{100\% Documented and Verified via OpenAPI Schema} \\
+\textbf{Total Active API Routes} & \textbf{82} & \textbf{100\% Verified and Documented via OpenAPI Specification} \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
-\section{Detailed Specification of Core API Endpoints}
+\section{Detailed Walkthrough of Core API Interactions}
 
-\subsection{Endpoint: Create Portfolio Generation Request}
-\begin{itemize}
-    \item \textbf{Method \& Path}: \texttt{POST /api/v1/portfolio-generation-requests}
-    \item \textbf{Purpose}: Launches the 13-node LangGraph multi-agent pipeline and SciPy SLSQP optimizer to generate a whole-share portfolio.
-    \item \textbf{Auth}: Bearer JWT Token required.
-    \item \textbf{Request Body Schema}:
+\subsection{1. Generating a New Investment Portfolio}
+When an investor completes the onboarding flow and requests a portfolio, the browser sends a \texttt{POST} request to \texttt{/api/v1/portfolio-generation-requests}:
+
+\noindent \textbf{The Request (What the Browser Sends)}:
+\begin{footnotesize}
 \begin{verbatim}
 {
   "investment_amount": 250000.0,
@@ -56,7 +73,11 @@ The application registers exactly \textbf{82 unique API endpoints} across eleven
   "excluded_sectors": ["FMCG_TOBACCO"]
 }
 \end{verbatim}
-    \item \textbf{Response Body Schema (HTTP 201 Created)}:
+\end{footnotesize}
+
+\noindent \textbf{The Response (What the Server Delivers Back)}:
+The server coordinates the 13 AI agents, runs the SciPy SLSQP optimizer, rounds shares to whole integer counts, and returns a complete, executable portfolio in approximately 2.1 seconds:
+\begin{footnotesize}
 \begin{verbatim}
 {
   "portfolio_id": "c1f7b8a2-8924-4b5a-9311-c9182046ef12",
@@ -80,21 +101,20 @@ The application registers exactly \textbf{82 unique API endpoints} across eleven
   ]
 }
 \end{verbatim}
-    \item \textbf{Errors}: 400 Bad Request (Capital $< \text{Rs.~}5,000$), 401 Unauthorized, 429 Rate Limit Exceeded.
-\end{itemize}
+\end{footnotesize}
 
-\subsection{Endpoint: Stock-Why Fiduciary Explanation}
-\begin{itemize}
-    \item \textbf{Method \& Path}: \texttt{GET /api/v1/portfolios/{portfolio\_id}/versions/{version\_id}/stocks/{symbol}/why}
-    \item \textbf{Purpose}: Returns dual-level fiduciary explanations (plain-English retail narrative and institutional factor breakdown).
-    \item \textbf{Auth}: Bearer JWT Token required.
-    \item \textbf{Response (HTTP 200 OK)}:
+\subsection{2. Asking ``Why Was This Stock Chosen?'' (Stock-Why API)}
+When a user clicks on an individual company in their portfolio to understand why it was selected, the browser sends a \texttt{GET} request to the Stock-Why endpoint (\path{/api/v1/portfolios/{id}/versions/{v}/stocks/{symbol}/why}):
+
+\noindent \textbf{The Response Delivered to the User}:
+\begin{footnotesize}
 \begin{verbatim}
 {
   "symbol": "TCS",
   "company_name": "Tata Consultancy Services Ltd.",
   "allocated_weight_pct": 24.5,
-  "retail_narrative": "TCS was selected as an anchor large-cap holding...",
+  "retail_narrative": "TCS was selected for its 46% ROE, "
+                     "near-zero debt, and high cash flow.",
   "factor_metrics": {
     "pe_ratio": 28.4,
     "roe_pct": 46.2,
@@ -103,14 +123,11 @@ The application registers exactly \textbf{82 unique API endpoints} across eleven
   }
 }
 \end{verbatim}
-\end{itemize}
+\end{footnotesize}
 
-\subsection{Endpoint: Demat CAS Statement Upload \& Diagnosis}
-\begin{itemize}
-    \item \textbf{Method \& Path}: \texttt{POST /api/v1/diagnosis/upload-cas}
-    \item \textbf{Purpose}: Ingests CDSL/NSDL PDF statements, parses stock holdings, and computes HHI concentration risks.
-    \item \textbf{Request}: \texttt{multipart/form-data} with \texttt{file: <binary PDF>} and optional \texttt{password: <string>}.
-    \item \textbf{Response (HTTP 200 OK)}:
+\subsection{3. Uploading and Diagnosing a Demat Account Statement}
+When an investor uploads their monthly Demat statement (PDF format), the browser sends a \path{multipart/form-data} request to the CAS diagnosis endpoint (\path{/api/v1/diagnosis/upload-cas}). The server parses the document and responds with a complete health diagnostic:
+\begin{footnotesize}
 \begin{verbatim}
 {
   "diagnosis_id": "d9812401-291b-419a-9e12-b21908239014",
@@ -119,46 +136,47 @@ The application registers exactly \textbf{82 unique API endpoints} across eleven
   "hhi_score": 2840.0,
   "concentration_risk": "HIGH",
   "overlapping_stocks": ["RELIANCE", "INFY"],
-  "recommendation_summary": "Portfolio is excessively skewed toward..."
+  "recommendation_summary": "Portfolio concentrated in two large-caps. "
+                            "Adding mid-caps is recommended."
 }
 \end{verbatim}
-\end{itemize}
+\end{footnotesize}
 
 \section{API Sequence Interaction Flows}
-Figures~\ref{fig:api_auth_seq} through \ref{fig:api_diag_seq} display the sequence diagrams for the primary operational workflows:
+Figures~\ref{fig:api_auth_seq} through \ref{fig:api_diag_seq} display the step-by-step sequence diagrams for the primary user workflows:
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.90\textwidth, height=0.38\textheight, keepaspectratio]{API_AUTH_FLOW.pdf}
-    \caption{API Sequence Diagram: Authentication and Session Token Flow}
+    \includegraphics[width=0.88\textwidth, height=0.35\textheight, keepaspectratio]{API_AUTH_FLOW.pdf}
+    \caption{API Sequence Diagram: User Registration, Login, and Session Token Flow}
     \label{fig:api_auth_seq}
 \end{figure}
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.90\textwidth, height=0.38\textheight, keepaspectratio]{API_PORTFOLIO_GENERATION_FLOW.pdf}
-    \caption{API Sequence Diagram: Portfolio Request and SLSQP Solver Flow}
+    \includegraphics[width=0.88\textwidth, height=0.35\textheight, keepaspectratio]{API_PORTFOLIO_GENERATION_FLOW.pdf}
+    \caption[API Sequence Diagram: Multi-Agent Portfolio Solver Flow]{API Sequence Diagram: Multi-Agent Portfolio Generation and Solver Flow}
     \label{fig:api_port_seq}
 \end{figure}
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.90\textwidth, height=0.38\textheight, keepaspectratio]{API_MONITORING_REBALANCE_FLOW.pdf}
-    \caption{API Sequence Diagram: Continuous Drift Radar and Rebalance Flow}
+    \includegraphics[width=0.88\textwidth, height=0.35\textheight, keepaspectratio]{API_MONITORING_REBALANCE_FLOW.pdf}
+    \caption{API Sequence Diagram: Continuous Drift Radar and Rebalance Preview Flow}
     \label{fig:api_mon_seq}
 \end{figure}
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.90\textwidth, height=0.38\textheight, keepaspectratio]{API_DIAGNOSIS_FLOW.pdf}
+    \includegraphics[width=0.88\textwidth, height=0.35\textheight, keepaspectratio]{API_DIAGNOSIS_FLOW.pdf}
     \caption{API Sequence Diagram: Demat CAS Statement PDF Diagnosis Flow}
     \label{fig:api_diag_seq}
 \end{figure}
 
-\section{Postman Collection Integration and Verification}
-Lucid includes an importable Postman test suite located in \texttt{postman/}:
+\section{Postman Collection and Developer Testing Tools}
+To allow engineers and system auditors to test the API easily, Lucid provides an importable Postman collection located in \texttt{postman/}:
 \begin{itemize}
-    \item \textbf{Collection}: \texttt{postman/Lucid\_API\_Collection.json} comprising \textbf{96 individual API requests} grouped into 16 functional folders.
-    \item \textbf{Environment}: \texttt{postman/Lucid\_Development\_Environment.json} defining base URLs (\texttt{http://localhost:8000}), demo developer credentials (\texttt{developer@lucid.local}), and test parameters.
-    \item \textbf{Automated Test Scripts}: Login requests execute post-response test assertions that automatically capture and set the \texttt{{{accessToken}}} environment variable, enabling one-click test execution across the entire collection.
+    \item \textbf{Collection File (\path{Lucid_API_Collection.json})}: Contains \textbf{96 API requests} organized across 16 folders covering all features.
+    \item \textbf{Environment File (\path{Lucid_Development_Environment.json})}: Configured with server URLs and test developer credentials.
+    \item \textbf{Automated Test Scripts}: When a developer runs the login request, Postman automatically captures the new session token and saves it into the active environment. All subsequent requests use this token automatically, enabling one-click test runs across the entire platform.
 \end{itemize}

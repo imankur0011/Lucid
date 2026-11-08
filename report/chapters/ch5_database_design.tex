@@ -1,39 +1,54 @@
 \chapter{Database Design and Entity-Relationship Architecture}
 
-\section{Database Architectural Overview}
-The database tier serves as the authoritative, exclusive source of truth for the entire Lucid platform. Financial advisory systems, regulatory compliance frameworks, and transactional portfolio trackers demand uncompromising data integrity, transactional atomicity, and referential consistency. 
+\section{Database Overview: What It Is and Why Lucid Needs It}
+A \textbf{database} is an electronic filing cabinet that securely stores all the data needed by an application. In financial software like Lucid, data accuracy is extremely important. If an investor saves a portfolio, buys shares, or records an investment goal, that information must be stored permanently, accurately, and securely without any risk of loss or accidental corruption.
 
-Lucid employs \textbf{PostgreSQL 16} as its relational database management system. All entities, relationships, constraints, indexes, and triggers are modeled using \textbf{SQLAlchemy 2.0} declarative ORM and managed through \textbf{Alembic} schema migrations (\texttt{backend/alembic/}). 
+To understand how Lucid stores information, it helps to understand a few basic database concepts:
+\begin{itemize}
+    \item \textbf{Table}: A table works like a structured digital spreadsheet dedicated to a single topic. For example, one table stores user accounts, another stores company names, and a third stores daily stock prices.
+    \item \textbf{Column and Row}: Each row represents a single record (such as one registered investor). Each column represents a specific attribute of that record (such as their email address, date of registration, or risk category).
+    \item \textbf{Primary Key (PK)}: A unique identification code (like a Passport or PAN number) given to each row so that no two records are ever confused. Lucid uses standard unique identifiers (called \textbf{UUIDs}, such as \path{c56a4180-65aa-42ec-a945-5fd21dec0538}) rather than simple sequential numbers, ensuring that user accounts cannot be guessed by outsiders.
+    \item \textbf{Foreign Key (FK)}: A digital pointer that connects a row in one table to a row in another table. For example, a row in the \texttt{investor\_portfolios} table includes a \texttt{user\_id} foreign key pointing to the \texttt{app\_users} table, ensuring that every portfolio is permanently tied to the exact user who created it.
+    \item \textbf{Entity-Relationship (ER) Diagram}: A visual map showing database tables and the foreign-key lines connecting them.
+\end{itemize}
 
-\subsection{Database Schema Scale and Domain Breakdown}
-The database comprises \textbf{62 domain application tables} plus \textbf{1 Alembic schema tracking table}, yielding an exact total of \textbf{63 tables}. These tables are organized into eight functional domains:
+Lucid uses \textbf{PostgreSQL 16}, an enterprise open-source relational database. All database tables are defined in Python using \textbf{SQLAlchemy 2.0} and version-controlled with \textbf{Alembic}.
 
+\subsection{Scale of the Database: 62 Tables Across 8 Domains}
+The Lucid database contains exactly \textbf{62 application tables} (plus 1 migration tracking table called \texttt{alembic\_version}, for a total of 63 tables). To keep this large system organized and easy to maintain, the tables are divided into eight functional \textbf{domains}:
 \begin{enumerate}
-    \item \textbf{Domain 1: Identity, Authentication \& Security Governance} (5 tables)
-    \item \textbf{Domain 2: Investor Suitability, Profiling \& Financial Goals} (10 tables)
-    \item \textbf{Domain 3: Security Master \& Corporate Registry} (8 tables)
-    \item \textbf{Domain 4: Market Data, Historical Quotes \& Macro Regime} (8 tables)
-    \item \textbf{Domain 5: Portfolio Engine, Quantitative Optimization \& Tracking} (10 tables)
-    \item \textbf{Domain 6: Broker Integration, Execution \& Order Lifecycle} (5 tables)
-    \item \textbf{Domain 7: Demat CAS Diagnosis \& Portfolio Analytics} (3 tables)
-    \item \textbf{Domain 8: Multi-Agent AI Telemetry, Reasoning Traces \& Verification} (13 tables)
-    \item \textbf{Schema Tracking}: \texttt{alembic\_version} (1 table)
+    \item \textbf{Domain 1: User Identity, Authentication, and Security} (5 tables): Stores user accounts, encrypted passwords, login sessions, and security event logs.
+    \item \textbf{Domain 2: Investor Suitability, Profiling, and Goals} (10 tables): Records risk questionnaire answers, calculated risk scores, financial targets, and stock exclusion preferences.
+    \item \textbf{Domain 3: Security Master and Corporate Registry} (8 tables): Maintains the master catalog of 2,639 listed Indian companies across the NSE and BSE, their industry sectors, and exchange ticker codes.
+    \item \textbf{Domain 4: Market Data, Historical Prices, and Macro Factors} (8 tables): Stores daily stock prices, company financial ratios, inflation rates, central bank interest rates, and financial news.
+    \item \textbf{Domain 5: Portfolio Engine, Optimization, and Tracking} (10 tables): Stores recommended portfolios, calculated whole-share quantities, version histories, and daily portfolio valuations.
+    \item \textbf{Domain 6: Broker Integration and Order Simulation} (5 tables): Manages connections to brokerage accounts (such as Zerodha and Groww) and tracks simulated buy and sell orders.
+    \item \textbf{Domain 7: Demat CAS Diagnosis and Portfolio Health} (3 tables): Stores stock holdings parsed from uploaded monthly Demat PDF statements and saves health diagnostic scores.
+    \item \textbf{Domain 8: AI Agent Telemetry, Reasoning Traces, and Audits} (13 tables): Records the step-by-step thinking of the 13 AI agents, plain-English ``Stock-Why'' explanations, and real-time user notifications.
 \end{enumerate}
 
 \section{Master Entity-Relationship Architecture}
-Figure~\ref{fig:master_er} illustrates the complete master Entity-Relationship diagram representing the interconnected relationships across all functional domains:
+Figure~\ref{fig:master_er} illustrates the complete master Entity-Relationship diagram connecting all 62 application tables across the platform:
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
-    \includegraphics[width=\textwidth]{00_master_er_diagram.pdf}
+    \includegraphics[width=\textwidth, keepaspectratio]{00_master_er_diagram.pdf}
     \caption{Lucid Master Database Entity-Relationship Diagram (63 Tables)}
     \label{fig:master_er}
 \end{figure}
 
-\section{Domain-Wise Schema Specifications}
+In Figure~\ref{fig:master_er}, boxes represent individual database tables, grouped by color according to their functional domain. The lines connecting the boxes represent foreign-key relationships. For instance:
+\begin{itemize}
+    \item The central \texttt{APP\_USERS} table connects to \texttt{INVESTOR\_PORTFOLIOS}, ensuring multi-tenant data isolation so one user can never view another user's investments.
+    \item The \texttt{INVESTOR\_PORTFOLIOS} table connects to \texttt{PORTFOLIO\_VERSIONS}, preserving an immutable historical record of every change made to a portfolio over time.
+    \item Each portfolio version links to \texttt{PORTFOLIO\_SECURITY\_DECISIONS}, which identifies the exact shares, buy prices, and rupee amounts allocated to specific companies in the \texttt{SECURITIES} table.
+\end{itemize}
 
-\subsection{Domain 1: Identity, Authentication and Security Governance}
-Domain 1 manages user authentication, enterprise cryptographic credentials, token blacklists, consent tracking, and security audit trails.
+\section{Detailed Walkthrough of the Eight Functional Domains}
+
+\subsection{Domain 1: User Identity, Authentication, and Security Governance}
+Domain 1 manages user sign-ups, secure logins, password protection, and safety audit trails.
+Figure~\ref{fig:er_domain1} shows how the security tables connect to the primary user table:
 
 \begin{figure}[!htbp]
     \centering
@@ -42,8 +57,9 @@ Domain 1 manages user authentication, enterprise cryptographic credentials, toke
     \label{fig:er_domain1}
 \end{figure}
 
-\subsubsection{Table: \texttt{app\_users}}
-The primary identity ledger storing registered investor accounts.
+\subsubsection{Core Table: \texttt{app\_users}}
+Table~\ref{tab:schema_app_users} shows the structure of the main user identity table:
+
 \begin{table}[H]
 \centering
 \caption{Schema Specification: \texttt{app\_users}}
@@ -51,50 +67,48 @@ The primary identity ledger storing registered investor accounts.
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{llcccl}
 \toprule
-\textbf{Column Name} & \textbf{Data Type} & \textbf{PK} & \textbf{FK} & \textbf{Nullable} & \textbf{Description \& Constraints} \\
+\textbf{Column Name} & \textbf{Data Type} & \textbf{PK} & \textbf{FK} & \textbf{Nullable} & \textbf{Description \& Purpose in Simple English} \\
 \midrule
-\texttt{user\_id} & \texttt{UUID} & Yes & No & No & Primary Key, generated via \texttt{uuid\_generate\_v4()} \\
-\texttt{identity\_provider} & \texttt{VARCHAR(50)} & No & No & No & Auth provider (\texttt{local}, \texttt{google}, \texttt{apple}), default \texttt{'local'} \\
-\texttt{identity\_subject} & \texttt{VARCHAR(255)} & No & No & No & Unique subject identifier from auth provider \\
-\texttt{email} & \texttt{VARCHAR(255)} & No & No & No & Unique investor email address (indexed) \\
-\texttt{password\_hash} & \texttt{VARCHAR(255)} & No & No & Yes & Canonical Argon2id cryptographic hash (RFC 9106) \\
-\texttt{mobile\_number} & \texttt{VARCHAR(20)} & No & No & Yes & Investor contact number \\
-\texttt{email\_verified} & \texttt{BOOLEAN} & No & No & No & Email verification flag (default \texttt{FALSE}) \\
-\texttt{mobile\_verified} & \texttt{BOOLEAN} & No & No & No & Mobile verification flag (default \texttt{FALSE}) \\
-\texttt{account\_status} & \texttt{VARCHAR(50)} & No & No & No & Status: \texttt{'active'}, \texttt{'suspended'}, \texttt{'pending'}, default \texttt{'active'} \\
-\texttt{created\_at} & \texttt{TIMESTAMPTZ} & No & No & No & Record creation timestamp \\
-\texttt{updated\_at} & \texttt{TIMESTAMPTZ} & No & No & No & Last update timestamp \\
+\texttt{user\_id} & \texttt{UUID} & Yes & No & No & Unique identifier for each registered investor. \\
+\texttt{identity\_provider} & \texttt{VARCHAR(50)} & No & No & No & How the user signed in (\texttt{local} email/password, \texttt{google}, or \texttt{apple}). \\
+\texttt{identity\_subject} & \texttt{VARCHAR(255)} & No & No & No & External identification code from the login provider. \\
+\texttt{email} & \texttt{VARCHAR(255)} & No & No & No & The investor's registered email address (unique). \\
+\texttt{password\_hash} & \texttt{VARCHAR(255)} & No & No & Yes & Salted Argon2id cryptographic hash (original password is never stored). \\
+\texttt{mobile\_number} & \texttt{VARCHAR(20)} & No & No & Yes & Investor's mobile phone number. \\
+\texttt{email\_verified} & \texttt{BOOLEAN} & No & No & No & True if the investor confirmed their email address. \\
+\texttt{mobile\_verified} & \texttt{BOOLEAN} & No & No & No & True if the investor verified their mobile number with an OTP. \\
+\texttt{account\_status} & \texttt{VARCHAR(50)} & No & No & No & Status: \texttt{'active'}, \texttt{'pending'}, or \texttt{'suspended'}. \\
+\texttt{created\_at} & \texttt{TIMESTAMPTZ} & No & No & No & Exact date and time when the account was registered. \\
+\texttt{updated\_at} & \texttt{TIMESTAMPTZ} & No & No & No & Date and time when the profile was last modified. \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
-\noindent \textbf{Additional Domain 1 Tables}:
+\noindent \textbf{Additional Tables in Domain 1}:
 \begin{itemize}
-    \item \texttt{revoked\_tokens}: Stores invalidated JWT token signatures (\texttt{jti} UUID, expiry timestamp) to enforce immediate logout.
-    \item \texttt{user\_consents}: Tracks SEBI risk disclosures, terms of service, and privacy policy agreements (\texttt{consent\_type}, \texttt{version}, \texttt{ip\_address}).
-    \item \texttt{user\_verification\_codes}: Manages time-limited OTP tokens for email and mobile phone verification (\texttt{code\_hash}, \texttt{expires\_at}).
-    \item \texttt{audit\_events}: Tamper-evident ledger capturing security events, login attempts, password changes, and administrative actions (\texttt{event\_type}, \texttt{actor\_id}, \texttt{details\_json}).
+    \item \texttt{revoked\_tokens}: Stores canceled session tokens so that when an investor clicks ``Log Out,'' that session token can never be used again.
+    \item \texttt{user\_consents}: Records that the user agreed to the privacy policy, terms of service, and SEBI investment risk disclosures.
+    \item \texttt{user\_verification\_codes}: One-time passwords (OTPs) to verify emails and mobile numbers.
+    \item \texttt{audit\_events}: An unalterable security ledger that logs important actions (such as password changes, login attempts, or profile updates) to prevent unauthorized tampering.
 \end{itemize}
 
-\clearpage
-\subsection{Domain 2: Investor Suitability, Profiling and Financial Goals}
-Domain 2 captures the investor's financial reality, investment horizon, psychometric risk tolerance, and life goals across 10 specialized tables:
-
+\subsection{Domain 2: Investor Suitability, Profiling, and Financial Goals}
+Domain 2 stores the investor's financial background, investment horizon, risk tolerance score, and savings goals across 10 tables:
 \begin{itemize}
-    \item \texttt{user\_profiles}: Investor demographic and financial data (monthly income, investment horizon, net worth, tax bracket).
-    \item \texttt{user\_profile\_versions}: Historical audit versions of investor profiles tracking changes over time.
-    \item \texttt{financial\_goals}: Explicit investor milestones (\texttt{goal\_type}: wealth accumulation, retirement, child education; target corpus, target date).
-    \item \texttt{user\_preferences}: General UI, notification, and currency preferences.
-    \item \texttt{risk\_questions}: Canonical bank of SEBI suitability questions (\texttt{question\_text}, \texttt{category}, \texttt{weight}).
-    \item \texttt{risk\_question\_options}: Scored answer choices per question (\texttt{option\_text}, \texttt{score\_points}).
-    \item \texttt{risk\_assessments}: Assessment execution header (\texttt{user\_id}, \texttt{total\_score}, \texttt{risk\_category}: conservative, moderate, aggressive).
-    \item \texttt{risk\_assessment\_answers}: Investor selections mapping to specific question options.
-    \item \texttt{user\_security\_preferences}: Explicit stock-level inclusion or exclusion mandates (\texttt{ticker}, \texttt{preference\_type}: MANDATORY\_INCLUDE, EXCLUDE).
-    \item \texttt{user\_sector\_preferences}: Sector-level preferences (e.g., exclude tobacco, defense, or real estate).
+    \item \texttt{user\_profiles}: Stores financial details such as annual income, existing savings, investment experience, and tax bracket.
+    \item \texttt{user\_profile\_versions}: Keeps a historical log whenever an investor updates their financial details over time.
+    \item \texttt{financial\_goals}: Stores user targets (e.g., retirement or college funds) along with target amounts and timelines.
+    \item \texttt{user\_preferences}: Stores user interface preferences (such as dark mode or notification delivery choices).
+    \item \texttt{risk\_questions}: The master bank of questions used in the suitability questionnaire (for example: ``How would you react if the stock market fell 20\% in a month?'').
+    \item \texttt{risk\_question\_options}: The available multiple-choice answers for each question, each carrying specific points.
+    \item \texttt{risk\_assessments}: The summary record of an investor's questionnaire attempt, showing their total score and risk category (\textbf{Conservative}, \textbf{Moderate}, or \textbf{Aggressive}).
+    \item \texttt{risk\_assessment\_answers}: The specific choices selected by the investor for each question.
+    \item \texttt{user\_security\_preferences}: Custom rules set by the user, such as mandating that a specific favorite company be included or excluded.
+    \item \texttt{user\_sector\_preferences}: Custom rules to avoid entire industries (such as excluding tobacco, gambling, or defense companies).
 \end{itemize}
 
-Figure~\ref{fig:er_domain2} illustrates the Entity-Relationship schema for Domain 2:
+Figure~\ref{fig:er_domain2} displays the Entity-Relationship structure for Domain 2:
 
 \begin{figure}[!htbp]
     \centering
@@ -103,22 +117,20 @@ Figure~\ref{fig:er_domain2} illustrates the Entity-Relationship schema for Domai
     \label{fig:er_domain2}
 \end{figure}
 
-\clearpage
 \subsection{Domain 3: Security Master and Corporate Registry}
-Domain 3 defines the financial market universe, listed equities, exchanges, sectors, and cross-exchange ticker mappings across 8 tables:
-
+Domain 3 defines the universe of publicly traded companies, stock exchanges, and industry sectors across 8 tables:
 \begin{itemize}
-    \item \texttt{exchanges}: Exchange directory (\texttt{exchange\_code}: NSE, BSE; country, operating currency).
-    \item \texttt{sectors}: Macro-economic sectors (Financial Services, IT, Healthcare, FMCG, Energy).
-    \item \texttt{industries}: Granular industry taxonomy mapped to parent sectors.
-    \item \texttt{companies}: Corporate issuers (\texttt{cin\_number}, \texttt{company\_name}, \texttt{incorporation\_date}).
-    \item \texttt{company\_industries}: Junction table enabling multi-industry corporate classification.
-    \item \texttt{securities}: Canonical equity master (\texttt{security\_id}, \texttt{isin} [Unique], \texttt{company\_id}, \texttt{security\_type}: EQUITY, \texttt{liquidity\_tier}).
-    \item \texttt{instrument\_listings}: Exchange-specific trading listings (\texttt{security\_id}, \texttt{exchange\_id}, \texttt{ticker\_symbol}, e.g., RELIANCE on NSE vs 500325 on BSE).
-    \item \texttt{source\_instrument\_mappings}: Maps exchange tickers to external API identifiers (Yahoo Finance tickers, e.g., \texttt{RELIANCE.NS}).
+    \item \texttt{exchanges}: Directory of stock exchanges (\texttt{NSE} for National Stock Exchange, \texttt{BSE} for Bombay Stock Exchange).
+    \item \texttt{sectors}: Broad economic sectors (such as Financial Services, Information Technology, Healthcare, and Energy).
+    \item \texttt{industries}: Granular industry groupings linked to parent sectors (for example, Software Services within Information Technology).
+    \item \texttt{companies}: The legal business entities, storing their official Corporate Identification Number (CIN) and registered name.
+    \item \texttt{company\_industries}: Connects companies to their respective industries.
+    \item \texttt{securities}: The canonical stock master. Each stock is identified by its unique 12-character International Securities Identification Number (\textbf{ISIN}, such as \texttt{INE002A01018} for Reliance Industries). It also assigns each stock to an institutional \textbf{Liquidity Tier} based on trading volume.
+    \item \texttt{instrument\_listings}: Tracks which exchange a stock trades on, linking exchange ticker symbols (for example, \texttt{RELIANCE} on NSE vs. scrip code \texttt{500325} on BSE).
+    \item \texttt{source\_instrument\_mappings}: Translates exchange tickers into external data codes (such as \texttt{RELIANCE.NS} for Yahoo Finance).
 \end{itemize}
 
-Figure~\ref{fig:er_domain3} illustrates the Entity-Relationship schema for Domain 3:
+Figure~\ref{fig:er_domain3} displays the Entity-Relationship structure for Domain 3:
 
 \begin{figure}[!htbp]
     \centering
@@ -127,22 +139,20 @@ Figure~\ref{fig:er_domain3} illustrates the Entity-Relationship schema for Domai
     \label{fig:er_domain3}
 \end{figure}
 
-\clearpage
-\subsection{Domain 4: Market Data, Historical Quotes and Macro Regime}
-Domain 4 stores historical pricing, corporate fundamentals, macroeconomic indicators, and financial news across 8 tables:
-
+\subsection{Domain 4: Market Data, Historical Quotes, and Macroeconomic Regime}
+Domain 4 stores the financial information that Lucid uses to analyze stocks across 8 tables:
 \begin{itemize}
-    \item \texttt{market\_prices}: Daily historical OHLCV records (\texttt{security\_id}, \texttt{price\_date}, \texttt{open}, \texttt{high}, \texttt{low}, \texttt{close}, \texttt{adj\_close}, \texttt{volume}).
-    \item \texttt{fundamental\_metrics}: Point-in-time balance sheet metrics (\texttt{security\_id}, \texttt{period\_end}, \texttt{pe\_ratio}, \texttt{pb\_ratio}, \texttt{roe\_pct}, \texttt{debt\_to\_equity}, \texttt{market\_cap}).
-    \item \texttt{metric\_definitions}: Metadata catalog defining calculation formulas and units for financial metrics.
-    \item \texttt{economic\_indicators}: Macroeconomic series definitions (RBI Repo Rate, CPI Inflation, India 10Y Bond Yield).
-    \item \texttt{economic\_observations}: Point-in-time observations for macroeconomic indicators.
-    \item \texttt{market\_news\_articles}: Ingested financial news articles (\texttt{headline}, \texttt{content}, \texttt{published\_at}, \texttt{sentiment\_score}).
-    \item \texttt{news\_article\_securities}: Junction table mapping articles to specific security ISINs.
-    \item \texttt{knowledge\_documents}: Regulatory circulars and investment knowledge artifacts.
+    \item \texttt{market\_prices}: Stores daily OHLCV historical price bars (Open, High, Low, Close, Volume) for listed securities.
+    \item \texttt{fundamental\_metrics}: Stores point-in-time financial health ratios for companies—including Return on Equity (ROE), Debt-to-Equity, Price-to-Earnings (P/E), and Market Capitalization.
+    \item \texttt{metric\_definitions}: The reference dictionary defining how each financial ratio is calculated.
+    \item \texttt{economic\_indicators}: Reference list of country-wide economic indicators, such as the RBI Repo Rate, inflation (CPI), and government bond yields.
+    \item \texttt{economic\_observations}: Historical values for economic indicators over time.
+    \item \texttt{market\_news\_articles}: Recent financial news, corporate announcements, and filings.
+    \item \texttt{news\_article\_securities}: Connects news stories to the specific companies mentioned in the articles.
+    \item \texttt{knowledge\_documents}: Reference documents, including SEBI circulars, investment case studies, and educational guides.
 \end{itemize}
 
-Figure~\ref{fig:er_domain4} illustrates the Entity-Relationship schema for Domain 4:
+Figure~\ref{fig:er_domain4} displays the Entity-Relationship structure for Domain 4:
 
 \begin{figure}[!htbp]
     \centering
@@ -151,24 +161,22 @@ Figure~\ref{fig:er_domain4} illustrates the Entity-Relationship schema for Domai
     \label{fig:er_domain4}
 \end{figure}
 
-\clearpage
-\subsection{Domain 5: Portfolio Engine, Quantitative Optimization and Tracking}
-Domain 5 forms the transactional core of Lucid, recording recommended portfolios, versioned weight distributions, and performance snapshots across 10 tables:
-
+\subsection{Domain 5: Portfolio Engine, Quantitative Optimization, and Tracking}
+Domain 5 forms the transactional core of Lucid, recording recommended portfolios, version histories, and daily valuations across 10 tables:
 \begin{itemize}
-    \item \texttt{strategy\_definitions}: Core strategy templates (Conservative Income, Moderate Balanced, Aggressive Growth).
-    \item \texttt{strategy\_versions}: Versioned mathematical parameter sets per strategy.
-    \item \texttt{investor\_portfolios}: Master portfolio container per user (\texttt{portfolio\_id}, \texttt{user\_id}, \texttt{portfolio\_status}: active, archived).
-    \item \texttt{portfolio\_versions}: Immutable version snapshots (\texttt{version\_number}, \texttt{rebalance\_reason}, \texttt{effective\_date}, \texttt{cash\_balance}).
-    \item \texttt{portfolio\_version\_constraints}: Exact mathematical bounds applied to a version (max single stock 25\%, max sector 40\%).
-    \item \texttt{portfolio\_generation\_requests}: Ingested generation telemetry capturing user input parameters.
-    \item \texttt{portfolio\_security\_decisions}: Line-item security allocations (\texttt{security\_id}, \texttt{target\_weight\_pct}, \texttt{allocated\_shares}, \texttt{buy\_price}, \texttt{allocated\_amount}).
-    \item \texttt{portfolio\_performance\_snapshots}: Daily NAV records tracking equity value and cumulative returns.
-    \item \texttt{portfolio\_scenarios}: Stress-testing projections evaluating portfolio resilience under historical shocks.
-    \item \texttt{rebalance\_suggestions}: Proposed rebalancing actions generated by the monitoring engine.
+    \item \texttt{strategy\_definitions}: Strategy templates (\textbf{Conservative}, \textbf{Moderate}, and \textbf{Aggressive}).
+    \item \texttt{strategy\_versions}: Mathematical parameter sets (such as risk aversion penalties) assigned to each strategy.
+    \item \texttt{investor\_portfolios}: The master account record linking each portfolio to its owner.
+    \item \texttt{portfolio\_versions}: Whenever a portfolio is created or rebalanced, Lucid saves an immutable new version snapshot (Version 1, Version 2, etc.), recording the date, reason for change, and unallocated cash balance.
+    \item \texttt{portfolio\_version\_constraints}: The safety limits enforced for that version (for example, no single stock exceeding 25\% and no sector exceeding 40\%).
+    \item \texttt{portfolio\_generation\_requests}: An audit record of the user's input parameters (amount, goal, timeline) that triggered the portfolio creation.
+    \item \texttt{portfolio\_security\_decisions}: The exact line-item stock allocations, recording the company name, recommended percentage weight, number of whole shares, purchase price, and total invested rupees.
+    \item \texttt{portfolio\_performance\_snapshots}: Daily valuation records tracking the total value of the portfolio and cumulative gains or losses over time.
+    \item \texttt{portfolio\_scenarios}: Projections evaluating how the portfolio would behave during major historical market crashes (such as the 2008 financial crisis or the March 2020 COVID shock).
+    \item \texttt{rebalance\_suggestions}: Proposed adjustments generated by the monitoring daemon when stock prices drift away from planned targets.
 \end{itemize}
 
-Figure~\ref{fig:er_domain5} illustrates the Entity-Relationship schema for Domain 5:
+Figure~\ref{fig:er_domain5} displays the Entity-Relationship structure for Domain 5:
 
 \begin{figure}[!htbp]
     \centering
@@ -177,79 +185,74 @@ Figure~\ref{fig:er_domain5} illustrates the Entity-Relationship schema for Domai
     \label{fig:er_domain5}
 \end{figure}
 
-\clearpage
-\subsection{Domain 6: Broker Integration, Execution and Order Lifecycle}
-Domain 6 manages demat broker connections, order generation, and simulated trade execution across 5 tables:
-
+\subsection{Domain 6: Broker Integration, Execution, and Order Lifecycle}
+Domain 6 manages connections to brokerage platforms and tracks simulated order execution across 5 tables:
 \begin{itemize}
-    \item \texttt{broker\_providers}: Supported broker platforms (Zerodha, Upstox, Groww mock adapters).
-    \item \texttt{user\_broker\_accounts}: User-linked broker accounts (\texttt{account\_status}, \texttt{api\_token\_encrypted}).
-    \item \texttt{broker\_orders}: Parent order batches generated from portfolio rebalancing.
-    \item \texttt{broker\_order\_events}: Lifecycle audit events per order (CREATED, SUBMITTED, EXECUTED, REJECTED).
-    \item \texttt{broker\_executions}: Line-item execution records (\texttt{shares\_filled}, \texttt{average\_price}, \texttt{execution\_timestamp}).
+    \item \texttt{broker\_providers}: Supported brokerage platforms (such as Zerodha, Upstox, and Groww).
+    \item \texttt{user\_broker\_accounts}: Securely links an investor's brokerage credentials using strong encryption.
+    \item \texttt{broker\_orders}: Batches of buy and sell orders generated when an investor rebalances a portfolio.
+    \item \texttt{broker\_order\_events}: Audit timeline tracking order stages (\texttt{CREATED}, \texttt{SUBMITTED}, \texttt{EXECUTED}).
+    \item \texttt{broker\_executions}: The final trade execution receipts, recording filled share quantities, average purchase prices, and execution timestamps.
 \end{itemize}
 
-Figure~\ref{fig:er_domain6} illustrates the Entity-Relationship schema for Domain 6:
+Figure~\ref{fig:er_domain6} displays the Entity-Relationship structure for Domain 6:
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.88\textwidth, height=0.38\textheight, keepaspectratio]{06_broker_integrations_and_orders_domain.pdf}
+    \includegraphics[width=0.85\textwidth, height=0.34\textheight, keepaspectratio]{06_broker_integrations_and_orders_domain.pdf}
     \caption{Domain 6 ER Diagram: Broker Integration, Execution and Order Lifecycle}
     \label{fig:er_domain6}
 \end{figure}
 
-\clearpage
 \subsection{Domain 7: Demat CAS Diagnosis and Portfolio Analytics}
 Domain 7 stores imported external Demat portfolios and health diagnostic assessments across 3 tables:
-
 \begin{itemize}
-    \item \texttt{existing\_portfolios}: Imported portfolio records (\texttt{source\_type}: CAS\_PDF, MANUAL\_ENTRY; upload timestamp).
-    \item \texttt{existing\_portfolio\_holdings}: Parsed stock holdings (\texttt{isin}, \texttt{quantity}, \texttt{average\_buy\_price}, \texttt{current\_value}).
-    \item \texttt{portfolio\_diagnoses}: Comprehensive diagnosis output (\texttt{hhi\_score}, \texttt{concentration\_risk\_level}, \texttt{sector\_skews\_json}, \texttt{recommendation\_summary}).
+    \item \texttt{existing\_portfolios}: Records of uploaded monthly Demat statements (via PDF CAS statement or manual entry).
+    \item \texttt{existing\_portfolio\_holdings}: The parsed holdings extracted from the statement (company ISIN, share quantities, and original purchase costs).
+    \item \texttt{portfolio\_diagnoses}: The complete diagnostic report, including total current valuation, sector concentration risk, the Herfindahl-Hirschman Index (HHI) diversification score, and actionable hold, buy, or trim recommendations.
 \end{itemize}
 
-Figure~\ref{fig:er_domain7} illustrates the Entity-Relationship schema for Domain 7:
+Figure~\ref{fig:er_domain7} displays the Entity-Relationship structure for Domain 7:
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.88\textwidth, height=0.48\textheight, keepaspectratio]{07_demat_diagnosis_and_rebalancing_domain.pdf}
+    \includegraphics[width=0.85\textwidth, height=0.36\textheight, keepaspectratio]{07_demat_diagnosis_and_rebalancing_domain.pdf}
     \caption{Domain 7 ER Diagram: Demat CAS Diagnosis and Portfolio Analytics}
     \label{fig:er_domain7}
 \end{figure}
 
-\clearpage
-\subsection{Domain 8: Multi-Agent AI Telemetry, Reasoning Traces and Verification}
-Domain 8 captures LangGraph agent executions, fiduciary explanations, constraint verification runs, and notifications across 13 tables:
-
+\subsection{Domain 8: Multi-Agent AI Telemetry, Reasoning Traces, and Audits}
+Domain 8 stores the execution logs of the AI agents, plain-English explanations, and real-time user alerts across 13 tables:
 \begin{itemize}
-    \item \texttt{agent\_definitions}: Registered LangGraph agent nodes (Macro, Market, Fundamental, Critic, Explainability).
-    \item \texttt{agent\_versions}: Versioned prompts and model parameters.
-    \item \texttt{agent\_execution\_runs}: Telemetry recording latency, token usage, and structured outputs per agent node.
-    \item \texttt{recommendation\_explanations}: Dual-level fiduciary explanations (\texttt{retail\_explanation\_text}, \texttt{factor\_scores\_json}).
-    \item \texttt{evidence\_items}: Verifiable econometric data points supporting explanations.
-    \item \texttt{explanation\_evidence}: Junction table linking explanations to specific supporting evidence items.
-    \item \texttt{portfolio\_validation\_runs}: Deterministic validation audit logs.
-    \item \texttt{portfolio\_validation\_results}: Line-item constraint check passes/failures.
-    \item \texttt{data\_sources}: Registry of external data feeds.
-    \item \texttt{data\_ingestion\_runs}: Execution logs of automated data ingestion jobs.
-    \item \texttt{data\_ingestion\_errors}: Granular error traces capturing API failures or malformed records.
-    \item \texttt{notifications}: Real-time investor alerts (\texttt{notification\_type}: DRIFT\_ALERT, REBALANCE\_RECOMMENDED).
-    \item \texttt{user\_feedback}: User ratings and qualitative feedback on generated explanations.
+    \item \texttt{agent\_definitions}: Master catalog of the 13 specialized AI roles (Macro, Fundamental, News, Critic, etc.).
+    \item \texttt{agent\_versions}: Tracks versions of agent prompts and model settings over time.
+    \item \texttt{agent\_execution\_runs}: Audit log recording how long each agent took to think, token costs, and structured outputs.
+    \item \texttt{recommendation\_explanations}: The plain-English ``Stock-Why'' justifications and financial metric breakdowns shown to the user.
+    \item \texttt{evidence\_items}: Verifiable factual data points (such as company profit numbers or RBI interest rate quotes) that support the explanations.
+    \item \texttt{explanation\_evidence}: Connects each explanation to its specific supporting evidence items.
+    \item \texttt{portfolio\_validation\_runs}: Audit logs verifying that portfolios satisfy mathematical rules.
+    \item \texttt{portfolio\_validation\_results}: Pass/fail audit records for rules.
+    \item \texttt{data\_sources}: Directory of external data providers (NSE, BSE, Yahoo Finance).
+    \item \texttt{data\_ingestion\_runs}: Execution logs of automated nightly price and news download jobs.
+    \item \texttt{data\_ingestion\_errors}: Detailed error logs capturing any API failures or bad data records.
+    \item \texttt{notifications}: Real-time investor alerts (such as portfolio drift notices and rebalancing recommendations).
+    \item \texttt{user\_feedback}: User ratings and comments on whether an explanation was clear and helpful.
 \end{itemize}
 
-Figure~\ref{fig:er_domain8} illustrates the Entity-Relationship schema for Domain 8:
+Figure~\ref{fig:er_domain8} displays the Entity-Relationship structure for Domain 8:
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.88\textwidth, height=0.50\textheight, keepaspectratio]{08_multi_agent_telemetry_and_auditing_domain.pdf}
-    \caption{Domain 8 ER Diagram: Multi-Agent AI Telemetry, Reasoning Traces and Verification}
+    \includegraphics[width=0.85\textwidth, height=0.38\textheight, keepaspectratio]{08_multi_agent_telemetry_and_auditing_domain.pdf}
+    \caption[Domain 8 ER Diagram: AI Telemetry and Verification]{Domain 8 ER Diagram: Multi-Agent AI Telemetry, Reasoning Traces and Verification}
     \label{fig:er_domain8}
 \end{figure}
 
-\section{Database Design Decisions and Performance Optimization}
+\section{Database Design: Speed and Safety}
+To ensure the database runs quickly and reliably, four key engineering choices were made:
 \begin{enumerate}
-    \item \textbf{Normalization vs Performance}: The core operational ledgers (\texttt{app\_users}, \texttt{investor\_portfolios}, \texttt{securities}, \texttt{market\_prices}) are strictly normalized to Third Normal Form (3NF) to eliminate update anomalies. Performance snapshots and diagnostic reports utilize denormalized JSONB columns (\texttt{sector\_skews\_json}, \texttt{factor\_scores\_json}) to facilitate sub-5ms retrieval for frontend dashboard rendering.
-    \item \textbf{UUID Primary Keys}: All user, portfolio, and transaction records utilize RFC 4122 Version 4 UUIDs (\texttt{UUID}). This prevents sequential enumeration attacks and facilitates distributed microservice scaling.
-    \item \textbf{Indexing Strategy}: High-throughput search columns (\texttt{securities.isin}, \texttt{instrument\_listings.ticker\_symbol}, \texttt{market\_prices.(security\_id, price\_date)}) are supported by B-Tree composite indexes. Text search for stock screening leverages PostgreSQL GIN (Generalized Inverted Index) trgm indexes.
-    \item \textbf{Referential Integrity and Cascades}: Strong foreign key constraints safeguard financial ledgers. Deleting a portfolio version automatically cascades to dependent allocations (\texttt{portfolio\_security\_decisions}), while master security and user records enforce \texttt{ON DELETE RESTRICT} to prevent accidental loss of historical transaction ledgers.
+    \item \textbf{High Speed with Structured Flexibility}: Core tables (users, portfolios, stock prices) follow strict relational rules to prevent duplicate or conflicting records. At the same time, complex analysis reports (such as sector concentration breakdowns and AI factor scores) are stored in structured JSON columns (\texttt{JSONB}). This allows the web dashboard to load complete portfolio screens in less than 5 milliseconds without running dozens of separate database queries.
+    \item \textbf{Secure Universal IDs (UUIDs)}: Every account, portfolio, and order uses a randomized 128-bit universal identifier (UUID) instead of a simple number like 1, 2, or 3. This protects user privacy by preventing unauthorized parties from guessing other users' portfolio links.
+    \item \textbf{Fast Search Indexes}: Searching through thousands of daily stock prices or looking up companies by ticker symbol is made nearly instantaneous by creating specialized B-Tree search indexes on frequently queried columns (such as \texttt{securities.isin} and \texttt{market\_prices.price\_date}).
+    \item \textbf{Accidental Deletion Protection}: Strong database rules (called \textbf{foreign key constraints}) protect financial records. For example, deleting a user account is strictly blocked if active transaction ledgers or historical investment records exist, ensuring that audit trails can never be accidentally erased.
 \end{enumerate}

@@ -1,163 +1,199 @@
 \chapter{Low-Level Design (LLD)}
 
 \section{LLD Overview}
-The Low-Level Design (LLD) provides an in-depth, class-level, and schema-level specification of Lucid's software components, data structures, algorithm implementations, and sequence flows. It translates the high-level architecture into precise technical abstractions implemented across the Next.js frontend, FastAPI backend, LangGraph agent workflows, and quantitative optimization engines.
+While the High-Level Design described the broad architecture of Lucid, the Low-Level Design (LLD) explains how the individual software components, data structures, and algorithms operate internally. 
 
-\section{Frontend Architecture and Component Hierarchy}
-The client application is built with \textbf{Next.js 16.4.2} utilizing the React 19 App Router architecture (\texttt{frontend/src/app/}). State management leverages React hooks (\texttt{useState}, \texttt{useEffect}, \texttt{useCallback}) alongside local storage caching for authenticated session tokens.
-
-\subsection{Component Structure and Responsibilities}
-The presentation tier is structured into modular, decoupled React components located in \texttt{frontend/src/components/}:
+This chapter breaks down the system into understandable parts:
 \begin{itemize}
-    \item \textbf{\texttt{Navbar.tsx} \& \texttt{Footer.tsx}}: Navigation header managing global auth state, active user profile, Demat connection status, and responsive layout toggles.
-    \item \textbf{\texttt{LandingPage.tsx}}: Marketing hero section, feature highlights, and interactive entry points for new and returning investors.
-    \item \textbf{\texttt{AuthView.tsx} \& \texttt{ProfileAuthModal.tsx}}: Authentication dialogs managing email/password registration, login, JWT token persistence, and input validation.
-    \item \textbf{\texttt{OnboardingWizard.tsx} \& \texttt{RiskQuestionnaireView.tsx}}: Five-step wizard presenting SEBI suitability questions, computing real-time risk scores, and persisting assessment results.
-    \item \textbf{\texttt{PortfolioGenerator.tsx}}: Interactive portfolio configuration panel allowing users to specify investment capital, select or define financial goals, and set sector preferences or exclusions.
-    \item \textbf{\texttt{HoldingsView.tsx} \& \texttt{AllocationVisualizer.tsx}}: Portfolio display interface rendering holding tables, whole-share lot quantities, average purchase prices, live NAV, and interactive sector/asset breakdown charts.
-    \item \textbf{\texttt{StockWhyModal.tsx} \& \texttt{ExplainabilityView.tsx}}: Fiduciary explainability modals rendering dual-level justifications (retail narrative and quantitative econometric factor scores).
-    \item \textbf{\texttt{DiagnosisView.tsx} \& \texttt{DiagnosisCopilotModal.tsx}}: Drag-and-drop PDF CAS statement uploader, holdings extraction parser, and AI-assisted Demat health diagnostic interface.
-    \item \textbf{\texttt{RebalancePreviewModal.tsx}}: Interactive modal displaying proposed BUY/SELL share orders, net cash changes, and statutory transaction cost breakdowns.
-    \item \textbf{\texttt{BenchmarksView.tsx} \& \texttt{StressScenariosView.tsx}}: Comparative performance analytics comparing Lucid against Equal-Weight (1/N) and Nifty 50 benchmarks, including stress testing under historical market shocks.
-    \item \textbf{\texttt{ConversationalAssistant.tsx}}: Natural language chat interface enabling investors to query portfolio decisions and explore stock rationale interactively.
-    \item \textbf{\texttt{NotificationsPanel.tsx}}: Real-time notification drawer displaying drift alerts, rebalance recommendations, and system events.
+    \item How the web screens are structured in the frontend.
+    \item How the backend organizes its files, security checks, and database connections.
+    \item How the thirteen specialized AI agents collaborate step by step.
+    \item How the mathematical engine calculates whole shares and taxes.
+    \item How the sequence flows handle user logins, portfolio generation, background monitoring, and statement analysis.
 \end{itemize}
 
-\subsection{Type-Safe Client API Layer (\texttt{frontend/src/lib/api.ts})}
-All network communication with the backend is abstracted through a type-safe API module. It handles:
+\section{Frontend Architecture: What the User Experiences}
+The client application is built using \textbf{Next.js 16.4.2} and \textbf{React 19.3.0} (located under \texttt{frontend/src/app/}). React allows the application to update parts of the screen instantly (such as updating stock charts or showing alerts) without needing to reload the entire web page.
+
+\subsection{Key Screen Components and What They Do}
+The user interface is broken down into modular building blocks located in \texttt{frontend/src/components/}:
 \begin{itemize}
-    \item Dynamic base URL resolution (\texttt{http://localhost:8000}).
-    \item Automatic injection of \texttt{Authorization: Bearer <token>} headers.
-    \item Unified response parsing and error handling, mapping HTTP status codes (400, 401, 403, 404, 422, 429, 500) into structured UI alerts.
+    \item \textbf{\texttt{Navbar.tsx} and \texttt{Footer.tsx}}: The top navigation bar and bottom footer. They show whether the user is logged in, display the active profile, and provide buttons to jump between the dashboard, portfolio wizard, and notifications.
+    \item \textbf{\texttt{LandingPage.tsx}}: The welcoming home page that explains what Lucid does, showcases key features, and invites new users to get started.
+    \item \textbf{\texttt{AuthView.tsx} and \texttt{ProfileAuthModal.tsx}}: Clean sign-up and login dialogs where users enter their email and password.
+    \item \textbf{\texttt{OnboardingWizard.tsx} and \texttt{RiskQuestionnaireView.tsx}}: A step-by-step questionnaire that asks users five simple questions to understand their investment horizon, financial goals, and comfort with market risk.
+    \item \textbf{\texttt{PortfolioGenerator.tsx}}: The main configuration panel where users type how much money they want to invest, select their savings goal, and specify any sectors they want to avoid.
+    \item \textbf{\texttt{HoldingsView.tsx} and \texttt{AllocationVisualizer.tsx}}: The primary portfolio display. It presents an easy-to-read table showing company names, share counts, purchase prices, current market values, and colorful pie charts of sector allocations.
+    \item \textbf{\texttt{StockWhyModal.tsx}}: An interactive pop-up card that appears when an investor clicks on any stock, explaining in plain English why that company was selected for their portfolio.
+    \item \textbf{\texttt{DiagnosisView.tsx}}: A drag-and-drop file upload screen where users can drop their monthly Demat PDF statement to receive an instant portfolio health check.
+    \item \textbf{\texttt{RebalancePreviewModal.tsx}}: A clear before-and-after review card showing proposed buy and sell share quantities, cash changes, and estimated transaction fees before the user confirms a rebalance.
+    \item \textbf{\texttt{ConversationalAssistant.tsx}}: A friendly AI chat assistant where users can ask questions about their portfolio or explore hypothetical ``what-if'' scenarios (such as ``What happens to my stocks if interest rates rise?'').
+    \item \textbf{\texttt{NotificationsPanel.tsx}}: An alert bell icon and sliding drawer that informs the investor whenever a portfolio has drifted or needs attention.
 \end{itemize}
 
-\section{Backend Architecture and API Subsystem}
-The backend is structured as a modular, layered FastAPI application under \texttt{backend/}:
+\subsection{Type-Safe Client API Layer}
+When a user clicks a button, the web screen does not talk directly to the database. Instead, all network requests go through a helper module (\path{frontend/src/lib/api.ts}). This helper:
+\begin{itemize}
+    \item Attaches the user's secret digital session badge (\texttt{Bearer} token) to prove their identity safely.
+    \item Converts technical server responses into clear, helpful error messages (such as reminding the user if an entered investment amount is below Rs.~5,000).
+\end{itemize}
 
-\begin{small}
+\section{Backend Architecture and Directory Structure}
+The backend is built with \textbf{FastAPI 0.115+}, a modern, high-speed Python web framework. The files are organized cleanly under \texttt{backend/} as follows:
+
+\begin{footnotesize}
 \begin{verbatim}
 backend/
 |-- api/
-|   `-- v1/                 # Versioned API routes (82 endpoints)
-|       |-- auth.py         # Authentication, login, registration, JWT
-|       |-- users.py        # Profile management, preferences
-|       |-- risk.py         # Suitability questionnaire & scoring
-|       |-- goals.py        # Financial goal CRUD & progress tracking
-|       |-- market_data.py  # Quotes, historical prices, regime, universe
-|       |-- portfolios.py   # Generation requests, versioning, stock-why
-|       |-- diagnosis.py    # Demat CAS PDF parsing & health diagnosis
-|       |-- monitoring.py   # Portfolio valuation & drift tracking
-|       |-- rebalancing.py  # Rebalance strategy & order previews
-|       |-- notifications.py# Real-time alerts
-|       `-- broker.py       # Broker simulation & order execution
-|-- models/                 # SQLAlchemy 2.0 ORM domain models (62 tables)
-|-- schemas/                # Pydantic v2 validation schemas
-|-- services/               # Business logic and service orchestrators
-|-- portfolio_engine/       # Optimization, lot rounding, frictions
-|-- agents/                 # LangGraph multi-agent StateGraph workflow
-|-- database/               # PostgreSQL engine, sessionmaker, get_db
-|-- middleware/             # Rate limiting, security headers, CORS
-|-- alembic/                # Database migration revisions
-`-- config.py               # Centralized settings (pydantic-settings)
+|   `-- v1/                 # 82 endpoints across 9 routers
+|       |-- auth.py         # Registration, login, and JWT
+|       |-- users.py        # Profiles and settings
+|       |-- risk.py         # Risk scoring & suitability
+|       |-- goals.py        # Goal tracking and targets
+|       |-- market_data.py  # Stock quotes & regime data
+|       |-- portfolios.py   # Portfolio creation & Stock-Why
+|       |-- diagnosis.py    # Demat PDF statement parsing
+|       |-- monitoring.py   # Valuation & drift tracking
+|       |-- rebalancing.py  # Rebalance preview & taxes
+|       |-- notifications.py# Real-time investor alerts
+|       `-- broker.py       # Simulated broker execution
+|-- models/                 # 62 database tables (SQLAlchemy)
+|-- schemas/                # Request schemas (Pydantic v2)
+|-- services/               # Core business logic helpers
+|-- portfolio_engine/       # SLSQP optimizer & lot rounding
+|-- agents/                 # 13-node LangGraph agent team
+|-- database/               # DB connection & session pool
+|-- middleware/             # Security, rate limits, CORS
+|-- alembic/                # Database migration scripts
+`-- config.py               # Application configuration
 \end{verbatim}
-\end{small}
+\end{footnotesize}
 
-\subsection{Dependency Injection and Session Management}
-FastAPI's dependency injection system (\texttt{Depends}) manages transactional database sessions:
-\begin{equation}
-\text{get\_db}() \to \text{Generator}[\text{Session}, \text{None}, \text{None}]
-\end{equation}
-The \texttt{get\_db} dependency yields a thread-local SQLAlchemy \texttt{SessionLocal} bound to PostgreSQL, ensuring that database connections are returned to the connection pool (\texttt{pool\_size=10, max\_overflow=20}) immediately upon request completion.
+\subsection{Database Session Management}
+To ensure the backend never runs out of database connections, FastAPI uses a mechanism called \textbf{Dependency Injection} (\texttt{get\_db}). 
+Think of this like borrowing a book from a library: when an API request arrives, the server borrows an active database connection from a managed pool (size of 10 connections, up to 20 overflow). As soon as the request finishes, the connection is immediately returned so other users can use it. This prevents the application from slowing down or crashing under heavy traffic.
 
-\section{Agent-Level Design: 13-Node LangGraph StateGraph}
-The multi-agent workflow is implemented in \texttt{backend/agents/graph.py} and \texttt{backend/agents/state.py} using \textbf{LangGraph 0.4}. The state across the entire execution graph is governed by a unified TypedDict:
+\section{Agent-Level Design: The 13-Node AI Research Team}
+Rather than relying on a single AI prompt, Lucid coordinates thirteen specialized digital agents organized in a structured sequence using \textbf{LangGraph 0.4}. 
 
+All thirteen agents share a digital workspace (called the \textbf{AgentState}), storing user inputs, market observations, and research findings:
+
+\begin{footnotesize}
 \begin{verbatim}
 class AgentState(TypedDict):
-    request_id: str
-    user_id: str
-    risk_category: str          # conservative, moderate, aggressive
-    investment_amount: float
-    goal_type: Optional[str]
-    time_horizon_years: Optional[int]
-    macro_regime: Dict[str, Any]
-    market_volatility: Dict[str, Any]
-    candidate_universe: List[Dict[str, Any]]
-    fundamental_scores: Dict[str, float]
-    sentiment_scores: Dict[str, float]
-    critic_feedback: List[str]
-    optimized_allocations: List[Dict[str, Any]]
-    fiduciary_explanations: Dict[str, str]
-    validation_status: bool
-    error_messages: List[str]
+    request_id: str             # Portfolio request tracking ID
+    user_id: str                # Identification of investor
+    risk_category: str          # conservative / moderate / aggressive
+    investment_amount: float    # Capital in rupees (e.g., 100000.0)
+    time_horizon_years: int     # Investment timeframe in years
+    macro_regime: dict          # Inflation, repo rates, GDP trends
+    market_volatility: dict     # India VIX level (calm / volatile)
+    candidate_universe: list    # Shortlisted healthy Indian stocks
+    fundamental_scores: dict    # Financial health ratings
+    sentiment_scores: dict      # News sentiment ratings
+    critic_feedback: list       # Risk warnings from skeptic agent
+    optimized_allocations: list # Final weights & whole share counts
+    fiduciary_explanations: dict# Plain-English Stock-Why reasons
 \end{verbatim}
+\end{footnotesize}
 
-\subsection{Agent Nodes and Execution Topology}
-The 13 nodes of the StateGraph execute in structured sequence with conditional validation edges:
+\subsection{The 13 Agents and What Each One Does}
+Think of the 13 nodes as specialized professionals working in an investment firm:
 \begin{enumerate}
-    \item \textbf{Input Validation Node}: Validates investor capital ($\ge \text{Rs.~}5,000$), risk category, and time horizon.
-    \item \textbf{Macro Analyst Node}: Analyzes RBI repo rate trends, inflation metrics, and GDP forecasts.
-    \item \textbf{Market Regime Node}: Evaluates India VIX volatility tiers and Nifty 50 50-DMA/200-DMA technical trends.
-    \item \textbf{Universe Ingestion Node}: Queries PostgreSQL for active listed equities matching liquidity thresholds.
-    \item \textbf{Fundamental Analyst Node}: Filters candidates against balance sheet criteria (ROE $\ge 15\%$, Debt/Equity $\le 1.5$, positive operating cash flows).
-    \item \textbf{Sentiment \& News Node}: Assesses ingested corporate news sentiment and corporate governance filings.
-    \item \textbf{Valuation Screening Node}: Evaluates relative P/E, P/B, and historical EV/EBITDA ratios against industry benchmarks.
-    \item \textbf{Candidate Ranking Node}: Combines fundamental, sentiment, and valuation scores into an aggregate conviction score.
-    \item \textbf{Adversarial Critic Node}: Challenges top-ranked candidates, searching for unaddressed regulatory risks, sector concentration traps, or cyclical headwinds.
-    \item \textbf{Quantitative SLSQP Solver Node}: Formulates and executes SciPy constrained mean-variance optimization.
-    \item \textbf{Integer Lot Sizing Node}: Translates percentage weights into whole shares and computes residual cash.
-    \item \textbf{Deterministic Constraint Validator Node}: Validates that no single stock exceeds 25\% and no sector exceeds 40\%. If violated, routes back to SLSQP with tightened bounds.
-    \item \textbf{Dual-Level Explainability Node}: Generates user-facing retail narratives and structured econometric factor scorecards.
+    \item \textbf{Input Validation Node (The Receptionist)}: Checks that the user's basic details, investment capital ($\ge \text{Rs.~}5,000$), and time horizon are valid before any research begins.
+    \item \textbf{Macro Analyst Node (The Chief Economist)}: Reviews broad economic indicators—such as Reserve Bank of India (RBI) interest rate policies, national inflation, and GDP growth forecasts.
+    \item \textbf{Market Regime Node (The Market Weather Forecaster)}: Checks the Indian market volatility index (India VIX) and moving averages to see whether the market is calm, choppy, or in a sharp downturn.
+    \item \textbf{Universe Ingestion Node (The Research Librarian)}: Pulls the catalog of active companies from the database and filters out thinly traded stocks that are difficult to buy or sell.
+    \item \textbf{Fundamental Analyst Node (The Chartered Accountant)}: Examines company financial statements, selecting companies with consistent profits, high Return on Equity (ROE $\ge 15\%$), and sensible debt levels (Debt/Equity $\le 1.5$).
+    \item \textbf{Sentiment \& News Node (The Financial Journalist)}: Scans recent corporate announcements and breaking news articles, looking for positive growth catalysts or negative controversies.
+    \item \textbf{Valuation Screening Node (The Bargain Hunter)}: Compares stock prices against company earnings (P/E ratio) to ensure the investor is not buying an overvalued, excessively expensive stock.
+    \item \textbf{Candidate Ranking Node (The Research Coordinator)}: Combines the fundamental, news, and valuation scores into an overall quality ranking for each company.
+    \item \textbf{Adversarial Critic Node (The Skeptical Risk Officer)}: Specifically searches for flaws in the top-ranked companies. It checks whether the portfolio is leaning too heavily into a single sector or whether a company faces regulatory risks.
+    \item \textbf{Quantitative SLSQP Solver Node (The Mathematician)}: Solves the mathematical Markowitz optimization equations to find the exact percentages that maximize return while minimizing risk.
+    \item \textbf{Integer Lot Sizing Node (The Cashier)}: Converts continuous percentages into exact full share quantities (such as 12 shares) and ensures that all leftover rupees remain safely in the investor's cash balance.
+    \item \textbf{Deterministic Constraint Validator Node (The Compliance Officer)}: Verifies that no single stock exceeds 25\% of the portfolio and no industry sector exceeds 40\%. If a rule is violated, it sends the portfolio back for re-adjustment.
+    \item \textbf{Dual-Level Explainability Node (The Financial Educator)}: Writes the plain-English ``Stock-Why'' explanations for each stock so the investor can understand the reasoning with complete transparency.
 \end{enumerate}
 
-\section{Quantitative Optimization and Lot Sizing Engine}
-Located in \texttt{backend/portfolio\_engine/}, the quantitative engine implements:
+\section{The Mathematical Calculation Engine}
+Located in \texttt{backend/portfolio\_engine/}, the mathematical engine handles numerical calculations without any AI involvement:
 \begin{itemize}
-    \item \textbf{Optimizer (\texttt{optimizer.py})}: Configures the SLSQP solver (\texttt{scipy.optimize.minimize}), setting objective functions to minimize negative Sharpe ratio (or minimize portfolio variance for conservative profiles).
-    \item \textbf{Integer Lot Rounder (\texttt{integer\_rounding.py})}: Executes whole-share floor rounding:
+    \item \textbf{Optimizer (\texttt{optimizer.py})}: Uses a numerical solver (SciPy SLSQP) to find the portfolio weights that maximize the Sharpe ratio (or minimize risk for conservative profiles) while strictly enforcing:
+    \begin{align*}
+    \sum_{i=1}^{K} w_i &= 1.0 \quad (\text{100\% capital allocation}) \\
+    w_i &\ge 0.0 \quad (\text{no short selling}) \\
+    w_i &\le 0.25 \quad (\text{maximum 25\% per stock})
+    \end{align*}
+    \item \textbf{Integer Lot Sizing (\texttt{integer\_rounding.py})}: Calculates the exact number of whole shares to purchase:
     \begin{equation}
-    q_i = \left\lfloor \frac{C \cdot w_i^*}{P_i} \right\rfloor, \quad \text{Residual Cash} = C - \sum_{i=1}^{K} q_i P_i
+    q_i = \left\lfloor \frac{C \cdot w_i^*}{P_i} \right\rfloor
     \end{equation}
-    where $C$ is total capital, $w_i^*$ is optimal continuous weight, and $P_i$ is current stock price. A secondary heuristic pass allocates residual cash to the highest-conviction holdings whose unit prices fit within the remaining cash balance without breaching the 25\% single-stock ceiling.
-    \item \textbf{Transaction Cost Engine (\texttt{transaction\_costs.py})}: Calculates all Indian statutory costs (STT 0.1\%, Exchange charges 0.00325\%, SEBI turnover fee 0.0001\%, Stamp duty 0.015\%, and GST 18\% on brokerage and exchange fees).
+    where:
+    \begin{itemize}
+        \item $q_i$ is the number of whole shares of stock $i$.
+        \item $C$ is the total investment amount (such as Rs.~1,00,000).
+        \item $w_i^*$ is the optimal percentage weight of stock $i$ (such as 10\% or Rs.~10,000).
+        \item $P_i$ is the current market price of one share (such as Rs.~1,400).
+        \item $\lfloor \dots \rfloor$ represents floor rounding (rounding down to the nearest whole integer).
+    \end{itemize}
+
+    \textbf{Numerical Example}: $10,000 / 1,400 = 7.142$ shares. Since Indian exchanges do not sell fractional shares, the algorithm rounds down to exactly 7 whole shares. The cost is $7 \times \text{Rs.~}1,400 = \text{Rs.~}9,800$, leaving Rs.~200 in cash. A secondary pass checks whether any leftover cash can purchase an additional share of another high-rated, lower-priced holding without exceeding the 25\% single-stock limit. Any remaining money is preserved as unallocated cash:
+    \begin{equation}
+    \text{Residual Cash} = C - \sum_{i=1}^{K} q_i P_i \ge 0.
+    \end{equation}
+
+    \item \textbf{Transaction Cost Engine (\path{transaction_costs.py})}: Calculates all statutory taxes and fees applicable to Indian stock trades:
+    \begin{itemize}
+        \item Securities Transaction Tax (STT): 0.10\% on delivery equity transactions.
+        \item Exchange Turnover Fee: 0.00325\% charged by NSE/BSE.
+        \item SEBI Regulatory Turnover Charge: 0.0001\% (Rs.~10 per crore).
+        \item Stamp Duty: 0.015\% charged on purchases under the Indian Stamp Act.
+        \item Goods and Services Tax (GST): 18.0\% applied to brokerage and exchange charges.
+    \end{itemize}
 \end{itemize}
 
-\section{Monitoring Scheduler and Distributed Locking}
-Located in \texttt{backend/services/monitoring\_scheduler.py}, the unattended background monitoring service runs on a dedicated background thread with an asynchronous execution loop (\texttt{interval\_seconds=300}). 
+\section{Background Monitoring Daemon and Advisory Locking}
+Located in the scheduler service (\path{backend/services/monitoring_scheduler.py}), the background daemon automatically evaluates active portfolios during Indian exchange trading hours (Monday through Friday, 09:15 to 15:30 IST). Every 300 seconds (5 minutes), the daemon wakes up, checks live stock prices, and calculates if any stock's current weight has moved away from its target by 5\% or more.
 
-To prevent concurrent execution across multi-worker deployments (e.g., multiple Uvicorn instances), the scheduler implements \textbf{PostgreSQL Session-Level Advisory Locking}:
-\begin{equation}
-\text{SELECT pg\_try\_advisory\_lock}(847291)
-\end{equation}
-Only the worker instance that acquires the 64-bit lock proceeds with portfolio valuation and drift auditing; secondary workers log an informative skip message and release the cycle.
+\textbf{How Duplicate Runs are Prevented (Advisory Lock)}:
+In a commercial server deployment, multiple backend processes may run simultaneously to handle web traffic. If every process ran the monitoring loop at the same time, the system would waste resources and send duplicate alerts to users.
+To solve this, Lucid uses an enterprise feature of PostgreSQL called a \textbf{Session Advisory Lock}:
+\[
+\text{SELECT pg\_try\_advisory\_lock}(847291);
+\]
+Think of this like a physical key to an office. Only the single server process that successfully picks up the key runs the 5-minute monitoring cycle. Other processes see that the key is in use, politely skip the cycle, and return to handling user web requests.
 
-\section{Sequence Flow Diagrams}
-Figures~\ref{fig:seq_auth} through \ref{fig:seq_diag} illustrate the low-level sequence interactions for primary system operations.
+\section{Sequence Flow Diagrams: Step-by-Step Interactions}
+Figures~\ref{fig:seq_auth} through \ref{fig:seq_diag} show the step-by-step interactions between the user, the frontend interface, the backend server, the AI/optimization engine, and the database for the core features of Lucid:
 
 \begin{figure}[!htbp]
     \centering
     \includegraphics[width=0.90\textwidth, height=0.38\textheight, keepaspectratio]{API_AUTH_FLOW.pdf}
-    \caption{Low-Level Sequence Flow: Investor Authentication and JWT Token Lifecycle}
+    \caption{Sequence Flow: User Registration, Authentication, and Secure Token Creation}
     \label{fig:seq_auth}
 \end{figure}
+Figure~\ref{fig:seq_auth} shows how an investor signs up. The user types their email and password into the frontend. The backend validates the inputs, hashes the password using Argon2id so it can never be viewed by anyone, stores the record in PostgreSQL, and returns an encrypted session token (JWT) to keep the user safely logged in.
 
 \begin{figure}[!htbp]
     \centering
     \includegraphics[width=0.90\textwidth, height=0.38\textheight, keepaspectratio]{API_PORTFOLIO_GENERATION_FLOW.pdf}
-    \caption{Low-Level Sequence Flow: Goal-Driven Portfolio Generation and SLSQP Optimization}
+    \caption{Sequence Flow: Goal-Driven Portfolio Generation and Mathematical Optimization}
     \label{fig:seq_generation}
 \end{figure}
+Figure~\ref{fig:seq_generation} traces the complete portfolio creation request. The user specifies their savings amount and financial goal. The backend queries the database for healthy stocks, runs the LangGraph AI agents to evaluate balance sheets and news, calls the SciPy solver to calculate optimal weights, converts percentages into whole share quantities, and saves the new portfolio version with complete explanations for display on the screen.
 
 \begin{figure}[!htbp]
     \centering
     \includegraphics[width=0.90\textwidth, height=0.38\textheight, keepaspectratio]{API_MONITORING_REBALANCE_FLOW.pdf}
-    \caption{Low-Level Sequence Flow: 5-Minute Drift Radar and Friction-Aware Rebalancing Preview}
+    \caption{Sequence Flow: 5-Minute Drift Radar and Rebalance Order Preview}
     \label{fig:seq_monitoring}
 \end{figure}
+Figure~\ref{fig:seq_monitoring} shows the background monitoring radar. During market hours, the scheduler wakes up, obtains the advisory lock, revalues active portfolios against live stock prices, and calculates drift. If a stock drifts by 5\% or more, it generates a notification. When the user clicks the notification, Lucid displays a complete before-and-after rebalancing preview with statutory tax breakdowns.
 
 \begin{figure}[!htbp]
     \centering
     \includegraphics[width=0.90\textwidth, height=0.38\textheight, keepaspectratio]{API_DIAGNOSIS_FLOW.pdf}
-    \caption{Low-Level Sequence Flow: Demat CAS PDF Statement Ingestion and Health Diagnosis}
+    \caption{Sequence Flow: Demat Statement (CAS PDF) Upload and Health Diagnosis}
     \label{fig:seq_diag}
 \end{figure}
+Figure~\ref{fig:seq_diag} illustrates how Lucid analyzes an existing investment portfolio. The user uploads a monthly Demat PDF statement. The backend extracts the stock codes, matches them against the security database, calculates total valuation and industry concentration, and displays an actionable health report with clear safety recommendations.

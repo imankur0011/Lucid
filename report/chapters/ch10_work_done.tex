@@ -1,127 +1,213 @@
 \chapter{Work Done and Functional Requirements Implementation}
 
-\section{Overview of Implemented Functionalities}
-The implementation of Lucid translates the architectural blueprints and low-level designs into a fully functional, verified software platform. All eleven functional requirements---comprising ten core requirements (\textbf{FR-C01} through \textbf{FR-C10}) and one differentiating requirement (\textbf{FR-D01})---are implemented, verified, and operational.
+\section{Overview of Implemented Features}
+This chapter describes the functional features built into Lucid. Every planned requirement has been completely developed, tested, and verified in code. 
 
-\section{Core Functional Requirements Implementation}
-
-\subsection{FR-C01: User Onboarding and Profile Management}
+The implementation covers eleven primary functional requirements:
 \begin{itemize}
-    \item \textbf{Implementation}: Developed in \texttt{frontend/src/components/OnboardingWizard.tsx} and \texttt{backend/api/v1/auth.py}, \texttt{risk.py}.
-    \item \textbf{Functionality}: Collects investor demographics, monthly savings, and investment horizon. Executes the 5-question psychometric suitability survey, computing an aggregate score and assigning a risk profile (Conservative, Moderate, Aggressive).
-    \item \textbf{Persistence}: Stored across \texttt{app\_users}, \texttt{user\_profiles}, \texttt{risk\_assessments}, and \texttt{risk\_assessment\_answers}. Passwords use Argon2id hashing.
+    \item \textbf{Ten Core Requirements (FR-C01 to FR-C10)}: The foundational capabilities needed to onboard users, research stocks, optimize portfolios, track market drift, and suggest rebalancing.
+    \item \textbf{Advanced Differentiator (FR-D01)}: The dual-level ``Stock-Why'' explainability feature providing a clear retail narrative and a financial scorecard for recommended holdings.
 \end{itemize}
 
-\subsection{FR-C02: Natural-Language Input Processing}
+To make the system easy to understand, each requirement is explained below from the perspective of the investor: what the user does, what happens behind the scenes, what result the user receives, and the specific code files that implement it.
+
+\section{Core Requirements: How Each Feature Works}
+
+\subsection{FR-C01: User Onboarding and Risk Suitability Profiling}
 \begin{itemize}
-    \item \textbf{Implementation}: Developed in \texttt{backend/services/nlp\_profile\_extractor.py} and \texttt{frontend/src/components/ConversationalAssistant.tsx}.
-    \item \textbf{Functionality}: Uses Google Gemini with structured Pydantic schema constraints to parse colloquial expressions (e.g., ``invest 2.5 lakhs for my daughter's higher education in 8 years, avoid defense stocks'').
-    \item \textbf{Extracted Attributes}: Normalizes capital into numeric floats (Rs.~2,50,000), maps horizon to integer years (8), sets goal category (Education), and maps sector names to canonical taxonomy codes (\texttt{DEFENSE\_AEROSPACE}).
+    \item \textbf{What the User Does}: The investor registers with their name and email, then answers a 5-question multiple-choice questionnaire about their financial knowledge, investment horizon, and reaction to market losses.
+    \item \textbf{What Lucid Does Behind the Scenes}: Lucid hashes the user's password using the military-grade Argon2id algorithm, creates a secure account record in the \texttt{app\_users} table, and calculates the total suitability score. It assigns the user to a risk category (\textbf{Conservative}, \textbf{Moderate}, or \textbf{Aggressive}).
+    \item \textbf{What the User Receives}: An instant, visual confirmation of their risk category along with an explanation of what it means for their investment strategy.
+    \item \textbf{Implementation Architecture}:
+    \begin{itemize}
+        \item \textit{UI Component}: \texttt{OnboardingWizard.tsx}
+        \item \textit{API Router}: \texttt{api/v1/risk.py}
+        \item \textit{Database Tables}: \texttt{app\_users}, \texttt{user\_profiles}, \texttt{risk\_assessments}
+        \item \textit{Test Suite}: Verified by \path{test_auth_and_security.py}
+    \end{itemize}
 \end{itemize}
 
-\subsection{FR-C03: Market Regime Classification}
+\subsection{FR-C02: Natural-Language Investment Goal Understanding}
 \begin{itemize}
-    \item \textbf{Implementation}: Developed in \texttt{backend/market\_data/regime.py} and \texttt{backend/api/v1/market\_data.py}.
-    \item \textbf{Functionality}: Evaluates daily quotes of Nifty 50 against 50-day and 200-day simple moving averages, and benchmarks India VIX across four volatility tiers ($<13$, $13-18$, $18-24$, $>24$).
-    \item \textbf{Impact}: Dynamically scales the risk aversion multiplier $\lambda$ inside the optimization objective, penalizing high-beta equities during elevated volatility periods.
+    \item \textbf{What the User Does}: Instead of filling out rigid forms, the investor can type their goal in plain English (for example: \textit{``I want to invest 2.5 lakhs for my retirement in 15 years, but don't include any tobacco companies''}).
+    \item \textbf{Behind the Scenes}: The AI model (Google Gemini) reads the prompt, extracts key parameters (Rs.~2,50,000 capital, 15-year horizon, retirement goal), and applies the requested sector exclusion (\texttt{FMCG\_TOBACCO}).
+    \item \textbf{What the User Receives}: A structured goal summary card displayed on screen asking the user to confirm the extracted details before proceeding.
+    \item \textbf{Implementation Architecture}:
+    \begin{itemize}
+        \item \textit{UI Component}: \texttt{ConversationalAssistant.tsx}
+        \item \textit{Backend Service}: \texttt{nlp\_profile\_extractor.py}
+        \item \textit{Database Tables}: \texttt{financial\_goals}, \texttt{user\_sector\_preferences}
+        \item \textit{Test Suite}: Verified by \path{test_natural_language_onboarding.py}
+    \end{itemize}
 \end{itemize}
 
-\subsection{FR-C04: Candidate Stock Universe Discovery and Tiering}
+\subsection{FR-C03: Market Trend and Volatility Analysis}
 \begin{itemize}
-    \item \textbf{Implementation}: Developed in \texttt{backend/portfolio\_engine/candidate\_selection.py} and \texttt{backend/market\_data/exchange\_universe\_sync.py}.
-    \item \textbf{Functionality}: Ingests the full 2,639 listed exchange universe, applying automated liquidity filters (ADTV $\ge 10,000$ shares, daily turnover $\ge \text{Rs.~}25,00,000$).
-    \item \textbf{Output}: Screens and evaluates the complete 2,639 listed exchange equity universe, dynamically extracting candidates across institutional liquidity tiers to formulate risk-adjusted portfolio recommendations.
+    \item \textbf{What the User Does}: The user does not need to configure anything. Whenever a portfolio is created, Lucid checks market conditions automatically.
+    \item \textbf{What Lucid Does Behind the Scenes}: The system fetches the latest price of the Nifty 50 benchmark index and the India VIX volatility gauge. It checks whether the market is in an uptrend (Bullish) or downtrend (Bearish), and whether volatility is calm, normal, or extreme.
+    \item \textbf{What the User Receives}: A visual Market Status Badge (such as ``Calm Market'' or ``High Volatility'') indicating how current conditions influence their portfolio.
+    \item \textbf{Implementation Architecture}:
+    \begin{itemize}
+        \item \textit{Backend Service}: \texttt{regime.py}
+        \item \textit{API Router}: \texttt{api/v1/market\_data.py}
+        \item \textit{Database Tables}: \texttt{economic\_observations}, \texttt{market\_prices}
+        \item \textit{Test Suite}: Verified by \path{test_market_regime_and_universe.py}
+    \end{itemize}
 \end{itemize}
 
-\subsection{FR-C05: Multi-Agent Reasoning via LangGraph StateGraph}
+\subsection{FR-C04: Comprehensive Stock Universe Discovery and Liquidity Tiering}
 \begin{itemize}
-    \item \textbf{Implementation}: Developed in \texttt{backend/agents/graph.py} and \texttt{backend/agents/nodes/}.
-    \item \textbf{Functionality}: Orchestrates a 13-node cyclical state graph where specialized agents analyze macro trends, corporate fundamentals (ROE $\ge 15\%$, Debt/Equity $\le 1.5$), and corporate news. 
-    \item \textbf{Adversarial Critic}: A dedicated Critic node challenges proposed selections for valuation risk or cyclical vulnerability before final weight assignment.
+    \item \textbf{What the User Does}: The user can search across 2,639 listed Indian companies or let the system automatically select the best candidates.
+    \item \textbf{What Lucid Does Behind the Scenes}: Lucid synchronizes the complete list of 2,639 actively traded equities across the NSE and BSE. It screens them into institutional Liquidity Tiers, ensuring that only stocks with sufficient daily trading volume are recommended.
+    \item \textbf{What the User Receives}: A guaranteed selection of liquid, high-quality companies that can be bought and sold easily without unexpected market slippage.
+    \item \textbf{Implementation Architecture}:
+    \begin{itemize}
+        \item \textit{Backend Service}: \texttt{candidate\_selection.py}
+        \item \textit{Sync Engine}: \texttt{exchange\_universe\_sync.py}
+        \item \textit{Database Tables}: \texttt{securities}, \texttt{instrument\_listings}
+        \item \textit{Test Suite}: Verified by \path{test_full_universe_sync.py}
+    \end{itemize}
 \end{itemize}
 
-\subsection{FR-C06: Mathematical Optimization and LLM Decoupling}
+\subsection{FR-C05: Multi-Agent Qualitative Stock Research}
 \begin{itemize}
-    \item \textbf{Implementation}: Developed in \texttt{backend/portfolio\_engine/optimizer.py}.
-    \item \textbf{Functionality}: Strictly prohibits the LLM from emitting numerical allocations. Solves constrained Markowitz mean-variance optimization using SciPy SLSQP.
-    \item \textbf{Constraint Enforcement}: Guarantees $\sum w_i = 100.0\%$, single-stock weights $\le 25\%$, and sector allocations $\le 40\%$.
+    \item \textbf{What the User Does}: The user clicks ``Generate Portfolio'' and watches an interactive progress indicator.
+    \item \textbf{What Lucid Does Behind the Scenes}: A team of 13 specialist AI agents investigates the shortlisted stocks. The agents check balance sheet ratios, industry competitive moats, and recent news. An Adversarial Critic agent challenges the selections, discarding any stock with elevated risks.
+    \item \textbf{What the User Receives}: A curated basket of 15 to 25 verified companies with qualitative conviction notes.
+    \item \textbf{Implementation Architecture}:
+    \begin{itemize}
+        \item \textit{Multi-Agent Engine}: \texttt{agents/graph.py} StateGraph
+        \item \textit{UI Component}: \texttt{StockWhyModal.tsx}
+        \item \textit{Database Tables}: \texttt{agent\_execution\_runs}, \texttt{evidence\_items}
+        \item \textit{Test Suite}: Verified by \path{test_multi_agent_llm_execution.py}
+    \end{itemize}
 \end{itemize}
 
-\subsection{FR-C07: Continuous Unattended Portfolio Monitoring}
+\subsection{FR-C06: Mathematical Optimization and Whole-Share Calculations}
 \begin{itemize}
-    \item \textbf{Implementation}: Developed in \texttt{backend/services/monitoring\_scheduler.py} and \texttt{backend/portfolio\_engine/monitoring\_service.py}.
-    \item \textbf{Functionality}: Asynchronous background scheduler waking every 300 seconds during Indian market hours (09:15--15:30 IST).
-    \item \textbf{Drift Detection}: Revalues all active investor portfolios with live market prices, calculating single-stock drift and sector drift against target versions.
+    \item \textbf{What the User Does}: The user specifies their investment budget (for example, Rs.~2,50,000).
+    \item \textbf{What Lucid Does Behind the Scenes}: The mathematical solver (SciPy SLSQP) calculates the optimal percentage weight for each stock to maximize the Sharpe ratio, subject to single-stock caps ($\le 25\%$) and sector caps ($\le 40\%$). The discrete lot-sizing algorithm then converts these percentages into exact whole numbers of shares, preserving unallocated cash.
+    \item \textbf{What the User Receives}: An exact shopping list of whole shares (for example: ``18 shares of TCS, 32 shares of Infosys, 12 shares of HDFC Bank'') that sums exactly to the user's budget.
+    \item \textbf{Implementation Architecture}:
+    \begin{itemize}
+        \item \textit{Mathematical Engine}: \texttt{optimizer.py} (SLSQP solver)
+        \item \textit{Discrete Lotting}: \texttt{discrete\_lotting.py}
+        \item \textit{Database Tables}: \texttt{portfolio\_versions}, \texttt{portfolio\_decisions}
+        \item \textit{Test Suite}: Verified by \path{test_portfolio_engine.py}
+    \end{itemize}
 \end{itemize}
 
-\subsection{FR-C08: Friction-Aware Rebalancing Engine}
+\subsection{FR-C07: Automatic Market-Hours Drift Monitoring}
 \begin{itemize}
-    \item \textbf{Implementation}: Developed in \texttt{backend/portfolio\_engine/rebalancing\_service.py} and \texttt{backend/portfolio\_engine/transaction\_costs.py}.
-    \item \textbf{Functionality}: Triggers when asset drift exceeds 5\% or sector drift exceeds 8\%. Generates an actionable order preview detailing whole-share BUY/SELL quantities.
-    \item \textbf{Statutory Cost Accounting}: Deducts estimated STT, exchange turnover fees, SEBI charges, stamp duty, and GST, ensuring exact cash balance conservation.
+    \item \textbf{What the User Does}: The investor simply goes about their day. Lucid monitors their portfolio in the background.
+    \item \textbf{What Lucid Does Behind the Scenes}: During official exchange trading hours (09:15 to 15:30 IST), a background monitoring service wakes up every 5 minutes, checks current stock prices, and calculates whether any stock's weight has drifted away from its target by 5\% or more.
+    \item \textbf{What the User Receives}: Peace of mind knowing their investments are monitored constantly without having to watch stock market tickers all day.
+    \item \textbf{Implementation Architecture}:
+    \begin{itemize}
+        \item \textit{Monitoring Daemon}: \texttt{monitoring\_scheduler.py}
+        \item \textit{UI View}: \texttt{HoldingsView.tsx}
+        \item \textit{Database Tables}: \texttt{portfolio\_performance\_snapshots}
+        \item \textit{Test Suite}: Verified by \makecell[l]{\texttt{test\_portfolio\_monitoring\_}\\\texttt{and\_rebalance.py}}
+    \end{itemize}
 \end{itemize}
 
-\subsection{FR-C09: Real-Time Alerts and Notifications Subsystem}
+\subsection{FR-C08: Transparent Rebalancing and Tax Estimation}
 \begin{itemize}
-    \item \textbf{Implementation}: Developed in \texttt{backend/api/v1/notifications.py} and \texttt{frontend/src/components/NotificationsPanel.tsx}.
-    \item \textbf{Functionality}: Persists real-time alerts into the \texttt{notifications} table upon drift threshold breach, rebalance recommendation, or market shock, rendering instant visual badges in the investor dashboard.
+    \item \textbf{What the User Does}: If a rebalance alert is triggered, the user opens the Rebalance modal to inspect the recommendations.
+    \item \textbf{What Lucid Does Behind the Scenes}: Lucid generates a complete comparison showing current shares versus suggested new shares. It calculates the exact statutory taxes (STT, stamp duty, exchange charges, and GST) so the user knows all transaction costs upfront.
+    \item \textbf{What the User Receives}: A transparent before-and-after trade preview. The user can review and approve the rebalancing action with complete confidence.
+    \item \textbf{Implementation Architecture}:
+    \begin{itemize}
+        \item \textit{Rebalance Engine}: \texttt{rebalancing\_service.py}
+        \item \textit{Tax Service}: \texttt{transaction\_costs.py}
+        \item \textit{Database Tables}: \texttt{rebalance\_suggestions}, \texttt{broker\_orders}
+        \item \textit{Test Suite}: Verified by \path{test_diagnosis_and_rebalance.py}
+    \end{itemize}
 \end{itemize}
 
-\subsection{FR-C10: Existing Demat Portfolio (CAS) Diagnosis}
+\subsection{FR-C09: Real-Time Alerts and Notification Hub}
 \begin{itemize}
-    \item \textbf{Implementation}: Developed in \texttt{backend/services/cas\_parser.py} and \texttt{frontend/src/components/DiagnosisView.tsx}.
-    \item \textbf{Functionality}: Ingests CDSL/NSDL PDF statements, extracting stock ISINs, quantities, and acquisition prices. Computes the Herfindahl-Hirschman Index (HHI), flags stock and sector concentration risks, and provides actionable position ratings.
+    \item \textbf{What the User Does}: The investor views alert badges in their notification bell icon on the top navigation bar.
+    \item \textbf{What Lucid Does Behind the Scenes}: Whenever an important event occurs (such as a drift threshold breach, market volatility spike, or completed rebalancing), Lucid creates a notification record in the database.
+    \item \textbf{What the User Receives}: Clear, clickable notifications that take the user directly to the relevant portfolio view or rebalance preview.
+    \item \textbf{Implementation Architecture}:
+    \begin{itemize}
+        \item \textit{UI Component}: \texttt{NotificationsPanel.tsx}
+        \item \textit{API Router}: \texttt{api/v1/notifications.py}
+        \item \textit{Database Tables}: \texttt{notifications} table
+        \item \textit{Test Suite}: Verified by \path{test_notifications_system.py}
+    \end{itemize}
 \end{itemize}
 
-\section{Differentiating Functional Requirement Implementation}
-
-\subsection{FR-D01: Fiduciary ``Stock-Why'' Explainability and Transparent Critic}
+\subsection{FR-C10: Demat Statement (CAS) Health Diagnosis}
 \begin{itemize}
-    \item \textbf{Implementation}: Developed in \texttt{backend/api/v1/portfolios.py} (line 120+) and \texttt{frontend/src/components/StockWhyModal.tsx}.
-    \item \textbf{Functionality}: Eliminates the robo-advisory black box. For every recommended holding, Lucid renders a dual-level explanation:
+    \item \textbf{What the User Does}: The investor uploads a monthly Demat account PDF statement provided by CDSL or NSDL.
+    \item \textbf{What Lucid Does Behind the Scenes}: A document parser reads the PDF, extracts all held stocks, identifies company ISINs, and computes the Herfindahl-Hirschman Index (HHI) diversification score.
+    \item \textbf{What the User Receives}: A comprehensive health diagnostic report highlighting concentration risks, duplicate holdings, and clear recommendations (Hold, Buy, or Trim).
+    \item \textbf{Implementation Architecture}:
+    \begin{itemize}
+        \item \textit{PDF Parser}: \texttt{cas\_parser.py}
+        \item \textit{UI Component}: \texttt{DiagnosisView.tsx}
+        \item \textit{Database Tables}: \texttt{existing\_portfolios}, \texttt{portfolio\_diagnoses}
+        \item \textit{Test Suite}: Verified by \path{test_diagnosis_copilot.py}
+    \end{itemize}
+\end{itemize}
+
+\section{Differentiating Requirement: Stock-Why Explanations}
+
+\subsection{FR-D01: Dual-Level Fiduciary Explainability}
+\begin{itemize}
+    \item \textbf{What the User Does}: Inside their portfolio, the investor clicks on any stock card or the ``Why Was This Chosen?'' button.
+    \item \textbf{What Lucid Does Behind the Scenes}: Lucid retrieves the qualitative reasoning produced by the multi-agent team and combines it with the mathematical metrics calculated by the optimizer.
+    \item \textbf{What the User Receives}: A dual-level explanation modal displaying:
     \begin{enumerate}
-        \item \textbf{Retail Narrative Tier}: Conversational, accessible prose explaining the company's competitive advantage, market position, and qualitative reason for inclusion.
-        \item \textbf{Quantitative Metric Tier}: Hard verifiable scorecard displaying the stock's P/E ratio, P/B ratio, ROE percentage, Debt-to-Equity, 1-year historical return, systematic beta, and marginal contribution to portfolio risk.
+        \item \textbf{The Retail Narrative}: Plain-English paragraphs explaining why the company was selected, its business strengths, and how it protects the user's financial goal.
+        \item \textbf{The Financial Scorecard}: A clean table showing Return on Equity (ROE), P/E ratio, Debt-to-Equity, 1-year historical return, and the stock's marginal contribution to portfolio risk.
     \end{enumerate}
+    \item \textbf{Implementation Architecture}:
+    \begin{itemize}
+        \item \textit{API Router}: \texttt{api/v1/portfolios.py}
+        \item \textit{UI Component}: \texttt{StockWhyModal.tsx}
+        \item \textit{Database Tables}: \texttt{recommendation\_explanations}, \texttt{evidence\_items}
+        \item \textit{Test Suite}: Verified by \path{test_stock_why_experience.py}
+    \end{itemize}
 \end{itemize}
 
 \clearpage
-\section{Comprehensive Requirements Traceability Matrix}
-Table~\ref{tab:traceability_matrix} establishes complete end-to-end traceability from functional requirement IDs to frontend components, backend routers, database tables, and automated test suites.
+\section{Requirements Traceability Matrix}
+Table~\ref{tab:traceability_matrix} establishes complete end-to-end traceability for every functional requirement, linking each requirement ID to its user interface component, backend API router, database tables, and automated test suite:
 
 \begin{table}[H]
 \centering
 \caption{Comprehensive Functional Requirements Traceability Matrix}
 \label{tab:traceability_matrix}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{llllll}
+\begin{tabular}{l l l l l c}
 \toprule
 \textbf{Req ID} & \textbf{Frontend UI Component} & \textbf{Backend Router} & \textbf{Database Tables} & \textbf{Automated Test Suite} & \textbf{Status} \\
 \midrule
-\textbf{FR-C01} & \makecell[l]{\texttt{Onboarding}\\\texttt{Wizard.tsx}} & \texttt{api/v1/risk.py} & \makecell[l]{\texttt{app\_users},\\\texttt{risk\_assessments}} & \makecell[l]{\texttt{test\_auth\_and\_}\\\texttt{security.py}} & \textbf{Verified} \\
-\addlinespace[3pt]
-\textbf{FR-C02} & \makecell[l]{\texttt{Conversational}\\\texttt{Assistant.tsx}} & \makecell[l]{\texttt{api/v1/}\\\texttt{portfolios.py}} & \makecell[l]{\texttt{financial\_goals},\\\texttt{user\_profiles}} & \makecell[l]{\texttt{test\_natural\_}\\\texttt{language\_}\\\texttt{onboarding.py}} & \textbf{Verified} \\
-\addlinespace[3pt]
-\textbf{FR-C03} & \texttt{HoldingsView.tsx} & \makecell[l]{\texttt{api/v1/}\\\texttt{market\_data.py}} & \makecell[l]{\texttt{economic\_}\\\texttt{observations},\\\texttt{market\_prices}} & \makecell[l]{\texttt{test\_market\_}\\\texttt{regime\_and\_}\\\texttt{universe.py}} & \textbf{Verified} \\
-\addlinespace[3pt]
-\textbf{FR-C04} & \texttt{HoldingsView.tsx} & \makecell[l]{\texttt{api/v1/}\\\texttt{market\_data.py}} & \makecell[l]{\texttt{securities},\\\texttt{instrument\_}\\\texttt{listings}} & \makecell[l]{\texttt{test\_full\_}\\\texttt{universe\_sync.py}} & \textbf{Verified} \\
-\addlinespace[3pt]
-\textbf{FR-C05} & \texttt{StockWhyModal.tsx} & \texttt{agents/graph.py} & \makecell[l]{\texttt{agent\_execution\_}\\\texttt{runs},\\\texttt{evidence\_items}} & \makecell[l]{\texttt{test\_multi\_agent\_}\\\texttt{llm\_execution.py}} & \textbf{Verified} \\
-\addlinespace[3pt]
-\textbf{FR-C06} & \makecell[l]{\texttt{Allocation}\\\texttt{Visualizer.tsx}} & \texttt{portfolio\_engine/} & \makecell[l]{\texttt{portfolio\_versions},\\\texttt{portfolio\_security\_}\\\texttt{decisions}} & \makecell[l]{\texttt{test\_portfolio\_}\\\texttt{engine.py}} & \textbf{Verified} \\
-\addlinespace[3pt]
-\textbf{FR-C07} & \texttt{HoldingsView.tsx} & \makecell[l]{\texttt{api/v1/}\\\texttt{monitoring.py}} & \makecell[l]{\texttt{portfolio\_}\\\texttt{performance\_}\\\texttt{snapshots}} & \makecell[l]{\texttt{test\_portfolio\_}\\\texttt{monitoring\_and\_}\\\texttt{rebalance.py}} & \textbf{Verified} \\
-\addlinespace[3pt]
-\textbf{FR-C08} & \makecell[l]{\texttt{Rebalance}\\\texttt{PreviewModal.tsx}} & \makecell[l]{\texttt{api/v1/}\\\texttt{rebalancing.py}} & \makecell[l]{\texttt{rebalance\_}\\\texttt{suggestions},\\\texttt{broker\_orders}} & \makecell[l]{\texttt{test\_diagnosis\_}\\\texttt{and\_rebalance.py}} & \textbf{Verified} \\
-\addlinespace[3pt]
-\textbf{FR-C09} & \makecell[l]{\texttt{Notifications}\\\texttt{Panel.tsx}} & \makecell[l]{\texttt{api/v1/}\\\texttt{notifications.py}} & \texttt{notifications} & \makecell[l]{\texttt{test\_notifications\_}\\\texttt{system.py}} & \textbf{Verified} \\
-\addlinespace[3pt]
-\textbf{FR-C10} & \texttt{DiagnosisView.tsx} & \makecell[l]{\texttt{api/v1/}\\\texttt{diagnosis.py}} & \makecell[l]{\texttt{existing\_portfolios},\\\texttt{portfolio\_diagnoses}} & \makecell[l]{\texttt{test\_diagnosis\_}\\\texttt{copilot.py}} & \textbf{Verified} \\
-\addlinespace[3pt]
-\textbf{FR-D01} & \texttt{StockWhyModal.tsx} & \makecell[l]{\texttt{api/v1/}\\\texttt{portfolios.py}} & \makecell[l]{\texttt{recommendation\_}\\\texttt{explanations},\\\texttt{evidence\_items}} & \makecell[l]{\texttt{test\_stock\_why\_}\\\texttt{experience.py}} & \textbf{Verified} \\
+\textbf{FR-C01} & \texttt{OnboardingWizard.tsx} & \texttt{api/v1/risk.py} & \makecell[l]{\texttt{app\_users},\\ \texttt{risk\_assessments}} & \makecell[l]{\texttt{test\_auth\_and\_}\\ \texttt{security.py}} & \textbf{Verified} \\
+\addlinespace[4pt]
+\textbf{FR-C02} & \makecell[l]{\texttt{Conversational}\\\texttt{Assistant.tsx}} & \texttt{api/v1/portfolios.py} & \makecell[l]{\texttt{financial\_goals},\\ \texttt{user\_profiles}} & \makecell[l]{\texttt{test\_natural\_}\\ \texttt{language\_}\\ \texttt{onboarding.py}} & \textbf{Verified} \\
+\addlinespace[4pt]
+\textbf{FR-C03} & \texttt{HoldingsView.tsx} & \texttt{api/v1/market\_data.py} & \makecell[l]{\texttt{economic\_obs},\\ \texttt{market\_prices}} & \makecell[l]{\texttt{test\_market\_}\\ \texttt{regime\_universe.py}} & \textbf{Verified} \\
+\addlinespace[4pt]
+\textbf{FR-C04} & \texttt{HoldingsView.tsx} & \texttt{api/v1/market\_data.py} & \makecell[l]{\texttt{securities},\\ \texttt{listings}} & \makecell[l]{\texttt{test\_full\_}\\ \texttt{universe\_sync.py}} & \textbf{Verified} \\
+\addlinespace[4pt]
+\textbf{FR-C05} & \texttt{StockWhyModal.tsx} & \texttt{agents/graph.py} & \makecell[l]{\texttt{agent\_runs},\\ \texttt{evidence\_items}} & \makecell[l]{\texttt{test\_multi\_agent\_}\\ \texttt{llm\_execution.py}} & \textbf{Verified} \\
+\addlinespace[4pt]
+\textbf{FR-C06} & \makecell[l]{\texttt{Allocation}\\\texttt{Visualizer.tsx}} & \texttt{portfolio\_engine/} & \makecell[l]{\texttt{portfolio\_versions},\\ \texttt{decisions}} & \makecell[l]{\texttt{test\_portfolio\_}\\ \texttt{engine.py}} & \textbf{Verified} \\
+\addlinespace[4pt]
+\textbf{FR-C07} & \texttt{HoldingsView.tsx} & \texttt{api/v1/monitoring.py} & \makecell[l]{\texttt{performance\_}\\ \texttt{snapshots}} & \makecell[l]{\texttt{test\_monitoring\_}\\ \texttt{and\_rebalance.py}} & \textbf{Verified} \\
+\addlinespace[4pt]
+\textbf{FR-C08} & \makecell[l]{\texttt{Rebalance}\\\texttt{PreviewModal.tsx}} & \texttt{api/v1/rebalancing.py} & \makecell[l]{\texttt{rebalance\_sugg},\\ \texttt{broker\_orders}} & \makecell[l]{\texttt{test\_diagnosis\_}\\ \texttt{and\_rebalance.py}} & \textbf{Verified} \\
+\addlinespace[4pt]
+\textbf{FR-C09} & \makecell[l]{\texttt{Notifications}\\\texttt{Panel.tsx}} & \texttt{api/v1/notifications.py} & \texttt{notifications} & \makecell[l]{\texttt{test\_notifications\_}\\ \texttt{system.py}} & \textbf{Verified} \\
+\addlinespace[4pt]
+\textbf{FR-C10} & \texttt{DiagnosisView.tsx} & \texttt{api/v1/diagnosis.py} & \makecell[l]{\texttt{portfolios},\\ \texttt{diagnoses}} & \makecell[l]{\texttt{test\_diagnosis\_}\\ \texttt{copilot.py}} & \textbf{Verified} \\
+\addlinespace[4pt]
+\textbf{FR-D01} & \texttt{StockWhyModal.tsx} & \texttt{api/v1/portfolios.py} & \makecell[l]{\texttt{explanations},\\ \texttt{evidence\_items}} & \makecell[l]{\texttt{test\_stock\_why\_}\\ \texttt{experience.py}} & \textbf{Verified} \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
-
-
