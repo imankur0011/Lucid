@@ -50,5 +50,10 @@ frontend/out/
 *.log
 logs/
 
+# Runtime PID & Build Hash files
+*.pid
+.lucid_*.pid
+.requirements.hash
+
 # Neo4j data (managed by Docker)
 neo4j_data/

@@ -10,6 +10,7 @@ Populates:
 
 import sys
 import os
+import uuid
 from pathlib import Path
 
 # Add project root to path
@@ -27,8 +28,8 @@ from backend.models import (
 )
 from backend.seed.seed_questionnaire import seed_risk_questions
 from backend.market_data.exchange_universe_sync import sync_full_exchange_universe
-from backend.market_data.regime import seed_market_indicators_and_news
-from backend.auth.utils import get_password_hash
+from backend.market_data.regime import seed_macro_and_news_data
+from backend.api.v1.auth import hash_password
 
 
 def seed_development_user(db):
@@ -37,12 +38,14 @@ def seed_development_user(db):
     user = db.query(AppUser).filter(AppUser.email == email).first()
     if not user:
         user = AppUser(
+            user_id=uuid.uuid4(),
+            identity_provider="local",
+            identity_subject="developer@lucid.local",
             email=email,
-            hashed_password=get_password_hash("LucidDevPass123!"),
-            full_name="Lucid Local Developer",
-            is_active=True,
-            is_verified=True,
-            role="investor",
+            password_hash=hash_password("LucidDevPass123!"),
+            email_verified=True,
+            mobile_verified=True,
+            account_status="active",
         )
         db.add(user)
         db.commit()
@@ -69,7 +72,7 @@ def main():
 
         # 2. Seed Macroeconomic Indicators & News
         print("\n[2/4] Seeding Macro Indicators, Policy Rates, and Market News...")
-        seed_market_indicators_and_news(db)
+        seed_macro_and_news_data(db)
         print("   ✅ RBI Repo Rate, India VIX, and market news baseline seeded.")
 
         # 3. Synchronize Full Exchange Universe (NSE + BSE)

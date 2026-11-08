@@ -16,7 +16,8 @@ const docs = [
   'SYSTEM_ARCHITECTURE',
   'AGENT_ARCHITECTURE',
   'METHODOLOGY',
-  'DATASET_USED'
+  'DATASET_USED',
+  'SETUP_AND_INSTALLATION'
 ];
 
 async function convertDoc(docName, browser) {

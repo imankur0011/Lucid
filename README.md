@@ -13,7 +13,41 @@ Lucid is an institutional-grade, agentic AI-driven equity portfolio construction
 
 ---
 
+## ⚡ Quick Start — One-Command Automated Setup & Launcher
+
+Run Lucid with a **single command**. The launcher automatically detects your operating system, configures Python `.venv`, installs frontend dependencies, generates cryptographically secure `.env` secrets, initializes PostgreSQL, executes Alembic migrations, seeds the 2,639-stock NSE/BSE universe, starts both backend and frontend servers, and launches your browser:
+
+### macOS / Linux
+```bash
+git clone https://github.com/imankur0011/Lucid.git
+cd Lucid
+chmod +x start_lucid.sh
+./start_lucid.sh
+```
+
+### Windows (PowerShell)
+```powershell
+git clone https://github.com/imankur0011/Lucid.git
+cd Lucid
+powershell -ExecutionPolicy Bypass -File .\start_lucid.ps1
+```
+
+### Service Lifecycle Commands
+| Command | Purpose |
+|---|---|
+| `./start_lucid.sh` | Full automated setup and application launcher (FastAPI + Next.js) |
+| `./status_lucid.sh` | Real-time diagnostic status of database, backend, and frontend |
+| `./logs_lucid.sh [backend\|frontend\|all]` | Stream live application logs |
+| `./stop_lucid.sh` | Gracefully terminate all Lucid background services |
+
+> **Default Demo Login**: `developer@lucid.local` / `LucidDevPass123!`  
+> **Frontend**: [http://localhost:3000](http://localhost:3000) | **API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)  
+> **Detailed Documentation**: See [SETUP_AND_INSTALLATION.md](SETUP_AND_INSTALLATION.md) for full architecture and manual setup guide.
+
+---
+
 ## Table of Contents
+0. [⚡ Quick Start — One-Command Automated Setup & Launcher](#-quick-start--one-command-automated-setup--launcher)
 1. [Overview & What Problem Lucid Solves](#1-overview--what-problem-lucid-solves)
 2. [Core Application Capabilities](#2-core-application-capabilities)
 3. [Technology Stack & System Architecture](#3-technology-stack--system-architecture)

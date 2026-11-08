@@ -57,6 +57,10 @@ class PortfolioBacktestEngine:
         if len(candidates) < 3:
             raise ValueError("Insufficient eligible candidates for backtesting")
 
+        # For institutional benchmark comparison, evaluate across the top representative liquid basket
+        if len(candidates) > 25:
+            candidates = candidates[:25]
+
         constraints = PortfolioConstraints(
             max_single_stock_pct=max_single_stock_pct,
             max_sector_pct=max_sector_pct,

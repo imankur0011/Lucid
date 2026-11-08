@@ -100,7 +100,7 @@ router = APIRouter(prefix="", tags=["Portfolios"])
 
 
 @router.get("/portfolios/benchmark-evaluation")
-async def evaluate_portfolio_benchmark(
+def evaluate_portfolio_benchmark(
     risk_category: str = "moderate",
     amount: float = 100000.0,
     db: Session = Depends(get_db),

@@ -41,6 +41,7 @@ def check_required_documents():
         "OPTIMIZATION_METHODOLOGY.md",
         "SECURITY_AND_RELIABILITY.md",
         "FUNCTIONAL_REQUIREMENT_MAPPING.md",
+        "SETUP_AND_INSTALLATION.md",
         # Mirrored Design Documents
         "docs/design/HIGH_LEVEL_DESIGN.md",
         "docs/design/LOW_LEVEL_DESIGN.md",
@@ -252,6 +253,39 @@ def check_relative_markdown_links():
     return True
 
 
+def check_launcher_and_lifecycle_scripts():
+    print("\n[8/8] Verifying Automated Launcher & Lifecycle Scripts...")
+    required_scripts = [
+        "start_lucid.sh",
+        "stop_lucid.sh",
+        "status_lucid.sh",
+        "logs_lucid.sh",
+        "start_lucid.ps1",
+        "scripts/init_database.py",
+    ]
+    missing = []
+    for s in required_scripts:
+        p = ROOT_DIR / s
+        if not p.is_file() or p.stat().st_size == 0:
+            missing.append(s)
+    if missing:
+        print(f"   {FAIL} Missing or empty launcher scripts: {missing}")
+        return False
+        
+    # Check execution bit on bash scripts
+    non_exec = []
+    for s in ["start_lucid.sh", "stop_lucid.sh", "status_lucid.sh", "logs_lucid.sh"]:
+        p = ROOT_DIR / s
+        if not os.access(p, os.X_OK):
+            non_exec.append(s)
+    if non_exec:
+        print(f"   {FAIL} Scripts missing executable permission: {non_exec}")
+        return False
+        
+    print(f"   {PASS} All {len(required_scripts)} launcher & lifecycle scripts verified and executable.")
+    return True
+
+
 def main():
     print("=" * 70)
     print("  LUCID — REPOSITORY-WIDE CONSISTENCY & DOCUMENTATION VALIDATOR")
@@ -265,6 +299,7 @@ def main():
         check_auth_and_llm_decisions(),
         check_openapi_endpoint_coverage(),
         check_relative_markdown_links(),
+        check_launcher_and_lifecycle_scripts(),
     ]
 
     print("\n" + "=" * 70)
