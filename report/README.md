@@ -5,7 +5,7 @@
 **Supervisor:** Dr. Biju R Mohan  
 **Department:** Department of Information Technology, National Institute of Technology Karnataka, Surathkal  
 **Academic Year:** 2026–2027  
-**Compiled Document:** `Final_Major_Project_Report.pdf` (128 Pages, Publication-Grade PDF, concludes at References)
+**Compiled Document:** `Final_Major_Project_Report.pdf` (132 Pages, Publication-Grade PDF, concludes at References)
 
 ---
 
@@ -15,7 +15,7 @@
 report/
 ├── main.tex                           # Master LaTeX document defining NITK layout, geometry, front matter
 ├── references.bib                     # Academic BibTeX citations (Markowitz, Sharpe, Fama-French, etc.)
-├── Final_Major_Project_Report.pdf     # Primary compiled thesis document (128 pages, ends at References)
+├── Final_Major_Project_Report.pdf     # Primary compiled thesis document (132 pages, ends at References)
 ├── chapters/                          # 12 Core Academic Chapters
 │   ├── ch1_introduction.tex           # Introduction, retail dilemma, motivation, contributions
 │   ├── ch2_market_survey.tex          # Literature review & competitive analysis (7 platforms)
