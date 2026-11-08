@@ -150,3 +150,4 @@ alembic upgrade head
 # 3. Re-seed reference data and security master
 python ../database/seed_reference_data.py
 ```
+

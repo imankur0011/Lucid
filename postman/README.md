@@ -160,3 +160,4 @@ newman run postman/Lucid_API_Collection.json \
 | `HTTP 401 Unauthorized` on protected routes | Access token has expired or is empty | Run `02 - Authentication -> Login` to refresh `{{accessToken}}` |
 | `HTTP 429 Too Many Requests` | Sliding-window rate limiter triggered | Wait 60 seconds or adjust `InMemoryRateLimiterMiddleware` in `backend/main.py` |
 | `HTTP 403 Diagnostic endpoint disabled` | `APP_ENV` is set to production/staging | Ensure `APP_ENV=development` in `.env` for `/api/db/stats` |
+

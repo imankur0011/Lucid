@@ -41,3 +41,4 @@ gunzip -c "${BACKUP_FILE}" | psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}
 echo "================================================================="
 echo "✅ Database restored successfully!"
 echo "================================================================="
+

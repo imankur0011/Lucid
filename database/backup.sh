@@ -34,3 +34,4 @@ echo "✅ Backup successfully created at:"
 echo "   ${BACKUP_FILE}"
 echo "   Size: $(du -h "${BACKUP_FILE}" | cut -f1)"
 echo "================================================================="
+

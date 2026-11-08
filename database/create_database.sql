@@ -30,3 +30,4 @@ SELECT
     current_database() AS database_name,
     current_user AS database_user,
     version() AS postgresql_version;
+
