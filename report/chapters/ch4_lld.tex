@@ -34,31 +34,33 @@ All network communication with the backend is abstracted through a type-safe API
 \section{Backend Architecture and API Subsystem}
 The backend is structured as a modular, layered FastAPI application under \texttt{backend/}:
 
+\begin{small}
 \begin{verbatim}
 backend/
 |-- api/
-|   `-- v1/              # Versioned API routes (82 endpoints)
-|       |-- auth.py      # Authentication, login, registration, JWT
-|       |-- users.py     # Profile management, preferences
-|       |-- risk.py      # Suitability questionnaire & scoring
-|       |-- goals.py     # Financial goal CRUD & progress tracking
-|       |-- market_data.py # Quotes, historical prices, regime, universe
-|       |-- portfolios.py # Generation requests, versioning, stock-why
-|       |-- diagnosis.py # Demat CAS PDF parsing & health diagnosis
-|       |-- monitoring.py # Portfolio valuation & drift tracking
-|       |-- rebalancing.py # Rebalancing strategy & order previews
-|       |-- notifications.py # Real-time alerts
-|       `-- broker.py    # Broker simulation & order execution
-|-- models/              # SQLAlchemy 2.0 ORM domain models (62 tables)
-|-- schemas/             # Pydantic v2 request & response validation schemas
-|-- services/            # Business logic and external service orchestrators
-|-- portfolio_engine/    # Quantitative optimization, rounding, transaction costs
-|-- agents/              # LangGraph multi-agent StateGraph workflow
-|-- database/            # Engine configuration, sessionmaker, get_db dependency
-|-- middleware/          # Rate limiting, security headers, CORS
-|-- alembic/             # Database migration revisions
-`-- config.py            # Centralized settings (pydantic-settings)
+|   `-- v1/                 # Versioned API routes (82 endpoints)
+|       |-- auth.py         # Authentication, login, registration, JWT
+|       |-- users.py        # Profile management, preferences
+|       |-- risk.py         # Suitability questionnaire & scoring
+|       |-- goals.py        # Financial goal CRUD & progress tracking
+|       |-- market_data.py  # Quotes, historical prices, regime, universe
+|       |-- portfolios.py   # Generation requests, versioning, stock-why
+|       |-- diagnosis.py    # Demat CAS PDF parsing & health diagnosis
+|       |-- monitoring.py   # Portfolio valuation & drift tracking
+|       |-- rebalancing.py  # Rebalance strategy & order previews
+|       |-- notifications.py# Real-time alerts
+|       `-- broker.py       # Broker simulation & order execution
+|-- models/                 # SQLAlchemy 2.0 ORM domain models (62 tables)
+|-- schemas/                # Pydantic v2 validation schemas
+|-- services/               # Business logic and service orchestrators
+|-- portfolio_engine/       # Optimization, lot rounding, frictions
+|-- agents/                 # LangGraph multi-agent StateGraph workflow
+|-- database/               # PostgreSQL engine, sessionmaker, get_db
+|-- middleware/             # Rate limiting, security headers, CORS
+|-- alembic/                # Database migration revisions
+`-- config.py               # Centralized settings (pydantic-settings)
 \end{verbatim}
+\end{small}
 
 \subsection{Dependency Injection and Session Management}
 FastAPI's dependency injection system (\texttt{Depends}) manages transactional database sessions:
@@ -132,30 +134,30 @@ Only the worker instance that acquires the 64-bit lock proceeds with portfolio v
 \section{Sequence Flow Diagrams}
 Figures~\ref{fig:seq_auth} through \ref{fig:seq_diag} illustrate the low-level sequence interactions for primary system operations.
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.9\textwidth]{API_AUTH_FLOW.png}
+    \includegraphics[width=0.90\textwidth, height=0.38\textheight, keepaspectratio]{API_AUTH_FLOW.png}
     \caption{Low-Level Sequence Flow: Investor Authentication and JWT Token Lifecycle}
     \label{fig:seq_auth}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.95\textwidth]{API_PORTFOLIO_GENERATION_FLOW.png}
+    \includegraphics[width=0.90\textwidth, height=0.38\textheight, keepaspectratio]{API_PORTFOLIO_GENERATION_FLOW.png}
     \caption{Low-Level Sequence Flow: Goal-Driven Portfolio Generation and SLSQP Optimization}
     \label{fig:seq_generation}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.95\textwidth]{API_MONITORING_REBALANCE_FLOW.png}
+    \includegraphics[width=0.90\textwidth, height=0.38\textheight, keepaspectratio]{API_MONITORING_REBALANCE_FLOW.png}
     \caption{Low-Level Sequence Flow: 5-Minute Drift Radar and Friction-Aware Rebalancing Preview}
     \label{fig:seq_monitoring}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.95\textwidth]{API_DIAGNOSIS_FLOW.png}
+    \includegraphics[width=0.90\textwidth, height=0.38\textheight, keepaspectratio]{API_DIAGNOSIS_FLOW.png}
     \caption{Low-Level Sequence Flow: Demat CAS PDF Statement Ingestion and Health Diagnosis}
     \label{fig:seq_diag}
 \end{figure}

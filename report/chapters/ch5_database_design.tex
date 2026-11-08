@@ -35,9 +35,9 @@ Figure~\ref{fig:master_er} illustrates the complete master Entity-Relationship d
 \subsection{Domain 1: Identity, Authentication and Security Governance}
 Domain 1 manages user authentication, enterprise cryptographic credentials, token blacklists, consent tracking, and security audit trails.
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.95\textwidth]{01_identity_and_security_domain.png}
+    \includegraphics[width=0.88\textwidth, height=0.55\textheight, keepaspectratio]{01_identity_and_security_domain.png}
     \caption{Domain 1 ER Diagram: Identity, Authentication and Security Governance}
     \label{fig:er_domain1}
 \end{figure}
@@ -54,7 +54,7 @@ The primary identity ledger storing registered investor accounts.
 \textbf{Column Name} & \textbf{Data Type} & \textbf{PK} & \textbf{FK} & \textbf{Nullable} & \textbf{Description \& Constraints} \\
 \midrule
 \texttt{user\_id} & \texttt{UUID} & Yes & No & No & Primary Key, generated via \texttt{uuid\_generate\_v4()} \\
-\texttt{identity\_provider} & \texttt{VARCHAR(50)} & No & No & No \& Auth provider (\texttt{local}, \texttt{google}, \texttt{apple}), default \texttt{'local'} \\
+\texttt{identity\_provider} & \texttt{VARCHAR(50)} & No & No & No & Auth provider (\texttt{local}, \texttt{google}, \texttt{apple}), default \texttt{'local'} \\
 \texttt{identity\_subject} & \texttt{VARCHAR(255)} & No & No & No & Unique subject identifier from auth provider \\
 \texttt{email} & \texttt{VARCHAR(255)} & No & No & No & Unique investor email address (indexed) \\
 \texttt{password\_hash} & \texttt{VARCHAR(255)} & No & No & Yes & Canonical Argon2id cryptographic hash (RFC 9106) \\
@@ -78,14 +78,7 @@ The primary identity ledger storing registered investor accounts.
 \end{itemize}
 
 \subsection{Domain 2: Investor Suitability, Profiling and Financial Goals}
-Domain 2 captures the investor's financial reality, investment horizon, psychometric risk tolerance, and life goals.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{02_investor_suitability_and_goals_domain.png}
-    \caption{Domain 2 ER Diagram: Investor Suitability, Profiling and Financial Goals}
-    \label{fig:er_domain2}
-\end{figure}
+Domain 2 captures the investor's financial reality, investment horizon, psychometric risk tolerance, and life goals across 10 specialized tables:
 
 \begin{itemize}
     \item \texttt{user\_profiles}: Investor demographic and financial data (monthly income, investment horizon, net worth, tax bracket).
@@ -100,15 +93,17 @@ Domain 2 captures the investor's financial reality, investment horizon, psychome
     \item \texttt{user\_sector\_preferences}: Sector-level preferences (e.g., exclude tobacco, defense, or real estate).
 \end{itemize}
 
-\subsection{Domain 3: Security Master and Corporate Registry}
-Domain 3 defines the financial market universe, listed equities, exchanges, sectors, and cross-exchange ticker mappings.
+Figure~\ref{fig:er_domain2} illustrates the Entity-Relationship schema for Domain 2:
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.95\textwidth]{03_security_master_and_companies_domain.png}
-    \caption{Domain 3 ER Diagram: Security Master and Corporate Registry}
-    \label{fig:er_domain3}
+    \includegraphics[width=0.88\textwidth, height=0.65\textheight, keepaspectratio]{02_investor_suitability_and_goals_domain.png}
+    \caption{Domain 2 ER Diagram: Investor Suitability, Profiling and Financial Goals}
+    \label{fig:er_domain2}
 \end{figure}
+
+\subsection{Domain 3: Security Master and Corporate Registry}
+Domain 3 defines the financial market universe, listed equities, exchanges, sectors, and cross-exchange ticker mappings across 8 tables:
 
 \begin{itemize}
     \item \texttt{exchanges}: Exchange directory (\texttt{exchange\_code}: NSE, BSE; country, operating currency).
@@ -121,15 +116,17 @@ Domain 3 defines the financial market universe, listed equities, exchanges, sect
     \item \texttt{source\_instrument\_mappings}: Maps exchange tickers to external API identifiers (Yahoo Finance tickers, e.g., \texttt{RELIANCE.NS}).
 \end{itemize}
 
-\subsection{Domain 4: Market Data, Historical Quotes and Macro Regime}
-Domain 4 stores historical pricing, corporate fundamentals, macroeconomic indicators, and financial news.
+Figure~\ref{fig:er_domain3} illustrates the Entity-Relationship schema for Domain 3:
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.95\textwidth]{04_market_data_and_fundamentals_domain.png}
-    \caption{Domain 4 ER Diagram: Market Data, Historical Quotes and Macro Regime}
-    \label{fig:er_domain4}
+    \includegraphics[width=0.88\textwidth, height=0.65\textheight, keepaspectratio]{03_security_master_and_companies_domain.png}
+    \caption{Domain 3 ER Diagram: Security Master and Corporate Registry}
+    \label{fig:er_domain3}
 \end{figure}
+
+\subsection{Domain 4: Market Data, Historical Quotes and Macro Regime}
+Domain 4 stores historical pricing, corporate fundamentals, macroeconomic indicators, and financial news across 8 tables:
 
 \begin{itemize}
     \item \texttt{market\_prices}: Daily historical OHLCV records (\texttt{security\_id}, \texttt{price\_date}, \texttt{open}, \texttt{high}, \texttt{low}, \texttt{close}, \texttt{adj\_close}, \texttt{volume}).
@@ -142,15 +139,17 @@ Domain 4 stores historical pricing, corporate fundamentals, macroeconomic indica
     \item \texttt{knowledge\_documents}: Regulatory circulars and investment knowledge artifacts.
 \end{itemize}
 
-\subsection{Domain 5: Portfolio Engine, Quantitative Optimization and Tracking}
-Domain 5 forms the transactional core of Lucid, recording recommended portfolios, versioned weight distributions, and performance snapshots.
+Figure~\ref{fig:er_domain4} illustrates the Entity-Relationship schema for Domain 4:
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.95\textwidth]{05_portfolio_engine_and_optimization_domain.png}
-    \caption{Domain 5 ER Diagram: Portfolio Engine, Quantitative Optimization and Tracking}
-    \label{fig:er_domain5}
+    \includegraphics[width=0.88\textwidth, height=0.65\textheight, keepaspectratio]{04_market_data_and_fundamentals_domain.png}
+    \caption{Domain 4 ER Diagram: Market Data, Historical Quotes and Macro Regime}
+    \label{fig:er_domain4}
 \end{figure}
+
+\subsection{Domain 5: Portfolio Engine, Quantitative Optimization and Tracking}
+Domain 5 forms the transactional core of Lucid, recording recommended portfolios, versioned weight distributions, and performance snapshots across 10 tables:
 
 \begin{itemize}
     \item \texttt{strategy\_definitions}: Core strategy templates (Conservative Income, Moderate Balanced, Aggressive Growth).
@@ -165,15 +164,17 @@ Domain 5 forms the transactional core of Lucid, recording recommended portfolios
     \item \texttt{rebalance\_suggestions}: Proposed rebalancing actions generated by the monitoring engine.
 \end{itemize}
 
-\subsection{Domain 6: Broker Integration, Execution and Order Lifecycle}
-Domain 6 manages demat broker connections, order generation, and simulated trade execution.
+Figure~\ref{fig:er_domain5} illustrates the Entity-Relationship schema for Domain 5:
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.95\textwidth]{06_broker_integrations_and_orders_domain.png}
-    \caption{Domain 6 ER Diagram: Broker Integration, Execution and Order Lifecycle}
-    \label{fig:er_domain6}
+    \includegraphics[width=0.88\textwidth, height=0.65\textheight, keepaspectratio]{05_portfolio_engine_and_optimization_domain.png}
+    \caption{Domain 5 ER Diagram: Portfolio Engine, Quantitative Optimization and Tracking}
+    \label{fig:er_domain5}
 \end{figure}
+
+\subsection{Domain 6: Broker Integration, Execution and Order Lifecycle}
+Domain 6 manages demat broker connections, order generation, and simulated trade execution across 5 tables:
 
 \begin{itemize}
     \item \texttt{broker\_providers}: Supported broker platforms (Zerodha, Upstox, Groww mock adapters).
@@ -183,15 +184,17 @@ Domain 6 manages demat broker connections, order generation, and simulated trade
     \item \texttt{broker\_executions}: Line-item execution records (\texttt{shares\_filled}, \texttt{average\_price}, \texttt{execution\_timestamp}).
 \end{itemize}
 
-\subsection{Domain 7: Demat CAS Diagnosis and Portfolio Analytics}
-Domain 7 stores imported external Demat portfolios and health diagnostic assessments.
+Figure~\ref{fig:er_domain6} illustrates the Entity-Relationship schema for Domain 6:
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.95\textwidth]{07_demat_diagnosis_and_rebalancing_domain.png}
-    \caption{Domain 7 ER Diagram: Demat CAS Diagnosis and Portfolio Analytics}
-    \label{fig:er_domain7}
+    \includegraphics[width=0.88\textwidth, height=0.65\textheight, keepaspectratio]{06_broker_integrations_and_orders_domain.png}
+    \caption{Domain 6 ER Diagram: Broker Integration, Execution and Order Lifecycle}
+    \label{fig:er_domain6}
 \end{figure}
+
+\subsection{Domain 7: Demat CAS Diagnosis and Portfolio Analytics}
+Domain 7 stores imported external Demat portfolios and health diagnostic assessments across 3 tables:
 
 \begin{itemize}
     \item \texttt{existing\_portfolios}: Imported portfolio records (\texttt{source\_type}: CAS\_PDF, MANUAL\_ENTRY; upload timestamp).
@@ -199,15 +202,17 @@ Domain 7 stores imported external Demat portfolios and health diagnostic assessm
     \item \texttt{portfolio\_diagnoses}: Comprehensive diagnosis output (\texttt{hhi\_score}, \texttt{concentration\_risk\_level}, \texttt{sector\_skews\_json}, \texttt{recommendation\_summary}).
 \end{itemize}
 
-\subsection{Domain 8: Multi-Agent AI Telemetry, Reasoning Traces and Verification}
-Domain 8 captures LangGraph agent executions, fiduciary explanations, constraint verification runs, and notifications.
+Figure~\ref{fig:er_domain7} illustrates the Entity-Relationship schema for Domain 7:
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.95\textwidth]{08_multi_agent_telemetry_and_auditing_domain.png}
-    \caption{Domain 8 ER Diagram: Multi-Agent AI Telemetry, Reasoning Traces and Verification}
-    \label{fig:er_domain8}
+    \includegraphics[width=0.88\textwidth, height=0.65\textheight, keepaspectratio]{07_demat_diagnosis_and_rebalancing_domain.png}
+    \caption{Domain 7 ER Diagram: Demat CAS Diagnosis and Portfolio Analytics}
+    \label{fig:er_domain7}
 \end{figure}
+
+\subsection{Domain 8: Multi-Agent AI Telemetry, Reasoning Traces and Verification}
+Domain 8 captures LangGraph agent executions, fiduciary explanations, constraint verification runs, and notifications across 13 tables:
 
 \begin{itemize}
     \item \texttt{agent\_definitions}: Registered LangGraph agent nodes (Macro, Market, Fundamental, Critic, Explainability).
@@ -224,6 +229,15 @@ Domain 8 captures LangGraph agent executions, fiduciary explanations, constraint
     \item \texttt{notifications}: Real-time investor alerts (\texttt{notification\_type}: DRIFT\_ALERT, REBALANCE\_RECOMMENDED).
     \item \texttt{user\_feedback}: User ratings and qualitative feedback on generated explanations.
 \end{itemize}
+
+Figure~\ref{fig:er_domain8} illustrates the Entity-Relationship schema for Domain 8:
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth, height=0.65\textheight, keepaspectratio]{08_multi_agent_telemetry_and_auditing_domain.png}
+    \caption{Domain 8 ER Diagram: Multi-Agent AI Telemetry, Reasoning Traces and Verification}
+    \label{fig:er_domain8}
+\end{figure}
 
 \section{Database Design Decisions and Performance Optimization}
 \begin{enumerate}

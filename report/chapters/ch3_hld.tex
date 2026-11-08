@@ -13,9 +13,9 @@ The platform strictly adheres to the principle of \textbf{Separation of Concerns
 \section{Major System Components}
 Lucid is decomposed into seven primary architectural subsystems, as illustrated in Figure~\ref{fig:hld_architecture}:
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
-    \includegraphics[width=\textwidth]{SYSTEM_ARCHITECTURE.png}
+    \includegraphics[width=0.92\textwidth, height=0.55\textheight, keepaspectratio]{SYSTEM_ARCHITECTURE.png}
     \caption{Lucid High-Level System Architecture and Tier Decomposition}
     \label{fig:hld_architecture}
 \end{figure}
@@ -47,9 +47,9 @@ The exclusive source of truth for the entire platform is \textbf{PostgreSQL 16}.
 \subsection{External Market Data and Feeds Subsystem}
 This subsystem manages continuous integration with external data providers, including official NSE archives (\texttt{EQUITY\_L.csv}), BSE equity masters, Yahoo Finance market data feeds, Reserve Bank of India macroeconomic publications, and Google Gemini Generative AI APIs.
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
     \centering
-    \includegraphics[width=\textwidth]{COMPLETE_DATA_FLOW.png}
+    \includegraphics[width=0.92\textwidth, height=0.35\textheight, keepaspectratio]{COMPLETE_DATA_FLOW.png}
     \caption{Lucid End-to-End Data Pipeline and Lifecycle Workflow}
     \label{fig:hld_data_flow}
 \end{figure}
