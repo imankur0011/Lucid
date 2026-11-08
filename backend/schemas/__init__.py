@@ -32,6 +32,7 @@ class UserProfileBase(BaseModel):
     preferred_currency: str = Field("INR", min_length=3, max_length=3)
     investment_experience: Optional[Literal["beginner", "intermediate", "experienced"]] = "beginner"
     investment_knowledge_level: Optional[Literal["basic", "intermediate", "advanced"]] = "basic"
+    mobile_number: Optional[str] = None
 
 
 class UserProfileUpdate(BaseModel):
@@ -40,12 +41,34 @@ class UserProfileUpdate(BaseModel):
     preferred_currency: Optional[str] = Field(None, min_length=3, max_length=3)
     investment_experience: Optional[Literal["beginner", "intermediate", "experienced"]] = None
     investment_knowledge_level: Optional[Literal["basic", "intermediate", "advanced"]] = None
+    mobile_number: Optional[str] = Field(None, max_length=20)
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: Optional[str] = None
+    new_password: str = Field(..., min_length=6, max_length=128)
 
 
 class UserProfileRead(UserProfileBase):
     user_id: UUID
+    version_number: int = 1
     created_at: datetime
     updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserProfileVersionRead(BaseModel):
+    profile_version_id: UUID
+    user_id: UUID
+    version_number: int
+    display_name: Optional[str] = None
+    country_code: str = "IN"
+    preferred_currency: str = "INR"
+    investment_experience: Optional[str] = None
+    investment_knowledge_level: Optional[str] = None
+    change_summary: Optional[str] = None
+    created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -55,11 +78,46 @@ class AppUserRead(BaseModel):
     identity_provider: str
     identity_subject: str
     email: Optional[str] = None
+    email_verified: bool = False
+    mobile_number: Optional[str] = None
+    mobile_verified: bool = False
     account_status: str
     profile: Optional[UserProfileRead] = None
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================
+# Authentication & Verification Schemas
+# ============================================================
+
+class RequestVerificationRequest(BaseModel):
+    recipient: str = Field(..., description="Email address or phone number")
+    code_type: Literal["email_verification", "mobile_verification"] = "email_verification"
+
+
+class VerifyCodeRequest(BaseModel):
+    recipient: str = Field(..., description="Email address or phone number")
+    code: str = Field(..., min_length=4, max_length=12, description="Verification OTP code")
+    code_type: Literal["email_verification", "mobile_verification"] = "email_verification"
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: str = Field(..., description="User account email address")
+
+
+class ResetPasswordRequest(BaseModel):
+    email: str = Field(..., description="User account email address")
+    code: str = Field(..., min_length=4, max_length=12, description="Password reset OTP code")
+    new_password: str = Field(..., min_length=6, description="New account password")
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: Optional[str] = None
+    demo_user: bool = False
+
 
 
 # ============================================================
@@ -103,6 +161,27 @@ class FinancialGoalRead(FinancialGoalBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+from backend.schemas.nlp_profile import (
+    ExtractionStatus,
+    ValidationStatus,
+    ContributionType,
+    HorizonCategory,
+    RiskCategoryEnum,
+    ExtractedFieldMeta,
+    ExtractedGoalItem,
+    ExtractedExistingHolding,
+    ExtractedCapitalDetails,
+    ExtractedRiskDetails,
+    ExtractedInvestmentPreferences,
+    ExtractedInvestorExperience,
+    MappedQuestionnaireAnswerItem,
+    ContradictionItem,
+    StructuredInvestorProfile,
+    NaturalLanguageProfileRequest,
+    NaturalLanguageProfileResponse,
+)
+
+
 # ============================================================
 # Risk Assessment Questionnaire Schemas
 # ============================================================
@@ -125,6 +204,7 @@ class RiskQuestionRead(BaseModel):
     answer_type: str
     is_required: bool
     display_order: int
+    scoring_config: Optional[Dict[str, Any]] = None
     options: List[RiskQuestionOptionRead] = []
 
     model_config = ConfigDict(from_attributes=True)
@@ -206,7 +286,8 @@ class PortfolioPreferences(BaseModel):
     excluded_instruments: List[str] = Field(default_factory=list)
     max_single_stock_weight_pct: float = Field(25.0, ge=5.0, le=50.0)
     max_sector_weight_pct: float = Field(40.0, ge=10.0, le=100.0)
-    target_stock_count: int = Field(5, ge=2, le=20)
+    target_stock_count: int = Field(5, ge=2, le=25)
+    min_stocks_count: Optional[int] = Field(3, ge=2, le=25)
 
 
 class PortfolioGenerationRequestCreate(BaseModel):
@@ -217,6 +298,7 @@ class PortfolioGenerationRequestCreate(BaseModel):
     investment_horizon_months: int = Field(60, gt=0, le=360)
     goal_id: Optional[UUID] = None
     risk_assessment_id: Optional[UUID] = None
+    risk_category: Optional[str] = None
     preferences: PortfolioPreferences = Field(default_factory=PortfolioPreferences)
     user_prompt: Optional[str] = None
 
@@ -267,6 +349,8 @@ class RecommendationExplanationItem(BaseModel):
     explanation_text: str
     display_order: int
     decision_id: Optional[UUID] = None
+    source_url: Optional[str] = None
+    evidence_title: Optional[str] = None
 
 
 class PortfolioVersionDetail(BaseModel):

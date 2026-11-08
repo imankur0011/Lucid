@@ -6,8 +6,13 @@ Defines and checks mathematical constraints (single-stock max, sector limits, we
 from typing import List, Dict, Any, Tuple, Optional
 from dataclasses import dataclass, field
 
-HARD_POLICY_MAX_STOCK_PCT: float = 25.0
-HARD_POLICY_MAX_SECTOR_PCT: float = 40.0
+try:
+    from backend.portfolio_engine.policy import POLICY_RULES
+    HARD_POLICY_MAX_STOCK_PCT: float = float(POLICY_RULES["POL-ALLOC-01"].threshold)
+    HARD_POLICY_MAX_SECTOR_PCT: float = float(POLICY_RULES["POL-SECT-01"].threshold)
+except ImportError:
+    HARD_POLICY_MAX_STOCK_PCT = 25.0
+    HARD_POLICY_MAX_SECTOR_PCT = 40.0
 
 
 @dataclass

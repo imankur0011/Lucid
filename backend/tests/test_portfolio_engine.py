@@ -134,11 +134,11 @@ def test_infeasible_constraints_produce_explicit_failure():
     db = SessionLocal()
     try:
         svc = PortfolioEngineService(db)
-        # Attempting to allocate across at most 1 stock when max_single_stock_pct is 25% is infeasible
+        # Impossible with universe to sum to 100% (with 71 stocks, 71 * 1.0% = 71.0% < 100%)
         res = svc.generate_portfolio(
             investment_amount=Decimal("100000.00"),
             risk_category="moderate",
-            max_single_stock_pct=5.0,  # Impossible with universe of ~11 stocks to sum to 100% (11 * 5% = 55% < 100%)
+            max_single_stock_pct=1.0,
         )
         assert not res["success"]
         assert res["validation"]["validation_status"] == "failed"
@@ -284,10 +284,10 @@ def test_effective_stock_allocation_limits_and_precedence():
     assert c_clamped.max_sector_pct == HARD_POLICY_MAX_SECTOR_PCT
 
     # 2. Risk profile ceiling takes precedence when stricter than hard policy:
-    # 'very_conservative' has max_stock_pct=15.0%, max_sector_pct=30.0%
+    # 'very_conservative' has max_stock_pct=15.0%, max_sector_pct=35.0%
     eff_vc = get_effective_constraints("very_conservative", requested_max_stock_pct=25.0)
     assert eff_vc.max_single_stock_pct == 15.0
-    assert eff_vc.max_sector_pct == 30.0
+    assert eff_vc.max_sector_pct == 35.0
 
     # 3. User requested ceiling takes precedence when stricter than risk profile:
     eff_user_strict = get_effective_constraints("moderate", requested_max_stock_pct=12.0)

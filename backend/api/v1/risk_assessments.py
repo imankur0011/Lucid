@@ -56,6 +56,10 @@ def calculate_risk_scores(db: Session, answers: list) -> tuple[float, float, str
     capacity_sum = 0.0
     capacity_weight = 0.0
 
+    zero_emergency_fund = False
+    short_horizon = False
+    beginner_knowledge = False
+
     for ans in answers:
         if not ans.selected_option_id:
             continue
@@ -70,6 +74,14 @@ def calculate_risk_scores(db: Session, answers: list) -> tuple[float, float, str
         weight = q.scoring_config.get("weight", 0.2)
         category = q.scoring_config.get("category", "tolerance")
         score = float(opt.score)
+
+        q_code = (q.question_code or "").upper()
+        if "EMERGENCY" in q_code and score <= 25.0:
+            zero_emergency_fund = True
+        if "HORIZON" in q_code and score <= 25.0:
+            short_horizon = True
+        if "KNOWLEDGE" in q_code and score <= 25.0:
+            beginner_knowledge = True
 
         total_weighted_score += score * weight
         total_weight += weight
@@ -115,6 +127,17 @@ def calculate_risk_scores(db: Session, answers: list) -> tuple[float, float, str
     # final_category = min(tolerance_category, capacity_category)
     tol_rank = CATEGORY_RANKS[tolerance_category]
     cap_rank = CATEGORY_RANKS[capacity_category]
+
+    # SEBI Fiduciary Constraint 1: Zero emergency fund strictly caps loss capacity to Conservative (Rank 2)
+    if zero_emergency_fund:
+        cap_rank = min(cap_rank, 2)
+    # SEBI Fiduciary Constraint 2: Investment horizon < 1 year strictly caps loss capacity to Conservative (Rank 2)
+    if short_horizon:
+        cap_rank = min(cap_rank, 2)
+    # SEBI Fiduciary Constraint 3: Beginner with no equity knowledge cannot be Aggressive (caps tolerance at Moderate, Rank 3)
+    if beginner_knowledge:
+        tol_rank = min(tol_rank, 3)
+
     final_rank = min(tol_rank, cap_rank)
     risk_category = RANK_TO_CATEGORY[final_rank]
 

@@ -30,10 +30,20 @@ class InMemoryRateLimiterMiddleware(BaseHTTPMiddleware):
         self._history: Dict[str, Dict[str, List[float]]] = {}
         InMemoryRateLimiterMiddleware._instance = self
 
-        # Path rules: (path_prefix, max_requests, window_seconds)
+        # Path rules: (method, path_prefix, max_requests, window_seconds)
         self.rules: List[Tuple[str, str, int, int]] = [
+            # Auth endpoints — strict to prevent brute-force
             ("POST", "/api/v1/auth/token", 20, 60),
+            ("POST", "/api/v1/auth/login", 20, 60),
+            ("POST", "/api/v1/auth/register", 10, 60),
+            ("POST", "/api/v1/auth/reset-password", 5, 300),
+            # Portfolio generation — expensive AI + optimization
+            ("POST", "/api/v1/portfolio-generation-requests", 20, 60),
             ("POST", "/api/v1/portfolios/generate", 15, 60),
+            # Chat assistant — LLM backed, protect from overuse
+            # Note: /api/v1/portfolios/{id}/chat — catch by suffix pattern checked in dispatch
+            ("POST", "/api/v1/portfolios", 30, 60),
+            # Market data ingestion
             ("POST", "/api/v1/market-data/ingest", 10, 60),
         ]
 

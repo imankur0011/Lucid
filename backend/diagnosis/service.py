@@ -27,6 +27,7 @@ try:
         compute_portfolio_metrics,
     )
     from backend.portfolio_engine.constraints import get_effective_constraints
+    from backend.portfolio_engine.transaction_costs import estimate_indian_equity_transaction_costs
 except ImportError:
     from models import (
         ExistingPortfolio,
@@ -42,6 +43,7 @@ except ImportError:
         compute_portfolio_metrics,
     )
     from portfolio_engine.constraints import get_effective_constraints
+    from portfolio_engine.transaction_costs import estimate_indian_equity_transaction_costs
 
 
 class PortfolioDiagnosisService:
@@ -107,6 +109,11 @@ class PortfolioDiagnosisService:
             holding_val = round(qty * latest_price, 2)
             total_market_val += holding_val
 
+            avg_price = Decimal(str(h.average_purchase_price)) if h.average_purchase_price is not None else None
+            invested_amt = round(qty * avg_price, 2) if avg_price is not None else None
+            unrealized_pnl = round(holding_val - invested_amt, 2) if invested_amt is not None else None
+            unrealized_pnl_pct = round(((holding_val / invested_amt) - Decimal("1.0")) * Decimal("100.0"), 2) if invested_amt and invested_amt > 0 else None
+
             sector_name = "General"
             if sec.company and sec.company.industries:
                 ind = sec.company.industries[0].industry
@@ -119,9 +126,13 @@ class PortfolioDiagnosisService:
                 "symbol": symbol,
                 "security_name": sec.security_name,
                 "sector_name": sector_name,
-                "quantity": qty,
+                "quantity": float(qty),
                 "latest_price": latest_price,
                 "current_value": holding_val,
+                "average_purchase_price": float(avg_price) if avg_price is not None else None,
+                "invested_amount": float(invested_amt) if invested_amt is not None else None,
+                "unrealized_pnl": float(unrealized_pnl) if unrealized_pnl is not None else None,
+                "unrealized_pnl_pct": float(unrealized_pnl_pct) if unrealized_pnl_pct is not None else None,
             })
 
         if total_market_val <= Decimal("0.0"):
@@ -131,19 +142,14 @@ class PortfolioDiagnosisService:
         warnings = []
         sector_weights: Dict[str, Decimal] = {}
 
-        for ch in current_holdings:
-            weight = round((ch["current_value"] / total_market_val) * Decimal("100.0"), 2)
-            ch["target_weight_pct"] = float(weight)  # for metric calculation
-            sec = ch["sector_name"]
-            sector_weights[sec] = sector_weights.get(sec, Decimal("0.0")) + weight
-
         eff_constraints = get_effective_constraints(risk_category=target_risk_category)
         stock_cap = Decimal(str(eff_constraints.max_single_stock_pct))
         sector_cap = Decimal(str(eff_constraints.max_sector_pct))
 
         for ch in current_holdings:
-            weight = (ch["current_value"] / total_market_val) * Decimal("100.0")
-            ch["weight_pct"] = float(round(weight, 2))
+            weight = round((ch["current_value"] / total_market_val) * Decimal("100.0"), 2)
+            ch["target_weight_pct"] = float(weight)  # for metric calculation
+            ch["weight_pct"] = float(weight)
             sec = ch["sector_name"]
             sector_weights[sec] = sector_weights.get(sec, Decimal("0.0")) + weight
 
@@ -168,6 +174,7 @@ class PortfolioDiagnosisService:
             risk_category=target_risk_category,
             max_single_stock_pct=eff_constraints.max_single_stock_pct,
             max_sector_pct=eff_constraints.max_sector_pct,
+            prioritized_security_ids=[h["security_id"] for h in current_holdings],
         )
 
         target_holdings_by_id = {
@@ -226,9 +233,28 @@ class PortfolioDiagnosisService:
                 "target_value": tgt_val,
                 "change_value": change_val,
                 "explanation": explanation,
+                "current_weight_pct": round(cur_wt, 2),
+                "target_weight_pct": round(tgt_wt, 2),
+                "latest_price": cur_price,
             })
 
         rebalance_turnover = round(total_turnover_pct / 2.0, 2)
+        trades_required_count = sum(1 for s in suggestions if s["action"] in ("buy", "sell"))
+        rebalance_status = "no_trades_required" if trades_required_count == 0 else "rebalance_proposed"
+
+        # Compute statutory Indian equity transaction costs for proposed rebalance trades
+        rebalance_trades = [
+            {
+                "symbol": s["symbol"],
+                "action": s["action"].upper(),
+                "trade_quantity": abs(int(s["quantity_change"])),
+                "latest_price": float(s.get("latest_price") or 0.0),
+                "trade_value": abs(float(s.get("change_value") or 0.0)),
+            }
+            for s in suggestions
+            if s["action"].lower() in ("buy", "sell") and abs(int(s["quantity_change"])) > 0
+        ]
+        tx_costs = estimate_indian_equity_transaction_costs(rebalance_trades)
 
         # 6. Persist Diagnosis and Suggestions to PostgreSQL
         diagnosis = PortfolioDiagnosis(
@@ -236,9 +262,12 @@ class PortfolioDiagnosisService:
             existing_portfolio_id=portfolio.existing_portfolio_id,
             diagnosis_status="completed",
             summary=(
+                "Portfolio satisfies target diversification and allocation constraints. No rebalancing trades are required at this time."
+                if trades_required_count == 0 else
                 f"Evaluated {len(current_holdings)} holdings totaling ₹{total_market_val:,.2f}. "
                 f"Diversification score is {current_metrics['diversification_score']:.1f}/100 with {len(warnings)} risk alerts. "
-                f"Rebalance plan requires {rebalance_turnover:.1f}% portfolio turnover."
+                f"Rebalance plan requires {rebalance_turnover:.1f}% portfolio turnover across {trades_required_count} recommended trades "
+                f"with estimated transaction charges of ₹{tx_costs.get('total_estimated_costs', 0.0):,.2f}."
             ),
             metrics={
                 "total_market_value": float(total_market_val),
@@ -247,6 +276,9 @@ class PortfolioDiagnosisService:
                 "turnover_pct": rebalance_turnover,
                 "warnings": warnings,
                 "post_rebalance_unallocated_cash": float(target_res.get("unallocated_cash", Decimal("0.0"))),
+                "rebalance_status": rebalance_status,
+                "trades_required_count": trades_required_count,
+                "transaction_costs": tx_costs,
             },
             market_context_as_of=now,
             started_at=now,
@@ -283,5 +315,9 @@ class PortfolioDiagnosisService:
             "rebalance_turnover_pct": rebalance_turnover,
             "unallocated_cash": target_res.get("unallocated_cash", Decimal("0.0")),
             "suggestions": suggestions,
+            "current_holdings": current_holdings,
+            "rebalance_status": rebalance_status,
+            "trades_required_count": trades_required_count,
+            "transaction_costs": tx_costs,
             "created_at": now,
         }

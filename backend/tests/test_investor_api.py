@@ -37,6 +37,14 @@ def test_get_and_patch_investor_profile():
     assert updated["display_name"] == "Senior Investor"
     assert updated["investment_experience"] == "experienced"
     assert updated["investment_knowledge_level"] == "advanced"
+    assert updated["version_number"] >= 2
+
+    # GET profile versions history
+    hist_res = client.get("/api/v1/profile/versions")
+    assert hist_res.status_code == 200, hist_res.text
+    hist_list = hist_res.json()
+    assert len(hist_list) >= 1
+    assert any("Senior" in (h.get("display_name") or "") or h.get("version_number") >= 1 for h in hist_list)
 
 
 def test_financial_goals_crud_lifecycle():

@@ -164,3 +164,147 @@ def test_rate_limiting_on_auth_endpoint():
     assert "rate limit exceeded" in limit_res.json()["detail"].lower()
     assert "retry-after" in limit_res.headers
 
+
+def test_email_and_mobile_verification_flow():
+    """Verify requesting and submitting OTP codes for email and mobile."""
+    # 1. Request verification code for email
+    req_email = client.post(
+        "/api/v1/auth/request-verification",
+        json={"recipient": "investor.verify@example.com", "code_type": "email_verification"},
+    )
+    assert req_email.status_code == 200, req_email.text
+    email_code = req_email.json()["demo_code"]
+    assert len(email_code) == 6
+
+    # 2. Verify with valid code
+    verify_email = client.post(
+        "/api/v1/auth/verify-code",
+        json={"recipient": "investor.verify@example.com", "code": email_code, "code_type": "email_verification"},
+    )
+    assert verify_email.status_code == 200, verify_email.text
+    assert verify_email.json()["status"] == "verified"
+
+    # 3. Request verification code for mobile
+    req_mobile = client.post(
+        "/api/v1/auth/request-verification",
+        json={"recipient": "+919876543210", "code_type": "mobile_verification"},
+    )
+    assert req_mobile.status_code == 200, req_mobile.text
+    mobile_code = req_mobile.json()["demo_code"]
+
+    # 4. Verify invalid code fails
+    invalid_verify = client.post(
+        "/api/v1/auth/verify-code",
+        json={"recipient": "+919876543210", "code": "000000", "code_type": "mobile_verification"},
+    )
+    assert invalid_verify.status_code == 400
+
+    # 5. Verify valid code succeeds
+    verify_mobile = client.post(
+        "/api/v1/auth/verify-code",
+        json={"recipient": "+919876543210", "code": mobile_code, "code_type": "mobile_verification"},
+    )
+    assert verify_mobile.status_code == 200
+    assert verify_mobile.json()["status"] == "verified"
+
+
+def test_password_recovery_and_logout_revocation():
+    """Verify forgot-password OTP, reset password with bcrypt, login with new password, and logout token revocation."""
+    test_email = f"investor.reset.{uuid4().hex[:8]}@example.com"
+    # 0. Register initial test user
+    reg_res = client.post(
+        "/api/v1/auth/register",
+        json={"email": test_email, "password": "OldPassword#123"},
+    )
+    assert reg_res.status_code == 200, reg_res.text
+
+    # 1. Request forgot password code
+    forgot_res = client.post(
+        "/api/v1/auth/forgot-password",
+        json={"email": test_email},
+    )
+    assert forgot_res.status_code == 200, forgot_res.text
+    reset_code = forgot_res.json()["demo_code"]
+
+    # 2. Reset password using the code
+    reset_res = client.post(
+        "/api/v1/auth/reset-password",
+        json={
+            "email": test_email,
+            "code": reset_code,
+            "new_password": "NewSecurePassword#2026",
+        },
+    )
+    assert reset_res.status_code == 200, reset_res.text
+    assert reset_res.json()["status"] == "success"
+
+    # 3. Login with newly reset password
+    login_res = client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": test_email,
+            "password": "NewSecurePassword#2026",
+        },
+    )
+    assert login_res.status_code == 200, login_res.text
+    new_token = login_res.json()["access_token"]
+    assert new_token
+
+    # 4. Access protected endpoint with token
+    auth_headers = {"Authorization": f"Bearer {new_token}"}
+    me_res = client.get("/api/v1/auth/me", headers=auth_headers)
+    assert me_res.status_code == 200
+
+    # 5. Logout and verify token revocation
+    logout_res = client.post("/api/v1/auth/logout", headers=auth_headers)
+    assert logout_res.status_code == 200, logout_res.text
+    assert logout_res.json()["status"] == "success"
+
+    # 6. Reusing revoked token must fail with 401
+    revoked_res = client.get("/api/v1/auth/me", headers=auth_headers)
+    assert revoked_res.status_code == 401
+    assert "revoked" in revoked_res.json()["detail"].lower()
+
+
+def test_change_password_and_mobile_profile_update():
+    """Verify that authenticated users can update their profile mobile number and change their password."""
+    test_email = f"investor.profile.{uuid4().hex[:8]}@example.com"
+    reg_res = client.post(
+        "/api/v1/auth/register",
+        json={"email": test_email, "password": "OriginalPassword#123"},
+    )
+    assert reg_res.status_code == 200, reg_res.text
+    token = reg_res.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 1. Update mobile number and display name
+    prof_patch = client.patch(
+        "/api/v1/profile",
+        headers=headers,
+        json={"mobile_number": "+919876543210", "display_name": "Test Investor"},
+    )
+    assert prof_patch.status_code == 200, prof_patch.text
+    prof_data = prof_patch.json()
+    assert prof_data["mobile_number"] == "+919876543210"
+    assert prof_data["display_name"] == "Test Investor"
+
+    # 2. Change password with wrong current password should fail
+    wrong_pwd = client.post(
+        "/api/v1/auth/change-password",
+        headers=headers,
+        json={"current_password": "WrongPassword", "new_password": "NewDirectPassword#2026"},
+    )
+    assert wrong_pwd.status_code == 400
+
+    # 3. Change password with correct current password succeeds
+    change_res = client.post(
+        "/api/v1/auth/change-password",
+        headers=headers,
+        json={"current_password": "OriginalPassword#123", "new_password": "NewDirectPassword#2026"},
+    )
+    assert change_res.status_code == 200, change_res.text
+    assert change_res.json()["status"] == "success"
+
+
+
+

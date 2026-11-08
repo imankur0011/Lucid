@@ -69,7 +69,7 @@ def test_llm_quota_error_fallback():
     """Verify graceful recovery when LLM quota is exhausted (HTTP 429)."""
     state = _make_dummy_state()
     mock_llm = MagicMock()
-    mock_llm.invoke.side_effect = Exception("429 ResourceExhausted: Quota exceeded for model gemini-2.5-flash")
+    mock_llm.invoke.side_effect = Exception("429 ResourceExhausted: Quota exceeded for model gemini-3.8-flash")
 
     with patch("backend.agent.nodes.get_llm", return_value=mock_llm):
         out = analyst_node(state)

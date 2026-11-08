@@ -1,0 +1,6800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lucid Platform — Interactive Database ER Diagram & Architecture Visualizer</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      user-select: none;
+    }
+    #canvas-container {
+      width: 100vw;
+      height: 100vh;
+      cursor: grab;
+      background: #F8F9FA;
+      background-image: radial-gradient(#CBD5E1 1.2px, transparent 1.2px);
+      background-size: 26px 26px;
+    }
+    #canvas-container.grabbing {
+      cursor: grabbing;
+    }
+    .table-card {
+      transition: filter 0.15s ease;
+      cursor: pointer;
+    }
+    .table-card:hover {
+      filter: drop-shadow(0 12px 20px rgba(0,0,0,0.14));
+    }
+    .table-card.selected rect.card-bg {
+      stroke: #2563EB !important;
+      stroke-width: 3.5px !important;
+    }
+    .edge-line {
+      stroke-dasharray: 4;
+      animation: dash 20s linear infinite;
+    }
+    @keyframes dash {
+      to {
+        stroke-dashoffset: -100;
+      }
+    }
+  </style>
+</head>
+<body class="bg-[#F8F9FA] text-[#1E293B]">
+
+  <!-- Top Navigation & Controls Bar -->
+  <header class="absolute top-0 left-0 right-0 z-30 flex flex-wrap items-center justify-between px-6 py-3 bg-white/95 backdrop-blur-md border-b border-[#E2E8F0] shadow-xs">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-[#285C4D] text-white flex items-center justify-center font-black text-lg shadow-sm">
+        L
+      </div>
+      <div>
+        <h1 class="text-sm font-bold text-[#0F172A] flex items-center gap-2">
+          Lucid Database Architecture &amp; ER Visualizer
+          <span id="table-count-badge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#DCFCE7] text-[#166534] border border-[#86EFAC]">
+            62 Tables • BCNF Normalized
+          </span>
+        </h1>
+        <p class="text-xs text-[#64748B]">Complete PostgreSQL 17 Relational Schema with Multi-Domain Filtering &amp; Search</p>
+      </div>
+    </div>
+
+    <!-- Search & Domain Filter -->
+    <div class="flex items-center gap-3">
+      <div class="relative">
+        <input
+          id="search-input"
+          type="text"
+          placeholder="Search table or attribute..."
+          class="w-56 px-3 py-1.5 text-xs rounded-lg border border-[#CBD5E1] bg-[#F1F5F9] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#285C4D] text-[#0F172A]"
+        />
+      </div>
+
+      <select
+        id="domain-select"
+        class="px-3 py-1.5 text-xs rounded-lg border border-[#CBD5E1] bg-[#F1F5F9] font-medium focus:outline-none focus:ring-2 focus:ring-[#285C4D] text-[#0F172A]"
+      >
+        <option value="ALL">All Domains (62 Tables)</option>
+        <option value="IDENTITY">User &amp; Identity (7)</option>
+        <option value="INVESTOR">Investor &amp; Suitability (5)</option>
+        <option value="SECURITY">Security Master (9)</option>
+        <option value="MARKET">Market Data &amp; Prices (11)</option>
+        <option value="PORTFOLIO">Portfolio &amp; Decisions (13)</option>
+        <option value="BROKER">Broker &amp; Demat Holdings (6)</option>
+        <option value="DIAGNOSIS">Demat Diagnosis (4)</option>
+        <option value="OPERATIONS">Agents &amp; Operations (7)</option>
+        <option value="AGENTS_BROKER">Agents &amp; Broker Combined (13)</option>
+      </select>
+    </div>
+
+    <!-- Zoom & Layout Controls -->
+    <div class="flex items-center gap-1.5 bg-[#F1F5F9] p-1 rounded-xl border border-[#CBD5E1]">
+      <button id="zoom-in" title="Zoom In" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-white hover:bg-[#E2E8F0] shadow-xs transition-colors">
+        +
+      </button>
+      <button id="zoom-reset" title="Reset Zoom" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white hover:bg-[#E2E8F0] shadow-xs transition-colors">
+        100%
+      </button>
+      <button id="zoom-out" title="Zoom Out" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-white hover:bg-[#E2E8F0] shadow-xs transition-colors">
+        −
+      </button>
+      <button id="zoom-fit" title="Fit to Screen" class="px-2.5 py-1 text-xs font-medium rounded-lg bg-[#285C4D] hover:bg-[#1E453A] text-white shadow-xs transition-colors">
+        Fit View
+      </button>
+    </div>
+  </header>
+
+  <!-- Interactive SVG Canvas Container -->
+  <div id="canvas-container">
+    <svg id="er-svg" width="100%" height="100%">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 8 5 L 0 9 z" fill="#94A3B8" />
+        </marker>
+        <marker id="arrow-selected" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 8 5 L 0 9 z" fill="#2563EB" />
+        </marker>
+        <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+          <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.08"/>
+        </filter>
+      </defs>
+      <g id="viewport-group">
+        <g id="edges-layer"></g>
+        <g id="nodes-layer"></g>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Inspector Modal / Drawer -->
+  <aside id="inspector-drawer" class="absolute top-16 right-6 bottom-6 w-96 bg-white/95 backdrop-blur-md rounded-2xl border border-[#CBD5E1] shadow-2xl z-40 p-5 flex flex-col hidden transition-all animate-fadeIn">
+    <div class="flex items-start justify-between pb-3 border-b border-[#E2E8F0]">
+      <div>
+        <span id="inspector-domain" class="text-xs font-extrabold uppercase tracking-wider text-[#285C4D]">
+          DOMAIN
+        </span>
+        <h3 id="inspector-title" class="text-base font-extrabold text-[#0F172A] mt-0.5">
+          table_name
+        </h3>
+      </div>
+      <button id="close-inspector" class="text-[#64748B] hover:text-[#0F172A] p-1.5 rounded-lg hover:bg-[#F1F5F9] transition-colors">
+        ✕
+      </button>
+    </div>
+
+    <p id="inspector-desc" class="text-xs text-[#475569] my-3 leading-relaxed">
+      Table description.
+    </p>
+
+    <div class="flex-1 overflow-y-auto pr-1 space-y-4">
+      <div>
+        <h4 class="text-xs font-bold uppercase tracking-wider text-[#64748B] mb-2">
+          Columns &amp; Data Types
+        </h4>
+        <div id="inspector-columns" class="space-y-1 text-xs"></div>
+      </div>
+
+      <div>
+        <h4 class="text-xs font-bold uppercase tracking-wider text-[#64748B] mb-1.5">
+          Foreign Key Relationships
+        </h4>
+        <div id="inspector-relations" class="space-y-1 text-xs"></div>
+      </div>
+
+      <div>
+        <h4 class="text-xs font-bold uppercase tracking-wider text-[#64748B] mb-1.5">
+          Key Constraints &amp; Indexes
+        </h4>
+        <div id="inspector-constraints" class="text-xs text-[#334155] space-y-1 bg-[#F8FAFC] p-2.5 rounded-xl border border-[#E2E8F0]"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Legend at Bottom-Left -->
+  <div class="absolute bottom-6 left-6 z-20 bg-white/95 backdrop-blur-md px-4 py-3 rounded-2xl border border-[#CBD5E1] shadow-md flex flex-wrap items-center gap-4 text-xs font-medium max-w-4xl">
+    <div class="flex items-center gap-1.5">
+      <span class="w-3 h-3 rounded-full bg-[#3B82F6]"></span> Identity (7)
+    </div>
+    <div class="flex items-center gap-1.5">
+      <span class="w-3 h-3 rounded-full bg-[#10B981]"></span> Investor (5)
+    </div>
+    <div class="flex items-center gap-1.5">
+      <span class="w-3 h-3 rounded-full bg-[#8B5CF6]"></span> Security (9)
+    </div>
+    <div class="flex items-center gap-1.5">
+      <span class="w-3 h-3 rounded-full bg-[#F59E0B]"></span> Market (11)
+    </div>
+    <div class="flex items-center gap-1.5">
+      <span class="w-3 h-3 rounded-full bg-[#059669]"></span> Portfolio (13)
+    </div>
+    <div class="flex items-center gap-1.5">
+      <span class="w-3 h-3 rounded-full bg-[#D97706]"></span> Broker (6)
+    </div>
+    <div class="flex items-center gap-1.5">
+      <span class="w-3 h-3 rounded-full bg-[#0284C7]"></span> Diagnosis (4)
+    </div>
+    <div class="flex items-center gap-1.5">
+      <span class="w-3 h-3 rounded-full bg-[#EC4899]"></span> Operations (7)
+    </div>
+  </div>
+
+  <script>
+    // Complete 62-Table Schema Data
+    const SCHEMA_DATA = [
+  {
+    "id": "app_users",
+    "name": "app_users",
+    "domain": "IDENTITY",
+    "domain_title": "User & Identity",
+    "x": 80,
+    "y": 90,
+    "color": "#3B82F6",
+    "desc": "Core application identity table storing email, Argon2id password hash, and account status.",
+    "columns": [
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "identity_provider",
+        "type": "VARCHAR(40)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "identity_subject",
+        "type": "VARCHAR(255)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "email",
+        "type": "VARCHAR(320)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "password_hash",
+        "type": "VARCHAR(255)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "email_verified",
+        "type": "BOOLEAN",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "mobile_number",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "mobile_verified",
+        "type": "BOOLEAN",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "account_status",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [],
+    "constraints": [
+      "PRIMARY KEY (user_id)",
+      "CHECK (account_status IN ('pending', 'active', 'suspended', 'closed'))",
+      "UNIQUE (identity_provider, identity_subject)"
+    ]
+  },
+  {
+    "id": "revoked_tokens",
+    "name": "revoked_tokens",
+    "domain": "IDENTITY",
+    "domain_title": "User & Identity",
+    "x": 80,
+    "y": 401,
+    "color": "#3B82F6",
+    "desc": "Blacklist ledger for invalidated stateless JWT tokens (JTI tracking).",
+    "columns": [
+      {
+        "name": "revocation_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "token_hash",
+        "type": "VARCHAR(128)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": true
+      },
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "app_users",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "revoked_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "expires_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "app_users",
+        "label": "FK user_id \u2192 app_users.user_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (revocation_id)",
+      "FOREIGN KEY (user_id) REFERENCES app_users(user_id)",
+      "UNIQUE (token_hash)"
+    ]
+  },
+  {
+    "id": "user_consents",
+    "name": "user_consents",
+    "domain": "IDENTITY",
+    "domain_title": "User & Identity",
+    "x": 80,
+    "y": 586,
+    "color": "#3B82F6",
+    "desc": "Append-only legal consent ledger tracking terms of service, SEBI risk disclosures, and DPDP consents.",
+    "columns": [
+      {
+        "name": "consent_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "app_users",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "consent_type",
+        "type": "VARCHAR(60)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "policy_version",
+        "type": "VARCHAR(80)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "consent_status",
+        "type": "VARCHAR(12)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "recorded_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "capture_source",
+        "type": "VARCHAR(40)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "evidence_reference",
+        "type": "VARCHAR(300)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "metadata",
+        "type": "JSONB",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "app_users",
+        "label": "FK user_id \u2192 app_users.user_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (consent_id)",
+      "FOREIGN KEY (user_id) REFERENCES app_users(user_id)",
+      "CHECK (consent_status IN ('granted', 'withdrawn'))"
+    ]
+  },
+  {
+    "id": "user_preferences",
+    "name": "user_preferences",
+    "domain": "IDENTITY",
+    "domain_title": "User & Identity",
+    "x": 80,
+    "y": 855,
+    "color": "#3B82F6",
+    "desc": "Investor UI configuration, default currency, and notification channel preferences.",
+    "columns": [
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": "app_users",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "preferred_language",
+        "type": "VARCHAR(12)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "timezone_name",
+        "type": "VARCHAR(80)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "email_notifications_enabled",
+        "type": "BOOLEAN",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "in_app_notifications_enabled",
+        "type": "BOOLEAN",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "app_users",
+        "label": "FK user_id \u2192 app_users.user_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (user_id)",
+      "FOREIGN KEY (user_id) REFERENCES app_users(user_id)"
+    ]
+  },
+  {
+    "id": "user_profile_versions",
+    "name": "user_profile_versions",
+    "domain": "IDENTITY",
+    "domain_title": "User & Identity",
+    "x": 80,
+    "y": 1082,
+    "color": "#3B82F6",
+    "desc": "Historical audit versions of modifications to user profile data.",
+    "columns": [
+      {
+        "name": "profile_version_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "app_users",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "version_number",
+        "type": "INTEGER",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "display_name",
+        "type": "VARCHAR(120)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "country_code",
+        "type": "CHAR(2)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "preferred_currency",
+        "type": "CHAR(3)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "investment_experience",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "investment_knowledge_level",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "change_summary",
+        "type": "VARCHAR(300)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "app_users",
+        "label": "FK user_id \u2192 app_users.user_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (profile_version_id)",
+      "FOREIGN KEY (user_id) REFERENCES app_users(user_id)",
+      "UNIQUE (user_id, version_number)"
+    ]
+  },
+  {
+    "id": "user_profiles",
+    "name": "user_profiles",
+    "domain": "IDENTITY",
+    "domain_title": "User & Identity",
+    "x": 80,
+    "y": 1372,
+    "color": "#3B82F6",
+    "desc": "Investor demographic profile, investment knowledge tier, and residency.",
+    "columns": [
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": "app_users",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "version_number",
+        "type": "INTEGER",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "display_name",
+        "type": "VARCHAR(120)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "country_code",
+        "type": "CHAR(2)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "preferred_currency",
+        "type": "CHAR(3)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "investment_experience",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "investment_knowledge_level",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "app_users",
+        "label": "FK user_id \u2192 app_users.user_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (user_id)",
+      "FOREIGN KEY (user_id) REFERENCES app_users(user_id)",
+      "CHECK (investment_experience IN ('beginner', 'intermediate', 'experienced'))",
+      "CHECK (investment_knowledge_level IN ('basic', 'intermediate', 'advanced'))"
+    ]
+  },
+  {
+    "id": "user_verification_codes",
+    "name": "user_verification_codes",
+    "domain": "IDENTITY",
+    "domain_title": "User & Identity",
+    "x": 80,
+    "y": 1641,
+    "color": "#3B82F6",
+    "desc": "Time-limited verification OTP codes for password reset and email confirmation.",
+    "columns": [
+      {
+        "name": "verification_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "app_users",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "code_type",
+        "type": "VARCHAR(40)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "code_value",
+        "type": "VARCHAR(32)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "recipient",
+        "type": "VARCHAR(320)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "expires_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "is_used",
+        "type": "BOOLEAN",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "app_users",
+        "label": "FK user_id \u2192 app_users.user_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (verification_id)",
+      "FOREIGN KEY (user_id) REFERENCES app_users(user_id)",
+      "CHECK (code_type IN ('email_verification', 'mobile_verification', 'password_reset'))"
+    ]
+  },
+  {
+    "id": "financial_goals",
+    "name": "financial_goals",
+    "domain": "INVESTOR",
+    "domain_title": "Investor & Suitability",
+    "x": 395,
+    "y": 90,
+    "color": "#10B981",
+    "desc": "Investor financial targets specifying goal type, target amount, and time horizon.",
+    "columns": [
+      {
+        "name": "goal_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "app_users",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "goal_name",
+        "type": "VARCHAR(120)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "goal_type",
+        "type": "VARCHAR(40)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "target_amount",
+        "type": "NUMERIC(20, 2)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "amount_already_saved",
+        "type": "NUMERIC(20, 2)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "currency_code",
+        "type": "CHAR(3)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "target_date",
+        "type": "DATE",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "priority",
+        "type": "SMALLINT",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "goal_status",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "notes",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "app_users",
+        "label": "FK user_id \u2192 app_users.user_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (goal_id)",
+      "FOREIGN KEY (user_id) REFERENCES app_users(user_id)",
+      "UNIQUE (goal_id, user_id)",
+      "CHECK (target_amount > 0)",
+      "CHECK (priority BETWEEN 1 AND 5)",
+      "CHECK (goal_status IN ('active', 'paused', 'completed', 'cancelled'))",
+      "CHECK (amount_already_saved >= 0)"
+    ]
+  },
+  {
+    "id": "risk_assessment_answers",
+    "name": "risk_assessment_answers",
+    "domain": "INVESTOR",
+    "domain_title": "Investor & Suitability",
+    "x": 395,
+    "y": 443,
+    "color": "#10B981",
+    "desc": "Granular user answers recorded for individual risk assessment questions.",
+    "columns": [
+      {
+        "name": "answer_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "risk_assessment_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "risk_assessments",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "question_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "risk_question_options",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "selected_option_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "risk_question_options",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "answer_text",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "answer_numeric",
+        "type": "NUMERIC(18, 6)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "answer_boolean",
+        "type": "BOOLEAN",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "risk_question_options",
+        "label": "FK question_id \u2192 risk_question_options.question_id"
+      },
+      {
+        "target": "risk_questions",
+        "label": "FK question_id \u2192 risk_questions.question_id"
+      },
+      {
+        "target": "risk_assessments",
+        "label": "FK risk_assessment_id \u2192 risk_assessments.risk_assessment_id"
+      },
+      {
+        "target": "risk_question_options",
+        "label": "FK selected_option_id \u2192 risk_question_options.option_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (answer_id)",
+      "FOREIGN KEY (question_id) REFERENCES risk_question_options(question_id)",
+      "FOREIGN KEY (question_id) REFERENCES risk_questions(question_id)",
+      "FOREIGN KEY (risk_assessment_id) REFERENCES risk_assessments(risk_assessment_id)",
+      "FOREIGN KEY (selected_option_id) REFERENCES risk_question_options(option_id)",
+      "UNIQUE (risk_assessment_id, question_id)"
+    ]
+  },
+  {
+    "id": "risk_assessments",
+    "name": "risk_assessments",
+    "domain": "INVESTOR",
+    "domain_title": "Investor & Suitability",
+    "x": 395,
+    "y": 691,
+    "color": "#10B981",
+    "desc": "SEBI suitability and risk assessment sessions with calculated risk score and category.",
+    "columns": [
+      {
+        "name": "risk_assessment_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "app_users",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "questionnaire_version",
+        "type": "VARCHAR(80)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "assessment_status",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "risk_tolerance_score",
+        "type": "NUMERIC(8, 3)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "risk_capacity_score",
+        "type": "NUMERIC(8, 3)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "risk_category",
+        "type": "VARCHAR(30)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "started_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "completed_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "app_users",
+        "label": "FK user_id \u2192 app_users.user_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (risk_assessment_id)",
+      "FOREIGN KEY (user_id) REFERENCES app_users(user_id)",
+      "UNIQUE (risk_assessment_id, user_id)",
+      "CHECK (assessment_status IN ('in_progress', 'completed', 'superseded', 'cancelled'))",
+      "CHECK (assessment_status <> 'completed' OR completed_at IS NOT NULL)",
+      "CHECK (completed_at IS NULL OR completed_at >= started_at)",
+      "CHECK (risk_category IS NULL OR risk_category IN ('very_conservative', 'conservative', 'moderate', 'growth', 'aggressive'))"
+    ]
+  },
+  {
+    "id": "risk_question_options",
+    "name": "risk_question_options",
+    "domain": "INVESTOR",
+    "domain_title": "Investor & Suitability",
+    "x": 395,
+    "y": 981,
+    "color": "#10B981",
+    "desc": "Selectable multiple-choice responses with associated risk score weights.",
+    "columns": [
+      {
+        "name": "option_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "question_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "risk_questions",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "option_code",
+        "type": "VARCHAR(60)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "option_label",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "score",
+        "type": "NUMERIC(8, 3)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "display_order",
+        "type": "INTEGER",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "risk_questions",
+        "label": "FK question_id \u2192 risk_questions.question_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (option_id)",
+      "FOREIGN KEY (question_id) REFERENCES risk_questions(question_id)",
+      "UNIQUE (question_id, option_code)",
+      "UNIQUE (option_id, question_id)"
+    ]
+  },
+  {
+    "id": "risk_questions",
+    "name": "risk_questions",
+    "domain": "INVESTOR",
+    "domain_title": "Investor & Suitability",
+    "x": 395,
+    "y": 1187,
+    "color": "#10B981",
+    "desc": "Standardized questionnaire items evaluating risk capacity, horizon, and loss tolerance.",
+    "columns": [
+      {
+        "name": "question_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "question_code",
+        "type": "VARCHAR(80)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "question_version",
+        "type": "INTEGER",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "question_text",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "answer_type",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "is_required",
+        "type": "BOOLEAN",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "is_active",
+        "type": "BOOLEAN",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "display_order",
+        "type": "INTEGER",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "scoring_config",
+        "type": "JSONB",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [],
+    "constraints": [
+      "PRIMARY KEY (question_id)",
+      "CHECK (question_version > 0)",
+      "UNIQUE (question_code, question_version)",
+      "CHECK (answer_type IN ('single_choice', 'text', 'numeric', 'boolean'))",
+      "UNIQUE (question_id, question_code, question_version)"
+    ]
+  },
+  {
+    "id": "companies",
+    "name": "companies",
+    "domain": "SECURITY",
+    "domain_title": "Security Master",
+    "x": 710,
+    "y": 90,
+    "color": "#8B5CF6",
+    "desc": "Legal entity master record with CIN, legal name, corporate website, and registration.",
+    "columns": [
+      {
+        "name": "company_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "legal_name",
+        "type": "VARCHAR(240)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "common_name",
+        "type": "VARCHAR(180)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "country_code",
+        "type": "CHAR(2)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "website_url",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [],
+    "constraints": [
+      "PRIMARY KEY (company_id)"
+    ]
+  },
+  {
+    "id": "company_industries",
+    "name": "company_industries",
+    "domain": "SECURITY",
+    "domain_title": "Security Master",
+    "x": 710,
+    "y": 317,
+    "color": "#8B5CF6",
+    "desc": "Many-to-many relationship mapping companies to industries and primary sector tags.",
+    "columns": [
+      {
+        "name": "company_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": "companies",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "industry_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": "industries",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "effective_from",
+        "type": "DATE",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "effective_to",
+        "type": "DATE",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "classification_source",
+        "type": "VARCHAR(120)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "companies",
+        "label": "FK company_id \u2192 companies.company_id"
+      },
+      {
+        "target": "industries",
+        "label": "FK industry_id \u2192 industries.industry_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (company_id, industry_id, effective_from)",
+      "FOREIGN KEY (company_id) REFERENCES companies(company_id)",
+      "FOREIGN KEY (industry_id) REFERENCES industries(industry_id)",
+      "CHECK (effective_to IS NULL OR effective_to >= effective_from)"
+    ]
+  },
+  {
+    "id": "exchanges",
+    "name": "exchanges",
+    "domain": "SECURITY",
+    "domain_title": "Security Master",
+    "x": 710,
+    "y": 502,
+    "color": "#8B5CF6",
+    "desc": "Exchange directory (NSE, BSE) with MIC codes, trading currencies, and holiday schedules.",
+    "columns": [
+      {
+        "name": "exchange_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "exchange_code",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": true
+      },
+      {
+        "name": "exchange_name",
+        "type": "VARCHAR(120)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "country_code",
+        "type": "CHAR(2)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "currency_code",
+        "type": "CHAR(3)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "is_active",
+        "type": "BOOLEAN",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [],
+    "constraints": [
+      "PRIMARY KEY (exchange_id)",
+      "UNIQUE (exchange_code)"
+    ]
+  },
+  {
+    "id": "industries",
+    "name": "industries",
+    "domain": "SECURITY",
+    "domain_title": "Security Master",
+    "x": 710,
+    "y": 708,
+    "color": "#8B5CF6",
+    "desc": "Granular industry classification linked to parent sector.",
+    "columns": [
+      {
+        "name": "industry_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "sector_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "sectors",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "industry_code",
+        "type": "VARCHAR(100)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": true
+      },
+      {
+        "name": "industry_name",
+        "type": "VARCHAR(160)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "taxonomy_source",
+        "type": "VARCHAR(120)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "is_active",
+        "type": "BOOLEAN",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "sectors",
+        "label": "FK sector_id \u2192 sectors.sector_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (industry_id)",
+      "FOREIGN KEY (sector_id) REFERENCES sectors(sector_id)",
+      "UNIQUE (industry_code)"
+    ]
+  },
+  {
+    "id": "instrument_listings",
+    "name": "instrument_listings",
+    "domain": "SECURITY",
+    "domain_title": "Security Master",
+    "x": 710,
+    "y": 914,
+    "color": "#8B5CF6",
+    "desc": "Exchange-specific equity listings with NSE/BSE symbols, scrip codes, and lot sizes.",
+    "columns": [
+      {
+        "name": "listing_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "security_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "securities",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "exchange_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "exchanges",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "symbol",
+        "type": "VARCHAR(80)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "trading_status",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "listed_on",
+        "type": "DATE",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "delisted_on",
+        "type": "DATE",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "securities",
+        "label": "FK security_id \u2192 securities.security_id"
+      },
+      {
+        "target": "exchanges",
+        "label": "FK exchange_id \u2192 exchanges.exchange_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (listing_id)",
+      "FOREIGN KEY (security_id) REFERENCES securities(security_id)",
+      "FOREIGN KEY (exchange_id) REFERENCES exchanges(exchange_id)",
+      "CHECK (trading_status IN ('active', 'suspended', 'delisted', 'inactive'))",
+      "UNIQUE (listing_id, security_id)",
+      "UNIQUE (exchange_id, symbol)",
+      "CHECK (delisted_on IS NULL OR listed_on IS NULL OR delisted_on >= listed_on)"
+    ]
+  },
+  {
+    "id": "sectors",
+    "name": "sectors",
+    "domain": "SECURITY",
+    "domain_title": "Security Master",
+    "x": 1025,
+    "y": 90,
+    "color": "#8B5CF6",
+    "desc": "Broad economic sector taxonomy (Information Technology, Healthcare, Power & Utilities, etc.).",
+    "columns": [
+      {
+        "name": "sector_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "sector_code",
+        "type": "VARCHAR(80)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": true
+      },
+      {
+        "name": "sector_name",
+        "type": "VARCHAR(120)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "taxonomy_source",
+        "type": "VARCHAR(120)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "is_active",
+        "type": "BOOLEAN",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [],
+    "constraints": [
+      "PRIMARY KEY (sector_id)",
+      "UNIQUE (sector_code)"
+    ]
+  },
+  {
+    "id": "securities",
+    "name": "securities",
+    "domain": "SECURITY",
+    "domain_title": "Security Master",
+    "x": 1025,
+    "y": 275,
+    "color": "#8B5CF6",
+    "desc": "Tradeable equity instruments with ISIN, currency code, security type, and listing status.",
+    "columns": [
+      {
+        "name": "security_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "company_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "companies",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "security_name",
+        "type": "VARCHAR(240)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "isin",
+        "type": "CHAR(12)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "security_type",
+        "type": "VARCHAR(30)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "currency_code",
+        "type": "CHAR(3)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "security_status",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "companies",
+        "label": "FK company_id \u2192 companies.company_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (security_id)",
+      "FOREIGN KEY (company_id) REFERENCES companies(company_id)",
+      "CHECK (security_type IN ('stock', 'etf', 'index', 'mutual_fund', 'bond', 'other'))",
+      "CHECK (security_status IN ('active', 'inactive', 'matured', 'delisted'))"
+    ]
+  },
+  {
+    "id": "user_sector_preferences",
+    "name": "user_sector_preferences",
+    "domain": "SECURITY",
+    "domain_title": "Security Master",
+    "x": 1025,
+    "y": 544,
+    "color": "#8B5CF6",
+    "desc": "Explicit investor sector tilts, positive preferences, and negative sector exclusions.",
+    "columns": [
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": "app_users",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "sector_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": "sectors",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "preference_type",
+        "type": "VARCHAR(12)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "app_users",
+        "label": "FK user_id \u2192 app_users.user_id"
+      },
+      {
+        "target": "sectors",
+        "label": "FK sector_id \u2192 sectors.sector_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (user_id, sector_id)",
+      "FOREIGN KEY (user_id) REFERENCES app_users(user_id)",
+      "FOREIGN KEY (sector_id) REFERENCES sectors(sector_id)",
+      "CHECK (preference_type IN ('include', 'exclude'))"
+    ]
+  },
+  {
+    "id": "user_security_preferences",
+    "name": "user_security_preferences",
+    "domain": "SECURITY",
+    "domain_title": "Security Master",
+    "x": 1025,
+    "y": 708,
+    "color": "#8B5CF6",
+    "desc": "Individual security exclusions (e.g. tobacco exclusion, ethical filters).",
+    "columns": [
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": "app_users",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "security_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": "securities",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "preference_type",
+        "type": "VARCHAR(12)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "reason",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "app_users",
+        "label": "FK user_id \u2192 app_users.user_id"
+      },
+      {
+        "target": "securities",
+        "label": "FK security_id \u2192 securities.security_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (user_id, security_id)",
+      "FOREIGN KEY (user_id) REFERENCES app_users(user_id)",
+      "FOREIGN KEY (security_id) REFERENCES securities(security_id)",
+      "CHECK (preference_type IN ('include', 'exclude'))"
+    ]
+  },
+  {
+    "id": "data_ingestion_errors",
+    "name": "data_ingestion_errors",
+    "domain": "MARKET",
+    "domain_title": "Market Data & Prices",
+    "x": 1970,
+    "y": 90,
+    "color": "#F59E0B",
+    "desc": "Error log for market data fetching exceptions and API failures.",
+    "columns": [
+      {
+        "name": "ingestion_error_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "ingestion_run_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "data_ingestion_runs",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "error_code",
+        "type": "VARCHAR(100)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "error_message",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "record_reference",
+        "type": "VARCHAR(300)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "is_retryable",
+        "type": "BOOLEAN",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "error_details",
+        "type": "JSONB",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "occurred_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "data_ingestion_runs",
+        "label": "FK ingestion_run_id \u2192 data_ingestion_runs.ingestion_run_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (ingestion_error_id)",
+      "FOREIGN KEY (ingestion_run_id) REFERENCES data_ingestion_runs(ingestion_run_id)"
+    ]
+  },
+  {
+    "id": "data_ingestion_runs",
+    "name": "data_ingestion_runs",
+    "domain": "MARKET",
+    "domain_title": "Market Data & Prices",
+    "x": 1970,
+    "y": 338,
+    "color": "#F59E0B",
+    "desc": "Audit log for batch and scheduled market data sync executions.",
+    "columns": [
+      {
+        "name": "ingestion_run_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "data_source_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "data_sources",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "data_type",
+        "type": "VARCHAR(60)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "run_status",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "started_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "finished_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "records_seen",
+        "type": "BIGINT",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "records_inserted",
+        "type": "BIGINT",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "records_updated",
+        "type": "BIGINT",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "error_code",
+        "type": "VARCHAR(100)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "error_summary",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "metadata",
+        "type": "JSONB",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "data_sources",
+        "label": "FK data_source_id \u2192 data_sources.data_source_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (ingestion_run_id)",
+      "FOREIGN KEY (data_source_id) REFERENCES data_sources(data_source_id)",
+      "CHECK (records_inserted >= 0)",
+      "UNIQUE (ingestion_run_id, data_source_id)",
+      "CHECK (records_updated >= 0)",
+      "CHECK (run_status IN ('queued', 'running', 'succeeded', 'partial', 'failed', 'cancelled'))",
+      "CHECK (records_seen >= 0)",
+      "CHECK (finished_at IS NULL OR finished_at >= started_at)"
+    ]
+  },
+  {
+    "id": "data_sources",
+    "name": "data_sources",
+    "domain": "MARKET",
+    "domain_title": "Market Data & Prices",
+    "x": 1970,
+    "y": 670,
+    "color": "#F59E0B",
+    "desc": "Registered market data API providers (Yahoo Finance, FRED, NewsAPI, NSE/BSE registries).",
+    "columns": [
+      {
+        "name": "data_source_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "source_code",
+        "type": "VARCHAR(80)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": true
+      },
+      {
+        "name": "display_name",
+        "type": "VARCHAR(160)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "source_type",
+        "type": "VARCHAR(30)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "base_url",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "secret_parameter_name",
+        "type": "VARCHAR(300)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "terms_url",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "license_notes",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "is_active",
+        "type": "BOOLEAN",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [],
+    "constraints": [
+      "PRIMARY KEY (data_source_id)",
+      "CHECK (source_type IN ('market_data', 'fundamentals', 'news', 'economic', 'broker', 'manual', 'internal'))",
+      "UNIQUE (source_code)"
+    ]
+  },
+  {
+    "id": "economic_indicators",
+    "name": "economic_indicators",
+    "domain": "MARKET",
+    "domain_title": "Market Data & Prices",
+    "x": 1970,
+    "y": 960,
+    "color": "#F59E0B",
+    "desc": "Macroeconomic indicator series metadata (RBI Repo rate, CPI, 10Y G-Sec Yield).",
+    "columns": [
+      {
+        "name": "economic_indicator_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "indicator_code",
+        "type": "VARCHAR(100)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": true
+      },
+      {
+        "name": "indicator_name",
+        "type": "VARCHAR(200)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "country_code",
+        "type": "CHAR(2)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "unit_code",
+        "type": "VARCHAR(60)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "frequency",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "description",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      }
+    ],
+    "relations": [],
+    "constraints": [
+      "PRIMARY KEY (economic_indicator_id)",
+      "CHECK (frequency IN ('daily', 'weekly', 'monthly', 'quarterly', 'annual', 'irregular'))",
+      "UNIQUE (indicator_code)"
+    ]
+  },
+  {
+    "id": "economic_observations",
+    "name": "economic_observations",
+    "domain": "MARKET",
+    "domain_title": "Market Data & Prices",
+    "x": 1970,
+    "y": 1187,
+    "color": "#F59E0B",
+    "desc": "Time-series observations and historical values for macroeconomic indicators.",
+    "columns": [
+      {
+        "name": "economic_observation_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "economic_indicator_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "economic_indicators",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "data_source_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "data_ingestion_runs",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "ingestion_run_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "data_ingestion_runs",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "observation_date",
+        "type": "DATE",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "observation_value",
+        "type": "NUMERIC(24, 8)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "release_date",
+        "type": "DATE",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "retrieved_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "economic_indicators",
+        "label": "FK economic_indicator_id \u2192 economic_indicators.economic_indicator_id"
+      },
+      {
+        "target": "data_ingestion_runs",
+        "label": "FK ingestion_run_id \u2192 data_ingestion_runs.ingestion_run_id"
+      },
+      {
+        "target": "data_sources",
+        "label": "FK data_source_id \u2192 data_sources.data_source_id"
+      },
+      {
+        "target": "data_ingestion_runs",
+        "label": "FK data_source_id \u2192 data_ingestion_runs.data_source_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (economic_observation_id)",
+      "FOREIGN KEY (economic_indicator_id) REFERENCES economic_indicators(economic_indicator_id)",
+      "FOREIGN KEY (ingestion_run_id) REFERENCES data_ingestion_runs(ingestion_run_id)",
+      "FOREIGN KEY (data_source_id) REFERENCES data_sources(data_source_id)",
+      "FOREIGN KEY (data_source_id) REFERENCES data_ingestion_runs(data_source_id)",
+      "UNIQUE (economic_indicator_id, observation_date, data_source_id)"
+    ]
+  },
+  {
+    "id": "fundamental_metrics",
+    "name": "fundamental_metrics",
+    "domain": "MARKET",
+    "domain_title": "Market Data & Prices",
+    "x": 1970,
+    "y": 1435,
+    "color": "#F59E0B",
+    "desc": "Quarterly balance sheet ratios: ROE, Debt/Equity, P/E, Operating Margin, 3Y CAGR.",
+    "columns": [
+      {
+        "name": "fundamental_metric_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "security_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "securities",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "metric_definition_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "metric_definitions",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "data_source_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "data_sources",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "ingestion_run_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "data_ingestion_runs",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "period_type",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "period_end_date",
+        "type": "DATE",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "metric_value",
+        "type": "NUMERIC(24, 8)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "currency_code",
+        "type": "CHAR(3)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "reported_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "retrieved_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "data_ingestion_runs",
+        "label": "FK ingestion_run_id \u2192 data_ingestion_runs.ingestion_run_id"
+      },
+      {
+        "target": "data_ingestion_runs",
+        "label": "FK data_source_id \u2192 data_ingestion_runs.data_source_id"
+      },
+      {
+        "target": "securities",
+        "label": "FK security_id \u2192 securities.security_id"
+      },
+      {
+        "target": "data_sources",
+        "label": "FK data_source_id \u2192 data_sources.data_source_id"
+      },
+      {
+        "target": "metric_definitions",
+        "label": "FK metric_definition_id \u2192 metric_definitions.metric_definition_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (fundamental_metric_id)",
+      "FOREIGN KEY (ingestion_run_id) REFERENCES data_ingestion_runs(ingestion_run_id)",
+      "FOREIGN KEY (data_source_id) REFERENCES data_ingestion_runs(data_source_id)",
+      "FOREIGN KEY (security_id) REFERENCES securities(security_id)",
+      "FOREIGN KEY (data_source_id) REFERENCES data_sources(data_source_id)",
+      "FOREIGN KEY (metric_definition_id) REFERENCES metric_definitions(metric_definition_id)",
+      "UNIQUE (security_id, metric_definition_id, period_type, period_end_date, data_source_id)",
+      "CHECK (period_type IN ('quarterly', 'annual', 'ttm', 'point_in_time'))"
+    ]
+  },
+  {
+    "id": "market_news_articles",
+    "name": "market_news_articles",
+    "domain": "MARKET",
+    "domain_title": "Market Data & Prices",
+    "x": 2285,
+    "y": 90,
+    "color": "#F59E0B",
+    "desc": "Aggregated corporate filings, SEBI circulars, and financial news items.",
+    "columns": [
+      {
+        "name": "news_article_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "data_source_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "data_sources",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "ingestion_run_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "data_ingestion_runs",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "provider_article_id",
+        "type": "VARCHAR(300)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "article_url",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "headline",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "summary",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "language_code",
+        "type": "VARCHAR(12)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "published_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "retrieved_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "sentiment_score",
+        "type": "NUMERIC(8, 5)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "sentiment_label",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "licensing_notes",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "data_sources",
+        "label": "FK data_source_id \u2192 data_sources.data_source_id"
+      },
+      {
+        "target": "data_ingestion_runs",
+        "label": "FK ingestion_run_id \u2192 data_ingestion_runs.ingestion_run_id"
+      },
+      {
+        "target": "data_ingestion_runs",
+        "label": "FK data_source_id \u2192 data_ingestion_runs.data_source_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (news_article_id)",
+      "FOREIGN KEY (data_source_id) REFERENCES data_sources(data_source_id)",
+      "FOREIGN KEY (ingestion_run_id) REFERENCES data_ingestion_runs(ingestion_run_id)",
+      "FOREIGN KEY (data_source_id) REFERENCES data_ingestion_runs(data_source_id)",
+      "CHECK (sentiment_score BETWEEN -1 AND 1)",
+      "UNIQUE (data_source_id, provider_article_id)",
+      "CHECK (sentiment_label IN ('negative', 'neutral', 'positive', 'mixed'))"
+    ]
+  },
+  {
+    "id": "market_prices",
+    "name": "market_prices",
+    "domain": "MARKET",
+    "domain_title": "Market Data & Prices",
+    "x": 2285,
+    "y": 443,
+    "color": "#F59E0B",
+    "desc": "Historical and real-time OHLCV price records for listed equity instruments.",
+    "columns": [
+      {
+        "name": "market_price_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "listing_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "instrument_listings",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "data_source_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "data_sources",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "ingestion_run_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "data_ingestion_runs",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "price_date",
+        "type": "DATE",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "open_price",
+        "type": "NUMERIC(20, 6)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "high_price",
+        "type": "NUMERIC(20, 6)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "low_price",
+        "type": "NUMERIC(20, 6)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "close_price",
+        "type": "NUMERIC(20, 6)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "adjusted_close_price",
+        "type": "NUMERIC(20, 6)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "volume",
+        "type": "BIGINT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "currency_code",
+        "type": "CHAR(3)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "provider_timestamp",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "retrieved_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "instrument_listings",
+        "label": "FK listing_id \u2192 instrument_listings.listing_id"
+      },
+      {
+        "target": "data_sources",
+        "label": "FK data_source_id \u2192 data_sources.data_source_id"
+      },
+      {
+        "target": "data_ingestion_runs",
+        "label": "FK data_source_id \u2192 data_ingestion_runs.data_source_id"
+      },
+      {
+        "target": "data_ingestion_runs",
+        "label": "FK ingestion_run_id \u2192 data_ingestion_runs.ingestion_run_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (market_price_id)",
+      "FOREIGN KEY (listing_id) REFERENCES instrument_listings(listing_id)",
+      "FOREIGN KEY (data_source_id) REFERENCES data_sources(data_source_id)",
+      "FOREIGN KEY (data_source_id) REFERENCES data_ingestion_runs(data_source_id)",
+      "FOREIGN KEY (ingestion_run_id) REFERENCES data_ingestion_runs(ingestion_run_id)",
+      "CHECK (volume IS NULL OR volume >= 0)",
+      "UNIQUE (listing_id, price_date, data_source_id)",
+      "CHECK (close_price >= 0)",
+      "CHECK (adjusted_close_price IS NULL OR adjusted_close_price >= 0)"
+    ]
+  },
+  {
+    "id": "metric_definitions",
+    "name": "metric_definitions",
+    "domain": "MARKET",
+    "domain_title": "Market Data & Prices",
+    "x": 2285,
+    "y": 817,
+    "color": "#F59E0B",
+    "desc": "Formal definitions and formulas for financial fundamental and quantitative metrics.",
+    "columns": [
+      {
+        "name": "metric_definition_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "metric_code",
+        "type": "VARCHAR(100)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": true
+      },
+      {
+        "name": "metric_name",
+        "type": "VARCHAR(180)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "unit_code",
+        "type": "VARCHAR(40)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "value_kind",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "description",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "is_active",
+        "type": "BOOLEAN",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [],
+    "constraints": [
+      "PRIMARY KEY (metric_definition_id)",
+      "UNIQUE (metric_code)",
+      "CHECK (value_kind IN ('numeric'))"
+    ]
+  },
+  {
+    "id": "news_article_securities",
+    "name": "news_article_securities",
+    "domain": "MARKET",
+    "domain_title": "Market Data & Prices",
+    "x": 2285,
+    "y": 1044,
+    "color": "#F59E0B",
+    "desc": "Association table linking news articles and regulatory filings to specific securities.",
+    "columns": [
+      {
+        "name": "news_article_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": "market_news_articles",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "security_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": "securities",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "relevance_score",
+        "type": "NUMERIC(6, 5)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "link_method",
+        "type": "VARCHAR(30)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "market_news_articles",
+        "label": "FK news_article_id \u2192 market_news_articles.news_article_id"
+      },
+      {
+        "target": "securities",
+        "label": "FK security_id \u2192 securities.security_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (news_article_id, security_id)",
+      "FOREIGN KEY (news_article_id) REFERENCES market_news_articles(news_article_id)",
+      "FOREIGN KEY (security_id) REFERENCES securities(security_id)",
+      "CHECK (link_method IN ('provider', 'symbol_match', 'entity_match', 'manual', 'model'))",
+      "CHECK (relevance_score IS NULL OR relevance_score BETWEEN 0 AND 1)"
+    ]
+  },
+  {
+    "id": "source_instrument_mappings",
+    "name": "source_instrument_mappings",
+    "domain": "MARKET",
+    "domain_title": "Market Data & Prices",
+    "x": 2285,
+    "y": 1208,
+    "color": "#F59E0B",
+    "desc": "Cross-reference mapping third-party data provider IDs to canonical internal securities.",
+    "columns": [
+      {
+        "name": "source_instrument_mapping_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "data_source_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "data_sources",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "listing_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "instrument_listings",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "external_instrument_code",
+        "type": "VARCHAR(200)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "external_symbol",
+        "type": "VARCHAR(100)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "data_sources",
+        "label": "FK data_source_id \u2192 data_sources.data_source_id"
+      },
+      {
+        "target": "instrument_listings",
+        "label": "FK listing_id \u2192 instrument_listings.listing_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (source_instrument_mapping_id)",
+      "FOREIGN KEY (data_source_id) REFERENCES data_sources(data_source_id)",
+      "FOREIGN KEY (listing_id) REFERENCES instrument_listings(listing_id)",
+      "UNIQUE (data_source_id, listing_id)",
+      "UNIQUE (data_source_id, external_instrument_code)"
+    ]
+  },
+  {
+    "id": "evidence_items",
+    "name": "evidence_items",
+    "domain": "PORTFOLIO",
+    "domain_title": "Portfolio & Decisions",
+    "x": 1340,
+    "y": 90,
+    "color": "#059669",
+    "desc": "Verifiable factual evidence items (filing excerpts, financial ratios) supporting recommendations.",
+    "columns": [
+      {
+        "name": "evidence_item_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "data_source_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "data_sources",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "security_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "securities",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "market_price_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "market_prices",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "fundamental_metric_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "fundamental_metrics",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "economic_observation_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "economic_observations",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "news_article_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "market_news_articles",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "evidence_type",
+        "type": "VARCHAR(40)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "title",
+        "type": "VARCHAR(300)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "evidence_summary",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "source_url",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "source_record_reference",
+        "type": "VARCHAR(300)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "published_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "observed_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "cited_value_snapshot",
+        "type": "JSONB",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "securities",
+        "label": "FK security_id \u2192 securities.security_id"
+      },
+      {
+        "target": "market_prices",
+        "label": "FK market_price_id \u2192 market_prices.market_price_id"
+      },
+      {
+        "target": "data_sources",
+        "label": "FK data_source_id \u2192 data_sources.data_source_id"
+      },
+      {
+        "target": "market_news_articles",
+        "label": "FK news_article_id \u2192 market_news_articles.news_article_id"
+      },
+      {
+        "target": "economic_observations",
+        "label": "FK economic_observation_id \u2192 economic_observations.economic_observation_id"
+      },
+      {
+        "target": "fundamental_metrics",
+        "label": "FK fundamental_metric_id \u2192 fundamental_metrics.fundamental_metric_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (evidence_item_id)",
+      "FOREIGN KEY (security_id) REFERENCES securities(security_id)",
+      "FOREIGN KEY (market_price_id) REFERENCES market_prices(market_price_id)",
+      "FOREIGN KEY (data_source_id) REFERENCES data_sources(data_source_id)",
+      "FOREIGN KEY (news_article_id) REFERENCES market_news_articles(news_article_id)",
+      "FOREIGN KEY (economic_observation_id) REFERENCES economic_observations(economic_observation_id)",
+      "FOREIGN KEY (fundamental_metric_id) REFERENCES fundamental_metrics(fundamental_metric_id)"
+    ]
+  },
+  {
+    "id": "explanation_evidence",
+    "name": "explanation_evidence",
+    "domain": "PORTFOLIO",
+    "domain_title": "Portfolio & Decisions",
+    "x": 1340,
+    "y": 506,
+    "color": "#059669",
+    "desc": "Many-to-many junction linking recommendation explanations to supporting evidence items.",
+    "columns": [
+      {
+        "name": "explanation_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": "recommendation_explanations",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "evidence_item_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": "evidence_items",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "relationship_label",
+        "type": "VARCHAR(40)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "recommendation_explanations",
+        "label": "FK explanation_id \u2192 recommendation_explanations.explanation_id"
+      },
+      {
+        "target": "evidence_items",
+        "label": "FK evidence_item_id \u2192 evidence_items.evidence_item_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (explanation_id, evidence_item_id)",
+      "FOREIGN KEY (explanation_id) REFERENCES recommendation_explanations(explanation_id)",
+      "FOREIGN KEY (evidence_item_id) REFERENCES evidence_items(evidence_item_id)",
+      "CHECK (relationship_label IN ('supports', 'contradicts', 'contextualizes'))"
+    ]
+  },
+  {
+    "id": "investor_portfolios",
+    "name": "investor_portfolios",
+    "domain": "PORTFOLIO",
+    "domain_title": "Portfolio & Decisions",
+    "x": 1340,
+    "y": 649,
+    "color": "#059669",
+    "desc": "Top-level portfolio container with user FK, portfolio name, and status.",
+    "columns": [
+      {
+        "name": "portfolio_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "app_users",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "portfolio_name",
+        "type": "VARCHAR(160)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "portfolio_status",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "app_users",
+        "label": "FK user_id \u2192 app_users.user_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (portfolio_id)",
+      "FOREIGN KEY (user_id) REFERENCES app_users(user_id)",
+      "CHECK (portfolio_status IN ('draft', 'active', 'archived'))",
+      "UNIQUE (portfolio_id, user_id)"
+    ]
+  },
+  {
+    "id": "portfolio_generation_requests",
+    "name": "portfolio_generation_requests",
+    "domain": "PORTFOLIO",
+    "domain_title": "Portfolio & Decisions",
+    "x": 1340,
+    "y": 855,
+    "color": "#059669",
+    "desc": "Inbound portfolio generation requests detailing investor prompt, capital, and risk tier.",
+    "columns": [
+      {
+        "name": "generation_request_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "portfolio_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "investor_portfolios",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "investor_portfolios",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "goal_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "financial_goals",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "risk_assessment_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "risk_assessments",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "request_type",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "request_status",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "user_prompt",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "requested_amount",
+        "type": "NUMERIC(20, 2)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "currency_code",
+        "type": "CHAR(3)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "investment_horizon_months",
+        "type": "INTEGER",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "normalized_inputs",
+        "type": "JSONB",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "investor_snapshot",
+        "type": "JSONB",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "market_context_as_of",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "started_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "completed_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "error_code",
+        "type": "VARCHAR(100)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "error_summary",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "risk_assessments",
+        "label": "FK risk_assessment_id \u2192 risk_assessments.risk_assessment_id"
+      },
+      {
+        "target": "investor_portfolios",
+        "label": "FK portfolio_id \u2192 investor_portfolios.portfolio_id"
+      },
+      {
+        "target": "financial_goals",
+        "label": "FK user_id \u2192 financial_goals.user_id"
+      },
+      {
+        "target": "financial_goals",
+        "label": "FK goal_id \u2192 financial_goals.goal_id"
+      },
+      {
+        "target": "risk_assessments",
+        "label": "FK user_id \u2192 risk_assessments.user_id"
+      },
+      {
+        "target": "investor_portfolios",
+        "label": "FK user_id \u2192 investor_portfolios.user_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (generation_request_id)",
+      "FOREIGN KEY (risk_assessment_id) REFERENCES risk_assessments(risk_assessment_id)",
+      "FOREIGN KEY (portfolio_id) REFERENCES investor_portfolios(portfolio_id)",
+      "FOREIGN KEY (user_id) REFERENCES financial_goals(user_id)",
+      "FOREIGN KEY (goal_id) REFERENCES financial_goals(goal_id)",
+      "FOREIGN KEY (user_id) REFERENCES risk_assessments(user_id)",
+      "FOREIGN KEY (user_id) REFERENCES investor_portfolios(user_id)",
+      "CHECK (requested_amount > 0)",
+      "UNIQUE (generation_request_id, portfolio_id)",
+      "CHECK (request_status IN ('queued', 'running', 'succeeded', 'failed', 'cancelled'))",
+      "CHECK (investment_horizon_months IS NULL OR investment_horizon_months > 0)",
+      "CHECK (request_type IN ('create', 'revise', 'scenario'))",
+      "CHECK (completed_at IS NULL OR started_at IS NULL OR completed_at >= started_at)"
+    ]
+  },
+  {
+    "id": "portfolio_scenarios",
+    "name": "portfolio_scenarios",
+    "domain": "PORTFOLIO",
+    "domain_title": "Portfolio & Decisions",
+    "x": 1340,
+    "y": 1334,
+    "color": "#059669",
+    "desc": "Simulated stress-test scenarios (e.g., 2008 GFC, 2020 COVID crash, Rate Hike).",
+    "columns": [
+      {
+        "name": "portfolio_scenario_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "portfolio_version_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "portfolio_versions",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "scenario_code",
+        "type": "VARCHAR(80)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "scenario_name",
+        "type": "VARCHAR(180)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "scenario_type",
+        "type": "VARCHAR(30)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "assumptions",
+        "type": "JSONB",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "estimated_portfolio_value",
+        "type": "NUMERIC(20, 2)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "estimated_change_amount",
+        "type": "NUMERIC(20, 2)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "estimated_change_pct",
+        "type": "NUMERIC(9, 4)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "result_summary",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "calculation_version",
+        "type": "VARCHAR(100)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "portfolio_versions",
+        "label": "FK portfolio_version_id \u2192 portfolio_versions.portfolio_version_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (portfolio_scenario_id)",
+      "FOREIGN KEY (portfolio_version_id) REFERENCES portfolio_versions(portfolio_version_id)",
+      "CHECK (estimated_portfolio_value IS NULL OR estimated_portfolio_value >= 0)",
+      "CHECK (scenario_type IN ('stress', 'what_if', 'market_regime', 'sensitivity'))",
+      "UNIQUE (portfolio_version_id, scenario_code)"
+    ]
+  },
+  {
+    "id": "portfolio_security_decisions",
+    "name": "portfolio_security_decisions",
+    "domain": "PORTFOLIO",
+    "domain_title": "Portfolio & Decisions",
+    "x": 1340,
+    "y": 1666,
+    "color": "#059669",
+    "desc": "Granular equity holdings per portfolio version with target weights and selection rationales.",
+    "columns": [
+      {
+        "name": "decision_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "portfolio_version_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "portfolio_versions",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "security_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "securities",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "listing_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "instrument_listings",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "decision_status",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "target_weight_pct",
+        "type": "NUMERIC(9, 6)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "decision_reason",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "portfolio_versions",
+        "label": "FK portfolio_version_id \u2192 portfolio_versions.portfolio_version_id"
+      },
+      {
+        "target": "securities",
+        "label": "FK security_id \u2192 securities.security_id"
+      },
+      {
+        "target": "instrument_listings",
+        "label": "FK security_id \u2192 instrument_listings.security_id"
+      },
+      {
+        "target": "instrument_listings",
+        "label": "FK listing_id \u2192 instrument_listings.listing_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (decision_id)",
+      "FOREIGN KEY (portfolio_version_id) REFERENCES portfolio_versions(portfolio_version_id)",
+      "FOREIGN KEY (security_id) REFERENCES securities(security_id)",
+      "FOREIGN KEY (security_id) REFERENCES instrument_listings(security_id)",
+      "FOREIGN KEY (listing_id) REFERENCES instrument_listings(listing_id)",
+      "CHECK ((decision_status = 'selected' AND target_weight_pct IS NOT NULL AND target_weight_pct > 0 AND target_weight_pct <= 100) OR (decision_status IN ('excluded', 'watchlist') AND target_weight_pct IS NULL))",
+      "CHECK (decision_status IN ('selected', 'excluded', 'watchlist'))",
+      "UNIQUE (portfolio_version_id, security_id)",
+      "UNIQUE (decision_id, portfolio_version_id)"
+    ]
+  },
+  {
+    "id": "portfolio_validation_results",
+    "name": "portfolio_validation_results",
+    "domain": "PORTFOLIO",
+    "domain_title": "Portfolio & Decisions",
+    "x": 1340,
+    "y": 1914,
+    "color": "#059669",
+    "desc": "Itemized constraint validation results (25% single-stock cap, 40% sector cap, whole shares).",
+    "columns": [
+      {
+        "name": "validation_result_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "validation_run_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "portfolio_validation_runs",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "rule_code",
+        "type": "VARCHAR(100)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "result_status",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "severity",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "security_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "securities",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "actual_value",
+        "type": "NUMERIC(24, 8)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "threshold_value",
+        "type": "NUMERIC(24, 8)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "result_message",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "details",
+        "type": "JSONB",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "securities",
+        "label": "FK security_id \u2192 securities.security_id"
+      },
+      {
+        "target": "portfolio_validation_runs",
+        "label": "FK validation_run_id \u2192 portfolio_validation_runs.validation_run_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (validation_result_id)",
+      "FOREIGN KEY (security_id) REFERENCES securities(security_id)",
+      "FOREIGN KEY (validation_run_id) REFERENCES portfolio_validation_runs(validation_run_id)",
+      "CHECK (result_status IN ('pass', 'fail', 'warning', 'not_applicable'))",
+      "CHECK (severity IN ('info', 'low', 'medium', 'high', 'critical'))"
+    ]
+  },
+  {
+    "id": "portfolio_validation_runs",
+    "name": "portfolio_validation_runs",
+    "domain": "PORTFOLIO",
+    "domain_title": "Portfolio & Decisions",
+    "x": 1655,
+    "y": 90,
+    "color": "#059669",
+    "desc": "Audit record of quantitative validation passes executed on portfolio versions.",
+    "columns": [
+      {
+        "name": "validation_run_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "portfolio_version_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "portfolio_versions",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "rule_set_version",
+        "type": "VARCHAR(100)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "calculation_engine_version",
+        "type": "VARCHAR(100)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "validation_status",
+        "type": "VARCHAR(24)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "started_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "completed_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "summary",
+        "type": "JSONB",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "portfolio_versions",
+        "label": "FK portfolio_version_id \u2192 portfolio_versions.portfolio_version_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (validation_run_id)",
+      "FOREIGN KEY (portfolio_version_id) REFERENCES portfolio_versions(portfolio_version_id)",
+      "CHECK (validation_status IN ('running', 'passed', 'failed', 'passed_with_warnings'))",
+      "CHECK (completed_at IS NULL OR completed_at >= started_at)"
+    ]
+  },
+  {
+    "id": "portfolio_version_constraints",
+    "name": "portfolio_version_constraints",
+    "domain": "PORTFOLIO",
+    "domain_title": "Portfolio & Decisions",
+    "x": 1655,
+    "y": 338,
+    "color": "#059669",
+    "desc": "Specific portfolio constraints applied during optimization.",
+    "columns": [
+      {
+        "name": "portfolio_constraint_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "portfolio_version_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "portfolio_versions",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "constraint_code",
+        "type": "VARCHAR(100)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "operator",
+        "type": "VARCHAR(12)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "comparison_value",
+        "type": "NUMERIC(24, 8)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "upper_value",
+        "type": "NUMERIC(24, 8)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "unit_code",
+        "type": "VARCHAR(40)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "is_mandatory",
+        "type": "BOOLEAN",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "applied",
+        "type": "BOOLEAN",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "description",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "portfolio_versions",
+        "label": "FK portfolio_version_id \u2192 portfolio_versions.portfolio_version_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (portfolio_constraint_id)",
+      "FOREIGN KEY (portfolio_version_id) REFERENCES portfolio_versions(portfolio_version_id)",
+      "CHECK (operator = 'between' OR comparison_value IS NOT NULL)",
+      "CHECK (operator <> 'between' OR (comparison_value IS NOT NULL AND upper_value IS NOT NULL AND comparison_value <= upper_value))",
+      "CHECK (operator = 'between' OR upper_value IS NULL)",
+      "UNIQUE (portfolio_version_id, constraint_code)",
+      "CHECK (operator IN ('<=', '>=', '=', 'between'))"
+    ]
+  },
+  {
+    "id": "portfolio_versions",
+    "name": "portfolio_versions",
+    "domain": "PORTFOLIO",
+    "domain_title": "Portfolio & Decisions",
+    "x": 1655,
+    "y": 649,
+    "color": "#059669",
+    "desc": "Immutable portfolio version snapshots with investment capital, expected return, and generation context JSON.",
+    "columns": [
+      {
+        "name": "portfolio_version_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "portfolio_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "portfolio_generation_requests",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "generation_request_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "portfolio_generation_requests",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "strategy_version_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "strategy_versions",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "version_number",
+        "type": "INTEGER",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "version_status",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "investment_amount",
+        "type": "NUMERIC(20, 2)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "currency_code",
+        "type": "CHAR(3)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "investment_horizon_months",
+        "type": "INTEGER",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "risk_category",
+        "type": "VARCHAR(30)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "expected_return_pct",
+        "type": "NUMERIC(9, 4)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "expected_volatility_pct",
+        "type": "NUMERIC(9, 4)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "diversification_score",
+        "type": "NUMERIC(8, 4)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "market_context_as_of",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "generation_context",
+        "type": "JSONB",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "generated_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "portfolio_generation_requests",
+        "label": "FK generation_request_id \u2192 portfolio_generation_requests.generation_request_id"
+      },
+      {
+        "target": "portfolio_generation_requests",
+        "label": "FK portfolio_id \u2192 portfolio_generation_requests.portfolio_id"
+      },
+      {
+        "target": "strategy_versions",
+        "label": "FK strategy_version_id \u2192 strategy_versions.strategy_version_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (portfolio_version_id)",
+      "FOREIGN KEY (generation_request_id) REFERENCES portfolio_generation_requests(generation_request_id)",
+      "FOREIGN KEY (portfolio_id) REFERENCES portfolio_generation_requests(portfolio_id)",
+      "FOREIGN KEY (strategy_version_id) REFERENCES strategy_versions(strategy_version_id)",
+      "CHECK (risk_category IS NULL OR risk_category IN ('very_conservative', 'conservative', 'moderate', 'growth', 'aggressive'))",
+      "CHECK (investment_amount > 0)",
+      "CHECK (diversification_score IS NULL OR (diversification_score BETWEEN 0 AND 100))",
+      "CHECK (version_status IN ('generated', 'reviewed', 'accepted', 'rejected', 'superseded', 'archived'))",
+      "UNIQUE (portfolio_id, version_number)",
+      "UNIQUE (portfolio_version_id, portfolio_id)",
+      "CHECK (investment_horizon_months IS NULL OR investment_horizon_months > 0)",
+      "CHECK (version_number > 0)"
+    ]
+  },
+  {
+    "id": "recommendation_explanations",
+    "name": "recommendation_explanations",
+    "domain": "PORTFOLIO",
+    "domain_title": "Portfolio & Decisions",
+    "x": 1655,
+    "y": 1086,
+    "color": "#059669",
+    "desc": "Fiduciary plain-English narrative rationales generated by the Moderator agent.",
+    "columns": [
+      {
+        "name": "explanation_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "portfolio_version_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "portfolio_versions",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "decision_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "portfolio_security_decisions",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "explanation_type",
+        "type": "VARCHAR(30)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "title",
+        "type": "VARCHAR(240)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "explanation_text",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "display_order",
+        "type": "INTEGER",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "portfolio_versions",
+        "label": "FK portfolio_version_id \u2192 portfolio_versions.portfolio_version_id"
+      },
+      {
+        "target": "portfolio_security_decisions",
+        "label": "FK portfolio_version_id \u2192 portfolio_security_decisions.portfolio_version_id"
+      },
+      {
+        "target": "portfolio_security_decisions",
+        "label": "FK decision_id \u2192 portfolio_security_decisions.decision_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (explanation_id)",
+      "FOREIGN KEY (portfolio_version_id) REFERENCES portfolio_versions(portfolio_version_id)",
+      "FOREIGN KEY (portfolio_version_id) REFERENCES portfolio_security_decisions(portfolio_version_id)",
+      "FOREIGN KEY (decision_id) REFERENCES portfolio_security_decisions(decision_id)",
+      "CHECK (explanation_type IN ('portfolio', 'selection', 'exclusion', 'risk', 'diversification', 'constraint', 'scenario', 'review'))"
+    ]
+  },
+  {
+    "id": "strategy_definitions",
+    "name": "strategy_definitions",
+    "domain": "PORTFOLIO",
+    "domain_title": "Portfolio & Decisions",
+    "x": 1655,
+    "y": 1334,
+    "color": "#059669",
+    "desc": "Formal investment strategy blueprints (e.g., Conservative Wealth Preserver, High-Growth Equity).",
+    "columns": [
+      {
+        "name": "strategy_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "strategy_code",
+        "type": "VARCHAR(100)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": true
+      },
+      {
+        "name": "strategy_name",
+        "type": "VARCHAR(180)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "description",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "is_active",
+        "type": "BOOLEAN",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [],
+    "constraints": [
+      "PRIMARY KEY (strategy_id)",
+      "UNIQUE (strategy_code)"
+    ]
+  },
+  {
+    "id": "strategy_versions",
+    "name": "strategy_versions",
+    "domain": "PORTFOLIO",
+    "domain_title": "Portfolio & Decisions",
+    "x": 1655,
+    "y": 1540,
+    "color": "#059669",
+    "desc": "Versioned parameter specifications for investment strategy models.",
+    "columns": [
+      {
+        "name": "strategy_version_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "strategy_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "strategy_definitions",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "version_label",
+        "type": "VARCHAR(80)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "optimizer_name",
+        "type": "VARCHAR(160)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "implementation_revision",
+        "type": "VARCHAR(160)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "configuration",
+        "type": "JSONB",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "constraint_set_version",
+        "type": "VARCHAR(100)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "strategy_definitions",
+        "label": "FK strategy_id \u2192 strategy_definitions.strategy_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (strategy_version_id)",
+      "FOREIGN KEY (strategy_id) REFERENCES strategy_definitions(strategy_id)",
+      "UNIQUE (strategy_id, version_label)"
+    ]
+  },
+  {
+    "id": "broker_executions",
+    "name": "broker_executions",
+    "domain": "BROKER",
+    "domain_title": "Broker & Holdings",
+    "x": 2600,
+    "y": 90,
+    "color": "#D97706",
+    "desc": "Realized execution fill records for placed broker orders with trade timestamps.",
+    "columns": [
+      {
+        "name": "broker_execution_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "broker_order_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "broker_orders",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "provider_execution_reference",
+        "type": "VARCHAR(240)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "executed_quantity",
+        "type": "NUMERIC(24, 8)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "execution_price",
+        "type": "NUMERIC(20, 6)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "executed_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "fees_amount",
+        "type": "NUMERIC(20, 2)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "currency_code",
+        "type": "CHAR(3)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "broker_orders",
+        "label": "FK broker_order_id \u2192 broker_orders.broker_order_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (broker_execution_id)",
+      "FOREIGN KEY (broker_order_id) REFERENCES broker_orders(broker_order_id)",
+      "CHECK (executed_quantity > 0)",
+      "UNIQUE (broker_order_id, provider_execution_reference)",
+      "CHECK (fees_amount IS NULL OR fees_amount >= 0)",
+      "CHECK (execution_price >= 0)"
+    ]
+  },
+  {
+    "id": "broker_order_events",
+    "name": "broker_order_events",
+    "domain": "BROKER",
+    "domain_title": "Broker & Holdings",
+    "x": 2600,
+    "y": 338,
+    "color": "#D97706",
+    "desc": "State transition lifecycle events for broker orders (placed, rejected, filled).",
+    "columns": [
+      {
+        "name": "broker_order_event_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "broker_order_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "broker_orders",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "event_status",
+        "type": "VARCHAR(24)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "event_message",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "provider_event_reference",
+        "type": "VARCHAR(240)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "event_payload",
+        "type": "JSONB",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "occurred_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "broker_orders",
+        "label": "FK broker_order_id \u2192 broker_orders.broker_order_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (broker_order_event_id)",
+      "FOREIGN KEY (broker_order_id) REFERENCES broker_orders(broker_order_id)",
+      "UNIQUE (broker_order_id, provider_event_reference)"
+    ]
+  },
+  {
+    "id": "broker_orders",
+    "name": "broker_orders",
+    "domain": "BROKER",
+    "domain_title": "Broker & Holdings",
+    "x": 2600,
+    "y": 565,
+    "color": "#D97706",
+    "desc": "Broker-ready execution order slips generated from whole-share rebalance proposals.",
+    "columns": [
+      {
+        "name": "broker_order_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "user_broker_account_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "user_broker_accounts",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "security_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "securities",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "listing_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "instrument_listings",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "provider_order_reference",
+        "type": "VARCHAR(240)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "side",
+        "type": "VARCHAR(8)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "order_type",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "order_quantity",
+        "type": "NUMERIC(24, 8)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "limit_price",
+        "type": "NUMERIC(20, 6)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "order_status",
+        "type": "VARCHAR(24)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "submitted_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "last_updated_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "user_broker_accounts",
+        "label": "FK user_broker_account_id \u2192 user_broker_accounts.user_broker_account_id"
+      },
+      {
+        "target": "securities",
+        "label": "FK security_id \u2192 securities.security_id"
+      },
+      {
+        "target": "instrument_listings",
+        "label": "FK security_id \u2192 instrument_listings.security_id"
+      },
+      {
+        "target": "instrument_listings",
+        "label": "FK listing_id \u2192 instrument_listings.listing_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (broker_order_id)",
+      "FOREIGN KEY (user_broker_account_id) REFERENCES user_broker_accounts(user_broker_account_id)",
+      "FOREIGN KEY (security_id) REFERENCES securities(security_id)",
+      "FOREIGN KEY (security_id) REFERENCES instrument_listings(security_id)",
+      "FOREIGN KEY (listing_id) REFERENCES instrument_listings(listing_id)",
+      "CHECK (order_quantity > 0)",
+      "CHECK (limit_price IS NULL OR limit_price >= 0)",
+      "CHECK (side IN ('buy', 'sell'))",
+      "UNIQUE (user_broker_account_id, provider_order_reference)",
+      "CHECK (order_status IN ('created', 'submitted', 'accepted', 'partially_filled', 'filled', 'cancelled', 'rejected', 'expired', 'unknown'))",
+      "CHECK (order_type IN ('market', 'limit', 'stop', 'stop_limit', 'other'))"
+    ]
+  },
+  {
+    "id": "broker_providers",
+    "name": "broker_providers",
+    "domain": "BROKER",
+    "domain_title": "Broker & Holdings",
+    "x": 2600,
+    "y": 918,
+    "color": "#D97706",
+    "desc": "Supported broker gateways (Zerodha Kite, Groww, AngelOne, Upstox).",
+    "columns": [
+      {
+        "name": "broker_provider_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "provider_code",
+        "type": "VARCHAR(80)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": true
+      },
+      {
+        "name": "provider_name",
+        "type": "VARCHAR(160)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "developer_docs_url",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "is_active",
+        "type": "BOOLEAN",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [],
+    "constraints": [
+      "PRIMARY KEY (broker_provider_id)",
+      "UNIQUE (provider_code)"
+    ]
+  },
+  {
+    "id": "portfolio_performance_snapshots",
+    "name": "portfolio_performance_snapshots",
+    "domain": "BROKER",
+    "domain_title": "Broker & Holdings",
+    "x": 2600,
+    "y": 1124,
+    "color": "#D97706",
+    "desc": "Periodic portfolio NAV, valuation, and total return performance snapshots.",
+    "columns": [
+      {
+        "name": "performance_snapshot_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "portfolio_version_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "portfolio_versions",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "snapshot_date",
+        "type": "DATE",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "valuation_amount",
+        "type": "NUMERIC(20, 2)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "currency_code",
+        "type": "CHAR(3)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "return_since_previous_pct",
+        "type": "NUMERIC(12, 6)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "cumulative_return_pct",
+        "type": "NUMERIC(12, 6)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "source_type",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "portfolio_versions",
+        "label": "FK portfolio_version_id \u2192 portfolio_versions.portfolio_version_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (performance_snapshot_id)",
+      "FOREIGN KEY (portfolio_version_id) REFERENCES portfolio_versions(portfolio_version_id)",
+      "CHECK (source_type IN ('simulated', 'user_reported', 'broker_confirmed'))",
+      "UNIQUE (portfolio_version_id, snapshot_date, source_type)",
+      "CHECK (valuation_amount >= 0)"
+    ]
+  },
+  {
+    "id": "user_broker_accounts",
+    "name": "user_broker_accounts",
+    "domain": "BROKER",
+    "domain_title": "Broker & Holdings",
+    "x": 2600,
+    "y": 1393,
+    "color": "#D97706",
+    "desc": "Connected broker accounts with encrypted authentication credentials and sync status.",
+    "columns": [
+      {
+        "name": "user_broker_account_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "app_users",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "broker_provider_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "broker_providers",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "external_account_reference",
+        "type": "VARCHAR(240)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "account_label",
+        "type": "VARCHAR(120)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "connection_status",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "granted_permissions",
+        "type": "JSONB",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "secret_reference",
+        "type": "VARCHAR(400)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "connected_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "last_synced_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "app_users",
+        "label": "FK user_id \u2192 app_users.user_id"
+      },
+      {
+        "target": "broker_providers",
+        "label": "FK broker_provider_id \u2192 broker_providers.broker_provider_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (user_broker_account_id)",
+      "FOREIGN KEY (user_id) REFERENCES app_users(user_id)",
+      "FOREIGN KEY (broker_provider_id) REFERENCES broker_providers(broker_provider_id)",
+      "UNIQUE (user_id, broker_provider_id, external_account_reference)",
+      "CHECK (connection_status IN ('pending', 'connected', 'expired', 'revoked', 'error'))"
+    ]
+  },
+  {
+    "id": "existing_portfolio_holdings",
+    "name": "existing_portfolio_holdings",
+    "domain": "DIAGNOSIS",
+    "domain_title": "Demat Diagnosis",
+    "x": 2915,
+    "y": 90,
+    "color": "#0284C7",
+    "desc": "Granular stock holdings extracted from uploaded brokerage statements.",
+    "columns": [
+      {
+        "name": "existing_portfolio_holding_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "existing_portfolio_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "existing_portfolios",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "security_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "instrument_listings",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "listing_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "instrument_listings",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "quantity",
+        "type": "NUMERIC(24, 8)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "average_purchase_price",
+        "type": "NUMERIC(20, 6)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "market_value",
+        "type": "NUMERIC(20, 2)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "currency_code",
+        "type": "CHAR(3)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "source_detail",
+        "type": "JSONB",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "instrument_listings",
+        "label": "FK security_id \u2192 instrument_listings.security_id"
+      },
+      {
+        "target": "instrument_listings",
+        "label": "FK listing_id \u2192 instrument_listings.listing_id"
+      },
+      {
+        "target": "existing_portfolios",
+        "label": "FK existing_portfolio_id \u2192 existing_portfolios.existing_portfolio_id"
+      },
+      {
+        "target": "securities",
+        "label": "FK security_id \u2192 securities.security_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (existing_portfolio_holding_id)",
+      "FOREIGN KEY (security_id) REFERENCES instrument_listings(security_id)",
+      "FOREIGN KEY (listing_id) REFERENCES instrument_listings(listing_id)",
+      "FOREIGN KEY (existing_portfolio_id) REFERENCES existing_portfolios(existing_portfolio_id)",
+      "FOREIGN KEY (security_id) REFERENCES securities(security_id)",
+      "CHECK (market_value IS NULL OR market_value >= 0)",
+      "UNIQUE (existing_portfolio_id, security_id)",
+      "CHECK (average_purchase_price IS NULL OR average_purchase_price >= 0)",
+      "CHECK (quantity > 0)"
+    ]
+  },
+  {
+    "id": "existing_portfolios",
+    "name": "existing_portfolios",
+    "domain": "DIAGNOSIS",
+    "domain_title": "Demat Diagnosis",
+    "x": 2915,
+    "y": 359,
+    "color": "#0284C7",
+    "desc": "Uploaded external Demat portfolio statements for comprehensive health diagnosis.",
+    "columns": [
+      {
+        "name": "existing_portfolio_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "app_users",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "portfolio_name",
+        "type": "VARCHAR(160)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "source_type",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "source_name",
+        "type": "VARCHAR(160)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "as_of_date",
+        "type": "DATE",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "currency_code",
+        "type": "CHAR(3)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "portfolio_status",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "app_users",
+        "label": "FK user_id \u2192 app_users.user_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (existing_portfolio_id)",
+      "FOREIGN KEY (user_id) REFERENCES app_users(user_id)",
+      "UNIQUE (existing_portfolio_id, user_id)",
+      "CHECK (portfolio_status IN ('active', 'archived'))",
+      "CHECK (source_type IN ('manual', 'file_import', 'broker_import'))"
+    ]
+  },
+  {
+    "id": "portfolio_diagnoses",
+    "name": "portfolio_diagnoses",
+    "domain": "DIAGNOSIS",
+    "domain_title": "Demat Diagnosis",
+    "x": 2915,
+    "y": 649,
+    "color": "#0284C7",
+    "desc": "Comprehensive 7-dimension diagnostic audit records with overall health score (0\u2013100).",
+    "columns": [
+      {
+        "name": "portfolio_diagnosis_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "existing_portfolio_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "existing_portfolios",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "diagnosis_status",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "summary",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "metrics",
+        "type": "JSONB",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "market_context_as_of",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "started_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "completed_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "existing_portfolios",
+        "label": "FK existing_portfolio_id \u2192 existing_portfolios.existing_portfolio_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (portfolio_diagnosis_id)",
+      "FOREIGN KEY (existing_portfolio_id) REFERENCES existing_portfolios(existing_portfolio_id)",
+      "CHECK (completed_at IS NULL OR completed_at >= started_at)",
+      "CHECK (diagnosis_status IN ('queued', 'running', 'completed', 'failed'))"
+    ]
+  },
+  {
+    "id": "rebalance_suggestions",
+    "name": "rebalance_suggestions",
+    "domain": "DIAGNOSIS",
+    "domain_title": "Demat Diagnosis",
+    "x": 2915,
+    "y": 897,
+    "color": "#0284C7",
+    "desc": "Diagnostic rebalance recommendations to fix over-concentration or low-quality holdings.",
+    "columns": [
+      {
+        "name": "rebalance_suggestion_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "portfolio_diagnosis_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "portfolio_diagnoses",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "security_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "securities",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "suggested_action",
+        "type": "VARCHAR(10)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "current_quantity",
+        "type": "NUMERIC(24, 8)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "target_quantity",
+        "type": "NUMERIC(24, 8)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "current_value",
+        "type": "NUMERIC(20, 2)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "target_value",
+        "type": "NUMERIC(20, 2)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "change_value",
+        "type": "NUMERIC(20, 2)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "explanation",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "securities",
+        "label": "FK security_id \u2192 securities.security_id"
+      },
+      {
+        "target": "portfolio_diagnoses",
+        "label": "FK portfolio_diagnosis_id \u2192 portfolio_diagnoses.portfolio_diagnosis_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (rebalance_suggestion_id)",
+      "FOREIGN KEY (security_id) REFERENCES securities(security_id)",
+      "FOREIGN KEY (portfolio_diagnosis_id) REFERENCES portfolio_diagnoses(portfolio_diagnosis_id)",
+      "CHECK (suggested_action IN ('buy', 'sell', 'hold'))",
+      "UNIQUE (portfolio_diagnosis_id, security_id)",
+      "CHECK (target_value IS NULL OR target_value >= 0)",
+      "CHECK (target_quantity IS NULL OR target_quantity >= 0)",
+      "CHECK (current_quantity IS NULL OR current_quantity >= 0)",
+      "CHECK (current_value IS NULL OR current_value >= 0)"
+    ]
+  },
+  {
+    "id": "agent_definitions",
+    "name": "agent_definitions",
+    "domain": "OPERATIONS",
+    "domain_title": "Agents & Operations",
+    "x": 3230,
+    "y": 90,
+    "color": "#EC4899",
+    "desc": "Registry of specialized agent roles (Manager, Suitability, Macro, Market, Fundamental, News, Critic, Moderator).",
+    "columns": [
+      {
+        "name": "agent_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "agent_code",
+        "type": "VARCHAR(80)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": true
+      },
+      {
+        "name": "agent_name",
+        "type": "VARCHAR(160)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "purpose",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "is_active",
+        "type": "BOOLEAN",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [],
+    "constraints": [
+      "PRIMARY KEY (agent_id)",
+      "UNIQUE (agent_code)"
+    ]
+  },
+  {
+    "id": "agent_execution_runs",
+    "name": "agent_execution_runs",
+    "domain": "OPERATIONS",
+    "domain_title": "Agents & Operations",
+    "x": 3230,
+    "y": 296,
+    "color": "#EC4899",
+    "desc": "Runtime execution logs recording agent start/end times, model parameters, and token usage.",
+    "columns": [
+      {
+        "name": "agent_execution_run_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "generation_request_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "portfolio_generation_requests",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "portfolio_version_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "portfolio_versions",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "agent_version_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "agent_versions",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "execution_status",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "input_fingerprint",
+        "type": "VARCHAR(128)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "output_summary",
+        "type": "JSONB",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "input_token_count",
+        "type": "BIGINT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "output_token_count",
+        "type": "BIGINT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "latency_ms",
+        "type": "BIGINT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "error_code",
+        "type": "VARCHAR(100)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "error_summary",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "started_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "completed_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "portfolio_generation_requests",
+        "label": "FK generation_request_id \u2192 portfolio_generation_requests.generation_request_id"
+      },
+      {
+        "target": "portfolio_versions",
+        "label": "FK portfolio_version_id \u2192 portfolio_versions.portfolio_version_id"
+      },
+      {
+        "target": "agent_versions",
+        "label": "FK agent_version_id \u2192 agent_versions.agent_version_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (agent_execution_run_id)",
+      "FOREIGN KEY (generation_request_id) REFERENCES portfolio_generation_requests(generation_request_id)",
+      "FOREIGN KEY (portfolio_version_id) REFERENCES portfolio_versions(portfolio_version_id)",
+      "FOREIGN KEY (agent_version_id) REFERENCES agent_versions(agent_version_id)",
+      "CHECK (input_token_count IS NULL OR input_token_count >= 0)",
+      "CHECK (completed_at IS NULL OR completed_at >= started_at)",
+      "CHECK (execution_status IN ('queued', 'running', 'succeeded', 'failed', 'skipped'))",
+      "CHECK (output_token_count IS NULL OR output_token_count >= 0)",
+      "CHECK (latency_ms IS NULL OR latency_ms >= 0)"
+    ]
+  },
+  {
+    "id": "agent_versions",
+    "name": "agent_versions",
+    "domain": "OPERATIONS",
+    "domain_title": "Agents & Operations",
+    "x": 3230,
+    "y": 670,
+    "color": "#EC4899",
+    "desc": "Versioned agent implementations with prompt versions and model configurations.",
+    "columns": [
+      {
+        "name": "agent_version_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "agent_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "agent_definitions",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "version_label",
+        "type": "VARCHAR(80)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "llm_provider",
+        "type": "VARCHAR(80)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "model_name",
+        "type": "VARCHAR(160)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "prompt_version",
+        "type": "VARCHAR(100)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "prompt_hash",
+        "type": "VARCHAR(128)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "structured_output_schema_version",
+        "type": "VARCHAR(100)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "configuration",
+        "type": "JSONB",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "is_active",
+        "type": "BOOLEAN",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "agent_definitions",
+        "label": "FK agent_id \u2192 agent_definitions.agent_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (agent_version_id)",
+      "FOREIGN KEY (agent_id) REFERENCES agent_definitions(agent_id)",
+      "UNIQUE (agent_id, version_label)"
+    ]
+  },
+  {
+    "id": "audit_events",
+    "name": "audit_events",
+    "domain": "OPERATIONS",
+    "domain_title": "Agents & Operations",
+    "x": 3230,
+    "y": 981,
+    "color": "#EC4899",
+    "desc": "Immutable system security and data access audit trail for compliance verification.",
+    "columns": [
+      {
+        "name": "audit_event_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "actor_user_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "app_users",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "action_code",
+        "type": "VARCHAR(100)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "resource_type",
+        "type": "VARCHAR(100)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "resource_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "outcome",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "request_id",
+        "type": "VARCHAR(128)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "ip_address",
+        "type": "INET",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "user_agent",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "event_metadata",
+        "type": "JSONB",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "app_users",
+        "label": "FK actor_user_id \u2192 app_users.user_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (audit_event_id)",
+      "FOREIGN KEY (actor_user_id) REFERENCES app_users(user_id)",
+      "CHECK (outcome IN ('success', 'failure', 'denied'))"
+    ]
+  },
+  {
+    "id": "knowledge_documents",
+    "name": "knowledge_documents",
+    "domain": "OPERATIONS",
+    "domain_title": "Agents & Operations",
+    "x": 3230,
+    "y": 1292,
+    "color": "#EC4899",
+    "desc": "Vector and text knowledge base documents for agent contextual retrieval.",
+    "columns": [
+      {
+        "name": "knowledge_document_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "data_source_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "data_sources",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "external_document_id",
+        "type": "VARCHAR(300)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "document_title",
+        "type": "VARCHAR(300)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "document_type",
+        "type": "VARCHAR(40)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "source_url",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "content_hash",
+        "type": "VARCHAR(128)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "object_storage_uri",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "embedding_model",
+        "type": "VARCHAR(160)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "vector_index_reference",
+        "type": "VARCHAR(300)",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "index_status",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "published_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "indexed_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "metadata",
+        "type": "JSONB",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "data_sources",
+        "label": "FK data_source_id \u2192 data_sources.data_source_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (knowledge_document_id)",
+      "FOREIGN KEY (data_source_id) REFERENCES data_sources(data_source_id)",
+      "UNIQUE (content_hash, embedding_model)",
+      "CHECK (index_status IN ('pending', 'indexed', 'failed', 'retired'))"
+    ]
+  },
+  {
+    "id": "notifications",
+    "name": "notifications",
+    "domain": "OPERATIONS",
+    "domain_title": "Agents & Operations",
+    "x": 3230,
+    "y": 1687,
+    "color": "#EC4899",
+    "desc": "In-app investor notifications for drift alerts, rebalance triggers, and market updates.",
+    "columns": [
+      {
+        "name": "notification_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "app_users",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "notification_type",
+        "type": "VARCHAR(40)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "title",
+        "type": "VARCHAR(200)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "message",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "delivery_channel",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "delivery_status",
+        "type": "VARCHAR(20)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "sent_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "read_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "dismissed_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "metadata",
+        "type": "JSONB",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "app_users",
+        "label": "FK user_id \u2192 app_users.user_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (notification_id)",
+      "FOREIGN KEY (user_id) REFERENCES app_users(user_id)",
+      "CHECK (sent_at IS NULL OR sent_at >= created_at)",
+      "CHECK (delivery_status IN ('pending', 'sent', 'failed'))",
+      "CHECK (read_at IS NULL OR read_at >= created_at)",
+      "CHECK (delivery_channel IN ('in_app', 'email', 'sms', 'push'))",
+      "CHECK (dismissed_at IS NULL OR dismissed_at >= created_at)"
+    ]
+  },
+  {
+    "id": "user_feedback",
+    "name": "user_feedback",
+    "domain": "OPERATIONS",
+    "domain_title": "Agents & Operations",
+    "x": 3230,
+    "y": 2019,
+    "color": "#EC4899",
+    "desc": "Investor feedback and ratings on portfolio recommendations and conversational copilot responses.",
+    "columns": [
+      {
+        "name": "user_feedback_id",
+        "type": "UUID",
+        "pk": true,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "app_users",
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "portfolio_version_id",
+        "type": "UUID",
+        "pk": false,
+        "fk": "portfolio_versions",
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "feedback_type",
+        "type": "VARCHAR(30)",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      },
+      {
+        "name": "rating",
+        "type": "SMALLINT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "feedback_text",
+        "type": "TEXT",
+        "pk": false,
+        "fk": null,
+        "nullable": true,
+        "uq": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "pk": false,
+        "fk": null,
+        "nullable": false,
+        "uq": false
+      }
+    ],
+    "relations": [
+      {
+        "target": "portfolio_versions",
+        "label": "FK portfolio_version_id \u2192 portfolio_versions.portfolio_version_id"
+      },
+      {
+        "target": "app_users",
+        "label": "FK user_id \u2192 app_users.user_id"
+      }
+    ],
+    "constraints": [
+      "PRIMARY KEY (user_feedback_id)",
+      "FOREIGN KEY (portfolio_version_id) REFERENCES portfolio_versions(portfolio_version_id)",
+      "FOREIGN KEY (user_id) REFERENCES app_users(user_id)",
+      "CHECK (feedback_type IN ('recommendation', 'explanation', 'application', 'other'))",
+      "CHECK (rating IS NULL OR rating BETWEEN 1 AND 5)"
+    ]
+  }
+];
+
+    // State
+    let zoomLevel = 0.55;
+    let panX = 40;
+    let panY = 70;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let selectedTableId = null;
+
+    const viewportGroup = document.getElementById("viewport-group");
+    const nodesLayer = document.getElementById("nodes-layer");
+    const edgesLayer = document.getElementById("edges-layer");
+    const container = document.getElementById("canvas-container");
+    const inspector = document.getElementById("inspector-drawer");
+    const countBadge = document.getElementById("table-count-badge");
+
+    function updateTransform() {
+      viewportGroup.setAttribute("transform", `translate(${panX}, ${panY}) scale(${zoomLevel})`);
+      document.getElementById("zoom-reset").innerText = `${Math.round(zoomLevel * 100)}%`;
+    }
+
+    function autoFitVisibleTables(visibleTables) {
+      if (!visibleTables || visibleTables.length === 0) return;
+      const containerW = container.clientWidth || window.innerWidth;
+      const containerH = container.clientHeight || window.innerHeight;
+
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      visibleTables.forEach(t => {
+        const cardH = 44 + t.columns.length * 21;
+        minX = Math.min(minX, t.x);
+        minY = Math.min(minY, t.y);
+        maxX = Math.max(maxX, t.x + 260);
+        maxY = Math.max(maxY, t.y + cardH);
+      });
+
+      const width = maxX - minX + 120;
+      const height = maxY - minY + 120;
+
+      const scaleX = (containerW - 80) / width;
+      const scaleY = (containerH - 140) / height;
+      zoomLevel = Math.min(Math.max(Math.min(scaleX, scaleY), 0.28), 1.05);
+
+      panX = (containerW - (maxX + minX) * zoomLevel) / 2;
+      panY = (containerH - (maxY + minY) * zoomLevel) / 2 + 25;
+
+      updateTransform();
+    }
+
+    function renderDiagram(filterDomain = "ALL", searchQuery = "", shouldAutoFit = false) {
+      nodesLayer.innerHTML = "";
+      edgesLayer.innerHTML = "";
+
+      const query = searchQuery.trim().toLowerCase();
+      const visibleTables = SCHEMA_DATA.filter(t => {
+        let matchesDomain = false;
+        if (filterDomain === "ALL") {
+          matchesDomain = true;
+        } else if (filterDomain === "AGENTS_BROKER") {
+          matchesDomain = (t.domain === "OPERATIONS" || t.domain === "BROKER");
+        } else {
+          matchesDomain = (t.domain === filterDomain);
+        }
+
+        const matchesQuery = !query || 
+          t.name.toLowerCase().includes(query) || 
+          t.domain_title.toLowerCase().includes(query) ||
+          t.columns.some(c => c.name.toLowerCase().includes(query));
+
+        return matchesDomain && matchesQuery;
+      });
+
+      countBadge.innerText = `Showing ${visibleTables.length} of ${SCHEMA_DATA.length} Tables • All Fields Visible`;
+      if (visibleTables.length === 0) {
+        countBadge.className = "px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#FEE2E2] text-[#991B1B] border border-[#FCA5A5]";
+      } else {
+        countBadge.className = "px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#DCFCE7] text-[#166534] border border-[#86EFAC]";
+      }
+
+      const visibleTableMap = new Map(visibleTables.map(t => [t.id, t]));
+
+      // 1. Draw Connecting Edges
+      visibleTables.forEach(source => {
+        source.relations.forEach(rel => {
+          const target = visibleTableMap.get(rel.target);
+          if (target) {
+            let x1, x2;
+            if (source.x <= target.x) {
+              x1 = source.x + 260;
+              x2 = target.x;
+            } else {
+              x1 = source.x;
+              x2 = target.x + 260;
+            }
+            const y1 = source.y + 17;
+            const y2 = target.y + 17;
+            const isSelected = selectedTableId && (selectedTableId === source.id || selectedTableId === target.id);
+
+            const dx = Math.max(Math.abs(x2 - x1) * 0.45, 30);
+            const pathData = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("d", pathData);
+            path.setAttribute("fill", "none");
+            path.setAttribute("stroke", isSelected ? "#2563EB" : "#94A3B8");
+            path.setAttribute("stroke-width", isSelected ? "2.5" : "1.2");
+            path.setAttribute("marker-end", isSelected ? "url(#arrow-selected)" : "url(#arrow)");
+            if (isSelected) {
+              path.classList.add("edge-line");
+            }
+            edgesLayer.appendChild(path);
+          }
+        });
+      });
+
+      // 2. Draw Table Nodes
+      visibleTables.forEach(t => {
+        const isSelected = selectedTableId === t.id;
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        g.setAttribute("class", `table-card ${isSelected ? 'selected' : ''}`);
+        g.setAttribute("transform", `translate(${t.x}, ${t.y})`);
+        g.onclick = (e) => {
+          e.stopPropagation();
+          selectTable(t.id);
+        };
+
+        const cardH = 44 + t.columns.length * 21;
+
+        // Background Box
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rect.setAttribute("class", "card-bg");
+        rect.setAttribute("width", "260");
+        rect.setAttribute("height", cardH);
+        rect.setAttribute("rx", "12");
+        rect.setAttribute("fill", "#FFFFFF");
+        rect.setAttribute("stroke", isSelected ? "#2563EB" : "#CBD5E1");
+        rect.setAttribute("stroke-width", isSelected ? "3.5" : "1.5");
+        rect.setAttribute("filter", "url(#shadow)");
+        g.appendChild(rect);
+
+        // Header Rect
+        const headerRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        headerRect.setAttribute("width", "260");
+        headerRect.setAttribute("height", "34");
+        headerRect.setAttribute("rx", "12");
+        headerRect.setAttribute("fill", t.color);
+        headerRect.setAttribute("opacity", "0.95");
+        g.appendChild(headerRect);
+
+        // Header Bottom Flat Cover (clean card header look)
+        const headerBottomCover = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        headerBottomCover.setAttribute("y", "22");
+        headerBottomCover.setAttribute("width", "260");
+        headerBottomCover.setAttribute("height", "12");
+        headerBottomCover.setAttribute("fill", t.color);
+        headerBottomCover.setAttribute("opacity", "0.95");
+        g.appendChild(headerBottomCover);
+
+        // Table Title text
+        const titleText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        titleText.setAttribute("x", "12");
+        titleText.setAttribute("y", "21");
+        titleText.setAttribute("fill", "#FFFFFF");
+        titleText.setAttribute("font-weight", "bold");
+        titleText.setAttribute("font-size", "11.5");
+        titleText.textContent = t.name.length > 21 ? t.name.substring(0, 20) + "…" : t.name;
+        g.appendChild(titleText);
+
+        // Column Count Pill in Header
+        const colCountText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        colCountText.setAttribute("x", "248");
+        colCountText.setAttribute("y", "21");
+        colCountText.setAttribute("text-anchor", "end");
+        colCountText.setAttribute("fill", "#FFFFFF");
+        colCountText.setAttribute("opacity", "0.85");
+        colCountText.setAttribute("font-size", "10");
+        colCountText.setAttribute("font-weight", "600");
+        colCountText.textContent = t.columns.length + " fields";
+        g.appendChild(colCountText);
+
+        // Render ALL Columns without truncation or clipping
+        t.columns.forEach((col, idx) => {
+          const cy = 52 + idx * 21;
+
+          // Subtle alternating row striping for enhanced legibility
+          if (idx % 2 === 0) {
+            const rowBg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            rowBg.setAttribute("x", "4");
+            rowBg.setAttribute("y", (cy - 14).toString());
+            rowBg.setAttribute("width", "252");
+            rowBg.setAttribute("height", "19");
+            rowBg.setAttribute("rx", "4");
+            rowBg.setAttribute("fill", "#F8FAFC");
+            g.appendChild(rowBg);
+          }
+
+          // Key Badges
+          if (col.pk && col.fk) {
+            const pkFkBadge = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            pkFkBadge.setAttribute("x", "10");
+            pkFkBadge.setAttribute("y", cy);
+            pkFkBadge.setAttribute("fill", "#7C3AED");
+            pkFkBadge.setAttribute("font-weight", "extrabold");
+            pkFkBadge.setAttribute("font-size", "8.5");
+            pkFkBadge.textContent = "PK/FK";
+            g.appendChild(pkFkBadge);
+          } else if (col.pk) {
+            const pkBadge = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            pkBadge.setAttribute("x", "10");
+            pkBadge.setAttribute("y", cy);
+            pkBadge.setAttribute("fill", "#D97706");
+            pkBadge.setAttribute("font-weight", "extrabold");
+            pkBadge.setAttribute("font-size", "9.5");
+            pkBadge.textContent = "PK";
+            g.appendChild(pkBadge);
+          } else if (col.fk) {
+            const fkBadge = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            fkBadge.setAttribute("x", "10");
+            fkBadge.setAttribute("y", cy);
+            fkBadge.setAttribute("fill", "#2563EB");
+            fkBadge.setAttribute("font-weight", "extrabold");
+            fkBadge.setAttribute("font-size", "9.5");
+            fkBadge.textContent = "FK";
+            g.appendChild(fkBadge);
+          }
+
+          // Column Name
+          const colName = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          const nameX = (col.pk && col.fk) ? "46" : ((col.pk || col.fk) ? "32" : "12");
+          colName.setAttribute("x", nameX);
+          colName.setAttribute("y", cy);
+          colName.setAttribute("fill", col.pk ? "#0F172A" : "#334155");
+          colName.setAttribute("font-weight", col.pk ? "bold" : "normal");
+          colName.setAttribute("font-size", "10.5");
+          colName.setAttribute("font-family", "ui-monospace, SFMono-Regular, Menlo, monospace");
+          if (col.name.length > 21) {
+            colName.textContent = col.name.substring(0, 20) + "…";
+            const titleElem = document.createElementNS("http://www.w3.org/2000/svg", "title");
+            titleElem.textContent = col.name;
+            colName.appendChild(titleElem);
+          } else {
+            colName.textContent = col.name;
+          }
+          g.appendChild(colName);
+
+          // Column Data Type
+          const colType = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          colType.setAttribute("x", "248");
+          colType.setAttribute("y", cy);
+          colType.setAttribute("text-anchor", "end");
+          colType.setAttribute("fill", "#64748B");
+          colType.setAttribute("font-size", "9.5");
+          colType.setAttribute("font-family", "ui-monospace, SFMono-Regular, Menlo, monospace");
+          colType.textContent = col.type.split("(")[0];
+          g.appendChild(colType);
+        });
+
+        nodesLayer.appendChild(g);
+      });
+
+      if (shouldAutoFit) {
+        autoFitVisibleTables(visibleTables);
+      }
+    }
+
+    function selectTable(tableId) {
+      selectedTableId = tableId;
+      const t = SCHEMA_DATA.find(item => item.id === tableId);
+      if (!t) return;
+
+      document.getElementById("inspector-domain").innerText = `${t.domain} • ${t.domain_title}`;
+      document.getElementById("inspector-title").innerText = t.name;
+      document.getElementById("inspector-desc").innerText = t.desc;
+
+      const colsContainer = document.getElementById("inspector-columns");
+      colsContainer.innerHTML = t.columns.map(c => `
+        <div class="flex items-center justify-between p-1.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
+          <div class="flex items-center gap-1.5">
+            ${c.pk ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-[#FEF3C7] text-[#D97706]">PK</span>' : ''}
+            ${c.fk ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-[#DBEAFE] text-[#1D4ED8]">FK → ${c.fk}</span>` : ''}
+            <span class="font-bold text-[#0F172A]">${c.name}</span>
+          </div>
+          <span class="font-mono text-[#64748B] text-[11px]">${c.type}</span>
+        </div>
+      `).join("");
+
+      const relsContainer = document.getElementById("inspector-relations");
+      relsContainer.innerHTML = t.relations.length ? t.relations.map(r => `
+        <div class="flex items-center justify-between p-1.5 rounded-lg bg-white border border-[#E2E8F0] cursor-pointer hover:bg-[#F1F5F9] transition-colors" onclick="selectTable('${r.target}')">
+          <span class="font-semibold text-[#0F172A]">${r.target}</span>
+          <span class="text-[#2563EB] text-[11px] font-medium">${r.label}</span>
+        </div>
+      `).join("") : '<div class="text-[#94A3B8] italic">No outbound foreign key relations.</div>';
+
+      const constsContainer = document.getElementById("inspector-constraints");
+      constsContainer.innerHTML = t.constraints.length ? t.constraints.map(c => `<div>• ${c}</div>`).join("") : '<div class="text-[#94A3B8] italic">No custom constraints.</div>';
+
+      inspector.classList.remove("hidden");
+      renderDiagram(document.getElementById("domain-select").value, document.getElementById("search-input").value, false);
+    }
+
+    // Canvas Panning and Zooming
+    container.addEventListener("mousedown", (e) => {
+      if (e.target.closest(".table-card") || e.target.closest("#inspector-drawer")) return;
+      isDragging = true;
+      startX = e.clientX - panX;
+      startY = e.clientY - panY;
+      container.classList.add("grabbing");
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      if (!isDragging) return;
+      panX = e.clientX - startX;
+      panY = e.clientY - startY;
+      updateTransform();
+    });
+
+    window.addEventListener("mouseup", () => {
+      isDragging = false;
+      container.classList.remove("grabbing");
+    });
+
+    container.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const zoomFactor = 1.08;
+      if (e.deltaY < 0) {
+        zoomLevel = Math.min(zoomLevel * zoomFactor, 2.5);
+      } else {
+        zoomLevel = Math.max(zoomLevel / zoomFactor, 0.22);
+      }
+      updateTransform();
+    });
+
+    document.getElementById("zoom-in").onclick = () => {
+      zoomLevel = Math.min(zoomLevel * 1.2, 2.5);
+      updateTransform();
+    };
+    document.getElementById("zoom-out").onclick = () => {
+      zoomLevel = Math.max(zoomLevel / 1.2, 0.22);
+      updateTransform();
+    };
+    document.getElementById("zoom-reset").onclick = () => {
+      zoomLevel = 1.0;
+      panX = 40;
+      panY = 70;
+      updateTransform();
+    };
+    document.getElementById("zoom-fit").onclick = () => {
+      renderDiagram(document.getElementById("domain-select").value, document.getElementById("search-input").value, true);
+    };
+
+    document.getElementById("domain-select").onchange = (e) => {
+      renderDiagram(e.target.value, document.getElementById("search-input").value, true);
+    };
+
+    document.getElementById("search-input").oninput = (e) => {
+      renderDiagram(document.getElementById("domain-select").value, e.target.value, true);
+    };
+
+    document.getElementById("close-inspector").onclick = () => {
+      inspector.classList.add("hidden");
+      selectedTableId = null;
+      renderDiagram(document.getElementById("domain-select").value, document.getElementById("search-input").value, false);
+    };
+
+    // Initial Render and Auto-Fit
+    renderDiagram("ALL", "", true);
+  </script>
+</body>
+</html>

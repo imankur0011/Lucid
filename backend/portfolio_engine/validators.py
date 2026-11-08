@@ -3,7 +3,7 @@ Deterministic Portfolio Validation Runner.
 Executes all hard mathematical gates and produces database-ready validation records.
 """
 
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Optional
 from decimal import Decimal
 import uuid
 from datetime import datetime

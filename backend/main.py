@@ -61,8 +61,20 @@ async def lifespan(app: FastAPI):
     except Exception as exc:
         print(f"   ⚠️ PostgreSQL Connection warning: {exc}")
 
+    # Launch Unattended Background Portfolio Monitoring Scheduler
+    scheduler = None
+    try:
+        from backend.services.monitoring_scheduler import BackgroundMonitoringScheduler
+        scheduler = BackgroundMonitoringScheduler(interval_seconds=300)
+        scheduler.start()
+        print("   ✅ Background Monitoring Scheduler Active (300s cycle, IST 09:15-15:30 window)")
+    except Exception as exc:
+        print(f"   ⚠️ Background Monitoring Scheduler failed to start: {exc}")
+
     yield
 
+    if scheduler:
+        scheduler.stop()
     print("👋 Shutting down...")
 
 
@@ -87,6 +99,21 @@ app.add_middleware(
 
 # In-Memory Rate Limiting middleware (protects auth and expensive AI generation)
 app.add_middleware(InMemoryRateLimiterMiddleware, enabled=True)
+
+
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    """Adds enterprise security headers to all HTTP responses."""
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=()"
+    if settings.app_env in ("production", "staging"):
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
+
 
 # Mount API v1 Routes
 app.include_router(api_v1_router)

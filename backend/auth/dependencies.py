@@ -11,15 +11,20 @@ from fastapi import Depends, HTTPException, Security, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 import jwt
+import hashlib
 
 try:
     from backend.config import settings
     from backend.database import get_db
-    from backend.models import AppUser
+    from backend.models import AppUser, RevokedToken
 except ImportError:
     from config import settings
     from database import get_db
-    from models import AppUser
+    from models import AppUser, RevokedToken
+
+def hash_token(token: str) -> str:
+    """Returns SHA256 hex digest for token indexing and revocation lookup."""
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 # Demo investor UUID seeded in database
 DEMO_USER_ID = uuid.UUID("10000000-0000-4000-8000-000000000001")
@@ -70,6 +75,16 @@ async def get_current_user(
             sub = payload.get("sub") or payload.get("user_id")
             if sub:
                 user_id = uuid.UUID(str(sub))
+
+            # Verify token has not been revoked (e.g. via logout)
+            thash = hash_token(token)
+            revoked = db.query(RevokedToken).filter(RevokedToken.token_hash == thash).first()
+            if revoked:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Authentication token has been revoked / logged out. Please log in again.",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
         except jwt.ExpiredSignatureError:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

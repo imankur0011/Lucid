@@ -117,3 +117,65 @@ def test_portfolio_version_comparison_and_explanations_endpoints():
     assert "delta_return_pct" in comp_data["deltas"]
     assert "holdings_comparison" in comp_data
     assert len(comp_data["holdings_comparison"]) >= 3
+
+    # 5. List Portfolio Versions Endpoint
+    ver_list_res = client.get(f"/api/v1/portfolios/{portfolio_id}/versions")
+    assert ver_list_res.status_code == 200, ver_list_res.text
+    versions_list = ver_list_res.json()
+    assert len(versions_list) >= 2
+    assert any(v["portfolio_version_id"] == v1_id for v in versions_list)
+
+    # 6. Universal Compare Endpoint (Cross-Portfolio or Same Portfolio)
+    univ_res = client.post(
+        "/api/v1/portfolios/compare",
+        json={"version_a_id": v1_id, "version_b_id": v2_id},
+    )
+    assert univ_res.status_code == 200, univ_res.text
+    univ_data = univ_res.json()
+    assert "deltas" in univ_data
+    assert "holdings_comparison" in univ_data
+
+
+def test_export_portfolio_orders_json_and_csv():
+    """Verify exporting executable trade order baskets in JSON, standard CSV, and Zerodha formats."""
+    # 1. Create a portfolio version
+    gen_res = client.post(
+        "/api/v1/portfolio-generation-requests",
+        json={
+            "portfolio_name": "Order Basket Export Portfolio",
+            "investment_amount": 200000.0,
+            "currency_code": "INR",
+            "investment_horizon_months": 48,
+            "preferences": {"max_single_stock_weight_pct": 25.0, "max_sector_weight_pct": 40.0},
+        },
+    )
+    assert gen_res.status_code == 201, gen_res.text
+    data = gen_res.json()
+    pid = data["portfolio_id"]
+    vid = data["portfolio_version_id"]
+
+    # 2. JSON export
+    res_json = client.get(f"/api/v1/portfolios/{pid}/versions/{vid}/export-orders?export_format=json")
+    assert res_json.status_code == 200, res_json.text
+    json_data = res_json.json()
+    assert json_data["total_orders"] >= 3
+    assert json_data["investment_amount"] == 200000.0
+    first_order = json_data["orders"][0]
+    assert first_order["action"] == "BUY"
+    assert first_order["shares_quantity"] > 0
+    assert first_order["exchange"] == "NSE"
+
+    # 3. Standard CSV export
+    res_csv = client.get(f"/api/v1/portfolios/{pid}/versions/{vid}/export-orders?export_format=csv")
+    assert res_csv.status_code == 200, res_csv.text
+    assert "text/csv" in res_csv.headers["content-type"]
+    assert "Symbol,Security Name,Sector" in res_csv.text
+    assert "Cash Reserve (INR)" in res_csv.text
+
+    # 4. Zerodha Kite basket CSV export
+    res_zk = client.get(f"/api/v1/portfolios/{pid}/versions/{vid}/export-orders?export_format=zerodha_csv")
+    assert res_zk.status_code == 200, res_zk.text
+    assert "text/csv" in res_zk.headers["content-type"]
+    assert "Instrument,Exchange,Action,Order Type,Quantity,Price,Product" in res_zk.text
+    assert "BUY,LIMIT" in res_zk.text
+

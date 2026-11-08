@@ -11,6 +11,9 @@ from backend.models.users import (
     UserProfile,
     UserPreference,
     UserConsent,
+    UserVerificationCode,
+    RevokedToken,
+    UserProfileVersion,
 )
 
 # Investor domain
@@ -103,6 +106,9 @@ __all__ = [
     "UserProfile",
     "UserPreference",
     "UserConsent",
+    "UserVerificationCode",
+    "RevokedToken",
+    "UserProfileVersion",
     # Investor & Goals
     "FinancialGoal",
     "RiskQuestion",

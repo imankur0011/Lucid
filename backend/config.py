@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     # --- LLM ---
     gemini_api_key: Optional[str] = None
     llm_provider: str = "gemini"  # gemini | ollama
-    llm_model: str = "gemini-2.5-flash"
+    llm_model: str = "gemini-3.8-flash"
     ollama_base_url: str = "http://localhost:11434"
 
     # --- Neo4j ---

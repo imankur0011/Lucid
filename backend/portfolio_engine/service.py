@@ -5,6 +5,7 @@ Connects candidate selection, optimization, integer-share rounding, risk metrics
 
 from typing import List, Dict, Any, Optional
 from decimal import Decimal
+import math
 import uuid
 from datetime import date, datetime
 from sqlalchemy.orm import Session
@@ -16,6 +17,7 @@ try:
     from backend.portfolio_engine.allocation_rounding import calculate_integer_shares_and_amounts
     from backend.portfolio_engine.risk_metrics import compute_portfolio_metrics
     from backend.portfolio_engine.validators import PortfolioValidator
+    from backend.portfolio_engine.factors import determine_optimal_holding_count
 except ImportError:
     from portfolio_engine.candidate_selection import CandidateUniverseSelector
     from portfolio_engine.constraints import PortfolioConstraints, get_effective_constraints
@@ -23,6 +25,7 @@ except ImportError:
     from portfolio_engine.allocation_rounding import calculate_integer_shares_and_amounts
     from portfolio_engine.risk_metrics import compute_portfolio_metrics
     from portfolio_engine.validators import PortfolioValidator
+    from portfolio_engine.factors import determine_optimal_holding_count
 
 
 class PortfolioEngineService:
@@ -41,6 +44,7 @@ class PortfolioEngineService:
         max_single_stock_pct: float = 25.0,
         max_sector_pct: float = 40.0,
         as_of_date: Optional[date] = None,
+        prioritized_security_ids: Optional[List[uuid.UUID]] = None,
     ) -> Dict[str, Any]:
         """
         Executes the full deterministic portfolio calculation pipeline.
@@ -62,18 +66,48 @@ class PortfolioEngineService:
                 "validation": {"validation_status": "failed"},
             }
 
-        # 2. Build mathematical constraints with deterministic precedence hierarchy:
-        # effective_limit = min(HARD_POLICY_CEILING, RISK_PROFILE_CEILING, INVESTOR_REQUESTED_LIMIT)
         constraints = get_effective_constraints(
             risk_category=risk_category,
             requested_max_stock_pct=max_single_stock_pct,
             requested_max_sector_pct=max_sector_pct,
-            min_stocks_count=min(3, len(candidates)),
+            min_stocks_count=3,
+        )
+
+        MAX_PORTFOLIO_HOLDINGS = 20
+        min_candidates_for_cap = int(math.ceil(100.0 / max(0.01, constraints.max_single_stock_pct)))
+        if min_candidates_for_cap > MAX_PORTFOLIO_HOLDINGS or min_candidates_for_cap > len(candidates):
+            return {
+                "success": False,
+                "error": f"Infeasible constraints: requested max single-stock cap of {constraints.max_single_stock_pct}% requires at least {min_candidates_for_cap} holdings, exceeding maximum prudent retail holdings limit of {MAX_PORTFOLIO_HOLDINGS}.",
+                "holdings": [],
+                "validation": {"validation_status": "failed"},
+            }
+
+        target_k = max(
+            determine_optimal_holding_count(
+                capital=float(investment_amount),
+                goal_type="wealth_creation",
+                risk_category=risk_category,
+            ),
+            min_candidates_for_cap,
+        )
+        selected_candidates = selector.rank_and_select_candidates(
+            candidates=candidates,
+            target_count=min(target_k, len(candidates)),
+            risk_category=risk_category,
+            prioritized_security_ids=set(prioritized_security_ids) if prioritized_security_ids else None,
+        )
+
+        constraints = get_effective_constraints(
+            risk_category=risk_category,
+            requested_max_stock_pct=max_single_stock_pct,
+            requested_max_sector_pct=max_sector_pct,
+            min_stocks_count=min(3, len(selected_candidates)),
         )
 
         # 3. Optimize allocations
         opt_success, raw_allocations, opt_msg = optimize_portfolio_allocations(
-            candidates=candidates,
+            candidates=selected_candidates,
             risk_category=risk_category,
             constraints=constraints,
         )

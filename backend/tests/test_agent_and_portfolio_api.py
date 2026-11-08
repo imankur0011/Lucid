@@ -153,3 +153,49 @@ def test_end_to_end_portfolio_generation_workflow():
     assert sector_data["scenario_type"] == "sector_shock"
     # Overall impact is contained because IT is only a fraction of total portfolio
     assert float(sector_data["loss_pct"]) < 15.0
+
+    # Repeated execution of scenarios one after another (verifies idempotent upsert & unique constraint resilience)
+    shock_repeat_res = client.post(
+        f"/api/v1/portfolios/{portfolio_id}/scenarios",
+        json={
+            "scenario_type": "market_shock",
+            "scenario_name": "Severe Market Correction (-20%)",
+            "drop_pct": 20.0,
+        },
+    )
+    assert shock_repeat_res.status_code == 200, shock_repeat_res.text
+    assert shock_repeat_res.json()["scenario_code"] == "market_shock_20pct"
+
+    sector_repeat_res = client.post(
+        f"/api/v1/portfolios/{portfolio_id}/scenarios",
+        json={
+            "scenario_type": "sector_shock",
+            "scenario_name": "IT Sector Headwind (-15%)",
+            "drop_pct": 15.0,
+            "affected_sector": "Information Technology",
+        },
+    )
+    assert sector_repeat_res.status_code == 200, sector_repeat_res.text
+
+    # Conversational Chat: Crash Scenario Query (FR-D08)
+    chat_crash_res = client.post(
+        f"/api/v1/portfolios/{portfolio_id}/chat",
+        json={"message": "What happens if the market crashes 30% like in March 2020?"},
+    )
+    assert chat_crash_res.status_code == 200, chat_crash_res.text
+    chat_crash_data = chat_crash_res.json()
+    assert "reply" in chat_crash_data
+    assert "March 2020" in chat_crash_data["reply"] or "crash" in chat_crash_data["reply"].lower()
+    assert chat_crash_data["scenario_simulation"] is not None
+    assert chat_crash_data["scenario_simulation"]["loss_pct"] > 0
+
+    # Conversational Chat: Stock Inquiries (FR-D01)
+    chat_stock_res = client.post(
+        f"/api/v1/portfolios/{portfolio_id}/chat",
+        json={"message": "Why did you recommend Reliance?"},
+    )
+    assert chat_stock_res.status_code == 200, chat_stock_res.text
+    chat_stock_data = chat_stock_res.json()
+    assert "reply" in chat_stock_data
+    assert len(chat_stock_data["suggested_followups"]) > 0
+

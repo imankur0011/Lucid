@@ -33,6 +33,14 @@ class AppUser(Base):
     identity_provider: Mapped[str] = mapped_column(String(40), nullable=False, default="cognito", server_default="cognito")
     identity_subject: Mapped[str] = mapped_column(String(255), nullable=False)
     email: Mapped[Optional[str]] = mapped_column(String(320), nullable=True)
+    password_hash: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    email_verified: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="false"
+    )
+    mobile_number: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    mobile_verified: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="false"
+    )
     account_status: Mapped[str] = mapped_column(
         String(20), nullable=False, default="active", server_default="active"
     )
@@ -63,6 +71,8 @@ class AppUser(Base):
     existing_portfolios = relationship("ExistingPortfolio", back_populates="user", cascade="all, delete-orphan")
     notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
     feedback = relationship("UserFeedback", back_populates="user", cascade="all, delete-orphan")
+    verification_codes = relationship("UserVerificationCode", back_populates="user", cascade="all, delete-orphan")
+    profile_versions = relationship("UserProfileVersion", back_populates="user", cascade="all, delete-orphan")
 
 
 class UserProfile(Base):
@@ -70,6 +80,9 @@ class UserProfile(Base):
 
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("app_users.user_id", ondelete="CASCADE"), primary_key=True
+    )
+    version_number: Mapped[int] = mapped_column(
+        default=1, server_default="1", nullable=False
     )
     display_name: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
     country_code: Mapped[str] = mapped_column(CHAR(2), nullable=False, default="IN", server_default="IN")
@@ -95,6 +108,10 @@ class UserProfile(Base):
     )
 
     user = relationship("AppUser", back_populates="profile")
+
+    @property
+    def mobile_number(self) -> Optional[str]:
+        return self.user.mobile_number if self.user else None
 
 
 class UserPreference(Base):
@@ -142,3 +159,85 @@ class UserConsent(Base):
     )
 
     user = relationship("AppUser", back_populates="consents")
+
+
+class UserVerificationCode(Base):
+    __tablename__ = "user_verification_codes"
+
+    verification_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=text("gen_random_uuid()")
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("app_users.user_id", ondelete="CASCADE"), nullable=False
+    )
+    code_type: Mapped[str] = mapped_column(String(40), nullable=False)  # 'email_verification', 'mobile_verification', 'password_reset'
+    code_value: Mapped[str] = mapped_column(String(32), nullable=False)
+    recipient: Mapped[str] = mapped_column(String(320), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    is_used: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="false")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=func.now(), server_default=func.now()
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "code_type IN ('email_verification', 'mobile_verification', 'password_reset')",
+            name="ck_verification_code_type",
+        ),
+        Index("ix_verification_codes_lookup", "recipient", "code_type", "is_used"),
+        Index("ix_verification_codes_user", "user_id", text("created_at DESC")),
+    )
+
+    user = relationship("AppUser", back_populates="verification_codes")
+
+
+class RevokedToken(Base):
+    __tablename__ = "revoked_tokens"
+
+    revocation_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=text("gen_random_uuid()")
+    )
+    token_hash: Mapped[str] = mapped_column(String(128), nullable=False, unique=True)
+    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("app_users.user_id", ondelete="CASCADE"), nullable=True
+    )
+    revoked_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=func.now(), server_default=func.now()
+    )
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    __table_args__ = (
+        Index("ix_revoked_tokens_hash", "token_hash"),
+        Index("ix_revoked_tokens_expires", "expires_at"),
+    )
+
+    user = relationship("AppUser")
+
+
+class UserProfileVersion(Base):
+    __tablename__ = "user_profile_versions"
+
+    profile_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=text("gen_random_uuid()")
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("app_users.user_id", ondelete="CASCADE"), nullable=False
+    )
+    version_number: Mapped[int] = mapped_column(nullable=False)
+    display_name: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
+    country_code: Mapped[str] = mapped_column(CHAR(2), nullable=False, default="IN")
+    preferred_currency: Mapped[str] = mapped_column(CHAR(3), nullable=False, default="INR")
+    investment_experience: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    investment_knowledge_level: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    change_summary: Mapped[Optional[str]] = mapped_column(String(300), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=func.now(), server_default=func.now()
+    )
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "version_number", name="uq_user_profile_version"),
+        Index("ix_user_profile_versions_user", "user_id", text("version_number DESC")),
+    )
+
+    user = relationship("AppUser", back_populates="profile_versions")
+

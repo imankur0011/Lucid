@@ -12,6 +12,10 @@ from backend.models import MarketPrice, InstrumentListing, DataIngestionRun, Dat
 from backend.market_data.quality import validate_price_record, verify_listing_freshness
 from backend.market_data.adapter import SimulatedMarketProvider
 from backend.market_data.ingestion import MarketDataIngestionService
+from fastapi.testclient import TestClient
+from backend.main import app
+
+client = TestClient(app)
 
 
 def test_market_data_quality_rules():
@@ -113,3 +117,38 @@ def test_market_data_freshness_verification():
         assert "stale" in reason_future.lower()
     finally:
         db.close()
+
+
+def test_market_regime_and_macro_endpoints():
+    """Verify market regime detection, macro indicators, and news API endpoints."""
+    # 1. Test Regime Detection
+    regime_res = client.get("/api/v1/market-data/regime")
+    assert regime_res.status_code == 200, regime_res.text
+    regime_data = regime_res.json()
+    assert regime_data["regime"] in ("BULL", "BEAR", "SIDEWAYS", "HIGH_VOLATILITY", "CALM", "MODERATE", "VOLATILE", "EXTREME")
+    assert "india_vix" in regime_data
+    assert "risk_multiplier" in regime_data
+    assert "volatility_dimension" in regime_data
+
+    # Test override
+    override_res = client.get("/api/v1/market-data/regime?vix=28.5")
+    assert override_res.status_code == 200
+    assert override_res.json()["volatility_dimension"] == "EXTREME_VOLATILITY"
+
+    # 2. Test Macro Indicators
+    macro_res = client.get("/api/v1/market-data/macro-indicators")
+    assert macro_res.status_code == 200, macro_res.text
+    macro_data = macro_res.json()
+    assert macro_data["count"] >= 4
+    codes = [i["indicator_code"] for i in macro_data["indicators"]]
+    assert "RBI_REPO_RATE" in codes
+    assert "INDIA_CPI_INFLATION" in codes
+
+    # 3. Test Market News
+    news_res = client.get("/api/v1/market-data/news")
+    assert news_res.status_code == 200, news_res.text
+    news_data = news_res.json()
+    assert news_data["count"] >= 1
+    assert "headline" in news_data["articles"][0]
+    assert "sentiment_score" in news_data["articles"][0]
+

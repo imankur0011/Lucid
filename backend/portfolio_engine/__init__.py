@@ -11,6 +11,7 @@ from backend.portfolio_engine.allocation_rounding import calculate_integer_share
 from backend.portfolio_engine.risk_metrics import compute_portfolio_metrics
 from backend.portfolio_engine.validators import PortfolioValidator
 from backend.portfolio_engine.service import PortfolioEngineService
+from backend.portfolio_engine.factors import get_equity_factors, determine_optimal_holding_count
 
 __all__ = [
     "CandidateUniverseSelector",
@@ -21,4 +22,6 @@ __all__ = [
     "compute_portfolio_metrics",
     "PortfolioValidator",
     "PortfolioEngineService",
+    "get_equity_factors",
+    "determine_optimal_holding_count",
 ]

@@ -26,7 +26,7 @@ def run_gemini_smoke_test():
 
     api_key = os.environ.get("GEMINI_API_KEY") or getattr(settings, "gemini_api_key", None)
 
-    print(f"Configured Model : {getattr(settings, 'llm_model', 'gemini-2.5-flash')}")
+    print(f"Configured Model : {getattr(settings, 'llm_model', 'gemini-3.8-flash')}")
     print(f"LLM Provider     : {getattr(settings, 'llm_provider', 'gemini')}")
 
     if not api_key or api_key == "your_gemini_api_key_here" or len(api_key) < 10:
@@ -51,7 +51,7 @@ def run_gemini_smoke_test():
         from langchain_google_genai import ChatGoogleGenerativeAI
         from langchain_core.messages import SystemMessage, HumanMessage
 
-        model_name = getattr(settings, "llm_model", "gemini-2.5-flash") or "gemini-2.5-flash"
+        model_name = getattr(settings, "llm_model", "gemini-3.8-flash") or "gemini-3.8-flash"
         llm = ChatGoogleGenerativeAI(
             model=model_name,
             google_api_key=api_key,
