@@ -1,16 +1,26 @@
 \chapter{Datasets Used and External Data Sources}
 
 \section{Dataset Overview and Ingestion Pipeline}
-Lucid integrates multiple disparate data sources spanning exchange security directories, daily financial market quotes, corporate balance sheets, central bank macroeconomic policy publications, and financial news feeds. 
+Lucid integrates multiple disparate data sources spanning exchange security directories, daily financial market quotes, corporate balance sheets, central bank macroeconomic policy publications, and financial news feeds. The ingestion pipeline transforms raw external data feeds into standardized relational structures across five primary data tiers:
 
-Figure~\ref{fig:api_to_agent} illustrates how external data is ingested, transformed, normalized in PostgreSQL, and selectively structured before being delivered to specific LangGraph agent nodes:
+\begin{enumerate}
+    \item \textbf{Exchange Security Masters}: Canonical exchange archives from the NSE and BSE cataloging 2,639 listed corporate equities, ISIN mappings, and listing metadata.
+    \item \textbf{Historical Market Quotes}: Daily OHLCV trading bars (252 sessions) and volume statistics per qualified equity retrieved via Yahoo Finance.
+    \item \textbf{Corporate Fundamentals}: Point-in-time balance sheet ratios (P/E, P/B, ROE, Debt/Equity, Operating Margins) extracted from quarterly filings.
+    \item \textbf{Macroeconomic Benchmarks}: Central bank policy rates from the RBI DBIE (policy repo rate, India 10-year bond yields, CPI inflation).
+    \item \textbf{Financial News and Sentiment}: Curated articles parsed from financial feeds and Google News RSS, scored for polarity and entity-ISIN linkage.
+\end{enumerate}
 
-\begin{figure}[!htbp]
+Figure~\ref{fig:api_to_agent} illustrates how raw external data is ingested, validated, normalized in PostgreSQL, and selectively structured before being delivered to specific LangGraph agent nodes:
+
+\clearpage
+\begin{figure}[p]
     \centering
-    \includegraphics[width=0.88\textwidth, height=0.68\textheight, keepaspectratio]{API_TO_AGENT_DATA_FLOW.png}
+    \includegraphics[width=0.92\textwidth, height=0.82\textheight, keepaspectratio]{API_TO_AGENT_DATA_FLOW.png}
     \caption{Data Ingestion, Transformation, and Agent Payload Delivery Pipeline}
     \label{fig:api_to_agent}
 \end{figure}
+\clearpage
 
 \section{External Data-Source Inventory}
 Table~\ref{tab:external_data_sources} provides an exhaustive inventory of every external data source integrated into Lucid, detailing the endpoint, retrieved fields, refresh frequency, and failure fallbacks.
