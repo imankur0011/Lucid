@@ -1,0 +1,131 @@
+\chapter{Work Done and Functional Requirements Implementation}
+
+\section{Overview of Implemented Functionalities}
+The implementation of Lucid translates the architectural blueprints and low-level designs into a fully functional, verified software platform. All eleven functional requirements---comprising ten core requirements (\textbf{FR-C01} through \textbf{FR-C10}) and one differentiating requirement (\textbf{FR-D01})---are implemented, verified, and operational.
+
+\section{Core Functional Requirements Implementation}
+
+\subsection{FR-C01: User Onboarding and Profile Management}
+\begin{itemize}
+    \item \textbf{Implementation}: Developed in \texttt{frontend/src/components/OnboardingWizard.tsx} and \texttt{backend/api/v1/auth.py}, \texttt{risk.py}.
+    \item \textbf{Functionality}: Collects investor demographics, monthly savings, and investment horizon. Executes the 5-question psychometric suitability survey, computing an aggregate score and assigning a risk profile (Conservative, Moderate, Aggressive).
+    \item \textbf{Persistence}: Stored across \texttt{app\_users}, \texttt{user\_profiles}, \texttt{risk\_assessments}, and \texttt{risk\_assessment\_answers}. Passwords use Argon2id hashing.
+\end{itemize}
+
+\subsection{FR-C02: Natural-Language Input Processing}
+\begin{itemize}
+    \item \textbf{Implementation}: Developed in \texttt{backend/services/nlp\_profile\_extractor.py} and \texttt{frontend/src/components/ConversationalAssistant.tsx}.
+    \item \textbf{Functionality}: Uses Google Gemini with structured Pydantic schema constraints to parse colloquial expressions (e.g., ``invest 2.5 lakhs for my daughter's higher education in 8 years, avoid defense stocks'').
+    \item \textbf{Extracted Attributes}: Normalizes capital into numeric floats (Rs.~2,50,000), maps horizon to integer years (8), sets goal category (Education), and maps sector names to canonical taxonomy codes (\texttt{DEFENSE\_AEROSPACE}).
+\end{itemize}
+
+\subsection{FR-C03: Market Regime Classification}
+\begin{itemize}
+    \item \textbf{Implementation}: Developed in \texttt{backend/market\_data/regime.py} and \texttt{backend/api/v1/market\_data.py}.
+    \item \textbf{Functionality}: Evaluates daily quotes of Nifty 50 against 50-day and 200-day simple moving averages, and benchmarks India VIX across four volatility tiers ($<13$, $13-18$, $18-24$, $>24$).
+    \item \textbf{Impact}: Dynamically scales the risk aversion multiplier $\lambda$ inside the optimization objective, penalizing high-beta equities during elevated volatility periods.
+\end{itemize}
+
+\subsection{FR-C04: Candidate Stock Universe Discovery and Tiering}
+\begin{itemize}
+    \item \textbf{Implementation}: Developed in \texttt{backend/portfolio\_engine/candidate\_selection.py} and \texttt{backend/market\_data/exchange\_universe\_sync.py}.
+    \item \textbf{Functionality}: Ingests the full 2,639 listed exchange universe, applying automated liquidity filters (ADTV $\ge 10,000$ shares, daily turnover $\ge \text{Rs.~}25,00,000$).
+    \item \textbf{Output}: Extracts an active, recommendation-eligible basket of exactly \textbf{504 liquid equities}, excluding illiquid micro-caps.
+\end{itemize}
+
+\subsection{FR-C05: Multi-Agent Reasoning via LangGraph StateGraph}
+\begin{itemize}
+    \item \textbf{Implementation}: Developed in \texttt{backend/agents/graph.py} and \texttt{backend/agents/nodes/}.
+    \item \textbf{Functionality}: Orchestrates a 13-node cyclical state graph where specialized agents analyze macro trends, corporate fundamentals (ROE $\ge 15\%$, Debt/Equity $\le 1.5$), and corporate news. 
+    \item \textbf{Adversarial Critic}: A dedicated Critic node challenges proposed selections for valuation risk or cyclical vulnerability before final weight assignment.
+\end{itemize}
+
+\subsection{FR-C06: Mathematical Optimization and LLM Decoupling}
+\begin{itemize}
+    \item \textbf{Implementation}: Developed in \texttt{backend/portfolio\_engine/optimizer.py}.
+    \item \textbf{Functionality}: Strictly prohibits the LLM from emitting numerical allocations. Solves constrained Markowitz mean-variance optimization using SciPy SLSQP.
+    \item \textbf{Constraint Enforcement}: Guarantees $\sum w_i = 100.0\%$, single-stock weights $\le 25\%$, and sector allocations $\le 40\%$.
+\end{itemize}
+
+\subsection{FR-C07: Continuous Unattended Portfolio Monitoring}
+\begin{itemize}
+    \item \textbf{Implementation}: Developed in \texttt{backend/services/monitoring\_scheduler.py} and \texttt{backend/portfolio\_engine/monitoring\_service.py}.
+    \item \textbf{Functionality}: Asynchronous background scheduler waking every 300 seconds during Indian market hours (09:15--15:30 IST).
+    \item \textbf{Drift Detection}: Revalues all active investor portfolios with live market prices, calculating single-stock drift and sector drift against target versions.
+\end{itemize}
+
+\subsection{FR-C08: Friction-Aware Rebalancing Engine}
+\begin{itemize}
+    \item \textbf{Implementation}: Developed in \texttt{backend/portfolio\_engine/rebalancing\_service.py} and \texttt{backend/portfolio\_engine/transaction\_costs.py}.
+    \item \textbf{Functionality}: Triggers when asset drift exceeds 5\% or sector drift exceeds 8\%. Generates an actionable order preview detailing whole-share BUY/SELL quantities.
+    \item \textbf{Statutory Cost Accounting}: Deducts estimated STT, exchange turnover fees, SEBI charges, stamp duty, and GST, ensuring exact cash balance conservation.
+\end{itemize}
+
+\subsection{FR-C09: Real-Time Alerts and Notifications Subsystem}
+\begin{itemize}
+    \item \textbf{Implementation}: Developed in \texttt{backend/api/v1/notifications.py} and \texttt{frontend/src/components/NotificationsPanel.tsx}.
+    \item \textbf{Functionality}: Persists real-time alerts into the \texttt{notifications} table upon drift threshold breach, rebalance recommendation, or market shock, rendering instant visual badges in the investor dashboard.
+\end{itemize}
+
+\subsection{FR-C10: Existing Demat Portfolio (CAS) Diagnosis}
+\begin{itemize}
+    \item \textbf{Implementation}: Developed in \texttt{backend/services/cas\_parser.py} and \texttt{frontend/src/components/DiagnosisView.tsx}.
+    \item \textbf{Functionality}: Ingests CDSL/NSDL PDF statements, extracting stock ISINs, quantities, and acquisition prices. Computes the Herfindahl-Hirschman Index (HHI), flags stock and sector concentration risks, and provides actionable position ratings.
+\end{itemize}
+
+\section{Differentiating Functional Requirement Implementation}
+
+\subsection{FR-D01: Fiduciary ``Stock-Why'' Explainability and Transparent Critic}
+\begin{itemize}
+    \item \textbf{Implementation}: Developed in \texttt{backend/api/v1/portfolios.py} (line 120+) and \texttt{frontend/src/components/StockWhyModal.tsx}.
+    \item \textbf{Functionality}: Eliminates the robo-advisory black box. For every recommended holding, Lucid renders a dual-level explanation:
+    \begin{enumerate}
+        \item \textbf{Retail Narrative Tier}: Conversational, accessible prose explaining the company's competitive advantage, market position, and qualitative reason for inclusion.
+        \item \textbf{Quantitative Metric Tier}: Hard verifiable scorecard displaying the stock's P/E ratio, P/B ratio, ROE percentage, Debt-to-Equity, 1-year historical return, systematic beta, and marginal contribution to portfolio risk.
+    \end{enumerate}
+\end{itemize}
+
+\section{Comprehensive Requirements Traceability Matrix}
+Table~\ref{tab:traceability_matrix} establishes complete end-to-end traceability from functional requirement IDs to frontend components, backend routers, database tables, and automated test suites.
+
+\begin{table}[H]
+\centering
+\caption{Comprehensive Functional Requirements Traceability Matrix}
+\label{tab:traceability_matrix}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lp{3.5cm}p{3cm}p{3.5cm}p{3cm}c}
+\toprule
+\textbf{Req ID} & \textbf{Frontend UI Component} & \textbf{Backend Router} & \textbf{Database Tables} & \textbf{Test Suite File} & \textbf{Status} \\
+\midrule
+\textbf{FR-C01} & \texttt{OnboardingWizard.tsx} & \texttt{api/v1/risk.py} & \texttt{app\_users}, \texttt{risk\_assessments} & \texttt{test\_auth\_and\_security.py} & \textbf{Implemented} \\
+\textbf{FR-C02} & \texttt{ConversationalAssistant.tsx} & \texttt{api/v1/portfolios.py} & \texttt{financial\_goals}, \texttt{user\_profiles} & \texttt{test\_natural\_language\_onboarding.py} & \textbf{Implemented} \\
+\textbf{FR-C03} & \texttt{HoldingsView.tsx} & \texttt{api/v1/market\_data.py} & \texttt{economic\_observations}, \texttt{market\_prices} & \texttt{test\_market\_regime\_and\_universe.py} & \textbf{Implemented} \\
+\textbf{FR-C04} & \texttt{HoldingsView.tsx} & \texttt{api/v1/market\_data.py} & \texttt{securities}, \texttt{instrument\_listings} & \texttt{test\_full\_universe\_sync.py} & \textbf{Implemented} \\
+\textbf{FR-C05} & \texttt{StockWhyModal.tsx} & \texttt{agents/graph.py} & \texttt{agent\_execution\_runs}, \texttt{evidence\_items} & \texttt{test\_multi\_agent\_llm\_execution.py} & \textbf{Implemented} \\
+\textbf{FR-C06} & \texttt{AllocationVisualizer.tsx} & \texttt{portfolio\_engine/} & \texttt{portfolio\_versions}, \texttt{portfolio\_security\_decisions} & \texttt{test\_portfolio\_engine.py} & \textbf{Implemented} \\
+\textbf{FR-C07} & \texttt{HoldingsView.tsx} & \texttt{api/v1/monitoring.py} & \texttt{portfolio\_performance\_snapshots} & \texttt{test\_portfolio\_monitoring\_and\_rebalance.py} & \textbf{Implemented} \\
+\textbf{FR-C08} & \texttt{RebalancePreviewModal.tsx} & \texttt{api/v1/rebalancing.py} & \texttt{rebalance\_suggestions}, \texttt{broker\_orders} & \texttt{test\_diagnosis\_and\_rebalance.py} & \textbf{Implemented} \\
+\textbf{FR-C09} & \texttt{NotificationsPanel.tsx} & \texttt{api/v1/notifications.py} & \texttt{notifications} & \texttt{test\_notifications\_system.py} & \textbf{Implemented} \\
+\textbf{FR-C10} & \texttt{DiagnosisView.tsx} & \texttt{api/v1/diagnosis.py} & \texttt{existing\_portfolios}, \texttt{portfolio\_diagnoses} & \texttt{test\_diagnosis\_copilot.py} & \textbf{Implemented} \\
+\textbf{FR-D01} & \texttt{StockWhyModal.tsx} & \texttt{api/v1/portfolios.py} & \texttt{recommendation\_explanations}, \texttt{evidence\_items} & \texttt{test\_stock\_why\_experience.py} & \textbf{Implemented} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\section{Application User Interface Demonstrations}
+Figures~\ref{fig:ui_landing} and \ref{fig:ui_portfolio} show live application screens captured from the running Next.js web application (\texttt{http://localhost:3000}):
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{ui_landing_dashboard.png}
+    \caption{Lucid Web Application: Main Investor Landing and Navigation Interface}
+    \label{fig:ui_landing}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{ui_portfolio_allocation.png}
+    \caption{Lucid Web Application: Generated Portfolio Holdings and Allocation View}
+    \label{fig:ui_portfolio}
+\end{figure}

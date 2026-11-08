@@ -1,0 +1,145 @@
+\chapter{Datasets Used and External Data Sources}
+
+\section{Dataset Overview and Ingestion Pipeline}
+Lucid integrates multiple disparate data sources spanning exchange security directories, daily financial market quotes, corporate balance sheets, central bank macroeconomic policy publications, and financial news feeds. 
+
+Figure~\ref{fig:api_to_agent} illustrates how external data is ingested, transformed, normalized in PostgreSQL, and selectively structured before being delivered to specific LangGraph agent nodes:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{API_TO_AGENT_DATA_FLOW.png}
+    \caption{Data Ingestion, Transformation, and Agent Payload Delivery Pipeline}
+    \label{fig:api_to_agent}
+\end{figure}
+
+\section{External Data-Source Inventory}
+Table~\ref{tab:external_data_sources} provides an exhaustive inventory of every external data source integrated into Lucid, detailing the endpoint, retrieved fields, refresh frequency, and failure fallbacks.
+
+\begin{table}[H]
+\centering
+\caption{Lucid External Data-Source Inventory and Ingestion Parameters}
+\label{tab:external_data_sources}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llllll}
+\toprule
+\textbf{Provider / Source} & \textbf{Endpoint / Archive} & \textbf{Data Retrieved} & \textbf{Format} & \textbf{Refresh Schedule} & \textbf{Fallback Behavior} \\
+\midrule
+\textbf{National Stock Exchange (NSE)} & \texttt{archives.nseindia.com/content/equities/EQUITY\_L.csv} & Symbol, Name, ISIN, Face Value, Listing Date & CSV & Weekly / Manual trigger & Cached database master \\
+\textbf{Bombay Stock Exchange (BSE)} & BSE Equity Scrip Master & Scrip Code, Scrip Name, ISIN & CSV/JSON & Monthly & Direct NSE primary ticker \\
+\textbf{Yahoo Finance (\texttt{yfinance})} & \texttt{/v8/finance/chart/{symbol}} & 1-Yr Daily OHLCV Quotes, Adj Close, Volume & JSON/Pandas & Daily post-market (16:30 IST) & Stored \texttt{market\_prices} records \\
+\textbf{Yahoo Finance Fundamentals} & \texttt{/v10/finance/quoteSummary/{symbol}} & P/E, P/B, ROE, Debt/Equity, Market Cap & JSON & Weekly & Point-in-time \texttt{fundamental\_metrics} \\
+\textbf{Reserve Bank of India (RBI)} & RBI DBIE Macro Bulletin & Policy Repo Rate, Reverse Repo, MSF Rate & REST/HTML & Bi-monthly MPC meeting & Seeded baseline (6.50\% Repo Rate) \\
+\textbf{NSE Market Indices} & NSE Index Stream & India VIX, Nifty 50 Index Value & REST/JSON & Real-time (15-min delayed) & Historical moving average \\
+\textbf{Google Gemini API} & \texttt{gemini-3.8-flash} via LangChain & Qualitative reasoning, thesis synthesis & JSON & On-demand per request & Deterministic rule-based models \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\section{Exchange Universe Coverage and Synchronization}
+The canonical equity universe is managed by \texttt{sync\_full\_exchange\_universe()} in \texttt{backend/market\_data/exchange\_universe\_sync.py}.
+
+\subsection{ISIN Collision Resolution and Split Mappings}
+During full-universe ingestion from official exchange archives, corporate actions such as stock splits and ISIN changes can introduce duplicate records or foreign key constraint collisions. For instance:
+\begin{itemize}
+    \item \textbf{Bajaj Finance Ltd. (BAJFINANCE)}: Historical split from face value Rs.~10 to Rs.~2 changed the primary ISIN from \texttt{INE296A01016} to \texttt{INE296A01024}.
+    \item \textbf{Dr. Reddy's Laboratories (DRREDDY)}: Face value modification from Rs.~5 to Rs.~1 updated the security ISIN.
+    \item \textbf{Hindustan Aeronautics Ltd. (HAL)}: Sub-division from Rs.~10 to Rs.~5 generated a new active ISIN.
+\end{itemize}
+The synchronization service resolves these collisions through unique upsert logic (\texttt{ON CONFLICT (isin) DO UPDATE}), ensuring that historical price data references the correct, active scrip listing.
+
+\subsection{Active Universe Scale}
+As verified in PostgreSQL 16:
+\begin{itemize}
+    \item \textbf{Total Stored Securities}: Exactly \textbf{2,639 listed equities} spanning large-cap, mid-cap, small-cap, and emerging enterprise segments.
+    \item \textbf{Total Exchange Listings}: Exactly \textbf{2,715 trading listings} (accounting for dual-listed equities across NSE and BSE).
+    \item \textbf{Liquid Recommendation Universe}: Exactly \textbf{504 liquid equities} passing ADTV and turnover liquidity thresholds.
+    \item \textbf{Searchable / Diagnosable Auxiliary Universe}: Exactly \textbf{2,135 securities} retained for Demat CAS portfolio imports and exploratory search.
+
+\end{itemize}
+
+\section{Historical Market Pricing and Lookback Analysis}
+Historical pricing records are maintained in the \texttt{market\_prices} table. 
+\begin{itemize}
+    \item \textbf{Lookback Horizon}: 252 trading sessions (representing one full financial year).
+    \item \textbf{Granularity}: Daily Open, High, Low, Close, Adjusted Close, and Volume.
+    \item \textbf{Continuous Returns}: Logarithmic daily returns are calculated as:
+    \begin{equation}
+    r_{i,t} = \ln \left( \frac{P_{i,t}^{\text{adj}}}{P_{i,t-1}^{\text{adj}}} \right)
+    \end{equation}
+    \item \textbf{Covariance Matrix ($\mathbf{\Sigma}$)}: The sample pairwise covariance matrix between all candidate assets is computed using NumPy:
+    \begin{equation}
+    \Sigma_{ij} = \frac{1}{T-1} \sum_{t=1}^{T} (r_{i,t} - \bar{r}_i)(r_{j,t} - \bar{r}_j)
+    \end{equation}
+    Annualized covariance is obtained by scaling by $\sqrt{252}$.
+\end{itemize}
+
+\section{Exact Data Payloads Delivered to Multi-Agent Nodes}
+A critical requirement of Lucid's architecture is that \textbf{raw external API responses are never dumped directly into the LLM context}. Dumping raw JSON wastes context tokens, slows response latency, and increases the likelihood of model confusion.
+
+Instead, backend services transform and filter raw API data, delivering clean, structured JSON payloads to specific agent nodes. Table~\ref{tab:agent_payloads} specifies the exact fields provided to each agent:
+
+\begin{table}[H]
+\centering
+\caption{Exact Data Payloads Delivered to LangGraph Multi-Agent Nodes}
+\label{tab:agent_payloads}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lllp{6cm}}
+\toprule
+\textbf{Agent Node} & \textbf{Data Source} & \textbf{Raw Data Type} & \textbf{Exact Structured Payload Fields Delivered to Agent} \\
+\midrule
+\textbf{Input Validator} & User HTTP Request & JSON & \texttt{capital\_inr}, \texttt{risk\_category}, \texttt{time\_horizon\_years}, \texttt{goal\_name}, \texttt{excluded\_sectors} \\
+\textbf{Macro Analyst} & RBI DBIE / Policy Bulletins & HTML / Reports & \texttt{rbi\_repo\_rate\_pct}, \texttt{inflation\_cpi\_pct}, \texttt{gdp\_growth\_forecast}, \texttt{monetary\_stance} \\
+\textbf{Market Regime} & NSE India Index Feeds & Live Quotes & \texttt{india\_vix\_value}, \texttt{vix\_tier}, \texttt{nifty\_current}, \texttt{nifty\_50\_dma}, \texttt{nifty\_200\_dma}, \texttt{regime\_trend} \\
+\textbf{Universe Selector} & PostgreSQL Master & SQL Records & Filtered list of candidate tickers: \texttt{symbol}, \texttt{company\_name}, \texttt{sector}, \texttt{industry}, \texttt{market\_cap\_tier} \\
+\textbf{Fundamental Analyst} & Yahoo Finance / DB & Financial Statements & Per Candidate: \texttt{symbol}, \texttt{pe\_ratio}, \texttt{pb\_ratio}, \texttt{roe\_pct}, \texttt{debt\_to\_equity}, \texttt{operating\_margin} \\
+\textbf{Sentiment / News} & Curated Ingested News & Text Articles & Per Candidate: \texttt{symbol}, \texttt{recent\_headlines\_count}, \texttt{net\_sentiment\_score}, \texttt{regulatory\_flags} \\
+\textbf{Adversarial Critic} & Preceding Node State & Python Dictionary & Candidate shortlist, proposed sector weights, aggregate conviction scores, identified risk factors \\
+\textbf{SLSQP Optimizer} & Quant Service & Vectorized Arrays & Covariance matrix $\mathbf{\Sigma}$, expected return vector $\boldsymbol{\mu}$, risk-free rate $R_f$, budget/sector bounds \\
+\textbf{Explainability Node} & Portfolio Decisions & DB Records & Final chosen symbols, allocated weights, whole shares, Sharpe score, marginal risk contribution \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\subsection{Sanitized Agent Context Example}
+Below is a representative sanitized payload delivered to the \textbf{Fundamental Analyst Node}:
+
+\begin{verbatim}
+{
+  "macro_context": {
+    "repo_rate": 6.50,
+    "vix_tier": "Normal Volatility (14.2)",
+    "market_trend": "Bullish above 200-DMA"
+  },
+  "candidate_stocks": [
+    {
+      "symbol": "TCS",
+      "company": "Tata Consultancy Services Ltd.",
+      "sector": "Information Technology",
+      "pe_ratio": 28.4,
+      "pb_ratio": 12.1,
+      "roe_pct": 46.2,
+      "debt_to_equity": 0.08,
+      "beta": 0.72
+    },
+    {
+      "symbol": "HDFCBANK",
+      "company": "HDFC Bank Ltd.",
+      "sector": "Financial Services",
+      "pe_ratio": 18.2,
+      "pb_ratio": 2.6,
+      "roe_pct": 16.8,
+      "debt_to_equity": 0.85,
+      "beta": 1.05
+    }
+  ]
+}
+\end{verbatim}
+
+\section{Dataset Quality, Limitations and Fallbacks}
+\begin{itemize}
+    \item \textbf{Rate Limits on External APIs}: Free market data tiers enforce rate limits (typically 2,000 requests/hour). Lucid mitigates this through caching in PostgreSQL (\texttt{market\_prices}), updating quotes only post-market.
+    \item \textbf{Corporate Action Adjustments}: Yahoo Finance quotes reflect historical dividend and split adjustments (\texttt{adj\_close}), ensuring that return calculations reflect genuine capital compounding.
+    \item \textbf{Deterministic Rule Fallback}: In the event of a Google Gemini API outage or timeout, Lucid activates its deterministic rule engine, scoring fundamentals using pre-calculated econometric weights with zero service disruption.
+\end{itemize}

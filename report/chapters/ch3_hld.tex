@@ -1,0 +1,96 @@
+\chapter{High-Level Design (HLD)}
+
+\section{HLD Overview}
+The High-Level Design (HLD) defines the structural blueprint, subsystem boundaries, inter-component communication channels, and primary user journeys governing the Lucid platform. Lucid is architected as an institutional-grade, multi-tier software system engineered specifically to meet the high-throughput, low-latency, and deterministic computational demands of Indian retail equity investing.
+
+The platform strictly adheres to the principle of \textbf{Separation of Concerns (SoC)}:
+\begin{itemize}
+    \item Qualitative contextual reasoning is isolated within an asynchronous multi-agent artificial intelligence framework.
+    \item Quantitative numerical optimization is executed within a dedicated mathematical solver.
+    \item Financial transaction state and security master catalogs are safeguarded within an ACID-compliant relational persistence engine.
+\end{itemize}
+
+\section{Major System Components}
+Lucid is decomposed into seven primary architectural subsystems, as illustrated in Figure~\ref{fig:hld_architecture}:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{SYSTEM_ARCHITECTURE.png}
+    \caption{Lucid High-Level System Architecture and Tier Decomposition}
+    \label{fig:hld_architecture}
+\end{figure}
+
+\subsection{Client Presentation Subsystem}
+Developed using \textbf{Next.js 16.4.2} (utilizing the App Router paradigm) and \textbf{React 19.3.0}, the presentation subsystem delivers a responsive, type-safe web dashboard for retail investors. The client implements interactive risk questionnaires, goal planning tools, asset allocation visualizers, stock explanation modals, Demat CAS file upload zones, and drift radar dashboards. All user interactions communicate asynchronously with the backend via a type-safe API client layer (\texttt{frontend/src/lib/api.ts}).
+
+\subsection{API Gateway and Security Subsystem}
+Powered by \textbf{FastAPI 0.115+} and running on the \textbf{Uvicorn ASGI} web server, the API layer acts as the centralized gateway for all incoming HTTP/HTTPS traffic. It enforces:
+\begin{itemize}
+    \item Cross-Origin Resource Sharing (CORS) policies.
+    \item Cryptographic authentication using JSON Web Tokens (JWT) signed with 256-bit secret keys.
+    \item Enterprise HTTP security headers (nosniff, frame-options DENY, XSS protection).
+    \item In-memory sliding-window rate limiting to protect computationally expensive AI generation endpoints from resource exhaustion.
+\end{itemize}
+
+\subsection{Business and Application Service Subsystem}
+This layer houses the core business logic governing user profiles, financial goal lifecycle management, market data retrieval, liquidity tier screening, portfolio performance calculation, Demat statement parsing, and friction-aware rebalancing.
+
+\subsection{Multi-Agent AI Orchestration Subsystem}
+Implemented using \textbf{LangGraph 0.4 StateGraph}, this subsystem coordinates a collective of specialized cognitive agent nodes. Rather than relying on a single prompt, the workflow systematically evaluates macroeconomic monetary policy, India VIX market volatility regimes, corporate fundamental metrics, and market news sentiment. It synthesizes qualitative conviction scores and detailed fiduciary explanations.
+
+\subsection{Quantitative and Optimization Subsystem}
+Completely decoupled from the LLM, this subsystem utilizes \textbf{SciPy 1.15's SLSQP solver} (\texttt{scipy.optimize.minimize}) to compute constrained Markowitz mean-variance allocations. The quantitative engine includes a deterministic integer lot sizing module and a statutory transaction friction model.
+
+\subsection{Data Persistence and Schema Subsystem}
+The exclusive source of truth for the entire platform is \textbf{PostgreSQL 16}. Managed via \textbf{SQLAlchemy 2.0} ORM and version-controlled using \textbf{Alembic}, the database comprises \textbf{62 domain application tables} (+1 alembic tracking table = 63 tables) organized into 8 functional domains.
+
+\subsection{External Market Data and Feeds Subsystem}
+This subsystem manages continuous integration with external data providers, including official NSE archives (\texttt{EQUITY\_L.csv}), BSE equity masters, Yahoo Finance market data feeds, Reserve Bank of India macroeconomic publications, and Google Gemini Generative AI APIs.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{COMPLETE_DATA_FLOW.png}
+    \caption{Lucid End-to-End Data Pipeline and Lifecycle Workflow}
+    \label{fig:hld_data_flow}
+\end{figure}
+
+\section{Component Interaction and Data Flow}
+Figure~\ref{fig:hld_data_flow} depicts the end-to-end data lifecycle across the platform. The interaction follows a structured pipeline:
+\begin{enumerate}
+    \item \textbf{Ingestion \& Normalization}: Raw security masters and daily quotes are fetched from NSE/BSE and Yahoo Finance, validated against database constraints, and normalized into \texttt{securities}, \texttt{instrument\_listings}, and \texttt{market\_prices}.
+    \item \textbf{Investor Context Acquisition}: The user completes the SEBI-aligned risk questionnaire and defines investment capital and financial goals via the Next.js UI.
+    \item \textbf{Universe Candidate Selection}: The candidate selection service queries the 2,639-security database, applying liquidity, market cap, and turnover filters to extract liquid candidates.
+    \item \textbf{Agentic Contextual Synthesis}: LangGraph triggers the 13-node multi-agent pipeline. The agents evaluate monetary policy, volatility regimes, balance sheet health, and news, producing risk-adjusted candidate scores and an adversarial critic trace.
+    \item \textbf{Deterministic SLSQP Optimization}: The mathematical engine takes the screened universe and executes numerical optimization subject to budget and sector constraints.
+    \item \textbf{Integer Lot Sizing \& Cash Conservation}: Continuous weights are converted into discrete whole shares, calculating exact residual cash.
+    \item \textbf{Fiduciary Explanation Generation}: Explanation nodes produce dual-level retail and institutional justifications, persisted into \texttt{recommendation\_explanations}.
+    \item \textbf{Continuous Monitoring \& Rebalancing}: The background scheduler polls active portfolios during market hours, auditing price changes and computing drift.
+\end{enumerate}
+
+\section{User-Level End-to-End Workflows}
+
+\subsection{Workflow 1: User Onboarding and Risk Profiling}
+An investor registers using email and password, hashed via Argon2id. The investor completes the five-stage SEBI-aligned suitability questionnaire evaluating financial knowledge, investment horizon, loss tolerance, and return expectations. The platform computes an aggregate risk score, mapping the investor into one of three risk categories: \textbf{Conservative}, \textbf{Moderate}, or \textbf{Aggressive}.
+
+\subsection{Workflow 2: Goal-Driven Portfolio Generation}
+The investor specifies investment capital (e.g., $\text{Rs.~}2,50,000$), an optional financial goal (e.g., ``Retirement corpus in 15 years''), and sector preferences or exclusions. The backend coordinates candidate selection, LangGraph agent synthesis, and SciPy SLSQP optimization, returning a discrete, whole-share portfolio displaying exact share quantities, target weights, sector skews, and residual cash balances.
+
+\subsection{Workflow 3: Fiduciary ``Stock-Why'' Explainability}
+For every holding in a recommended portfolio, the user can click ``Stock-Why'' to inspect the complete fiduciary justification. The UI displays both a plain-English narrative for retail comprehension and a quantitative breakdown of underlying econometric factor scores (ROE, P/E, Debt-to-Equity, Profit Margins, Beta, and 1-Year Price Lookback).
+
+\subsection{Workflow 4: Demat Statement (CAS) Upload and Diagnosis}
+An investor uploads a PDF Consolidated Account Statement (CAS) from CDSL or NSDL. The backend \texttt{cas\_parser} extracts stock ISINs, quantities, and purchase prices. The diagnostic engine maps holdings against the master security database, computes total portfolio valuation, evaluates sector concentration, calculates the Herfindahl-Hirschman Index (HHI), flags overlapping stocks, and provides actionable HOLD/BUY/SELL recommendations.
+
+\subsection{Workflow 5: Continuous 5-Minute Background Monitoring}
+During official Indian market hours (Monday to Friday, 09:15--15:30 IST), the \texttt{BackgroundMonitoringScheduler} wakes up every 300 seconds. It acquires a PostgreSQL distributed session lock (\texttt{pg\_try\_advisory\_lock}), fetches live market quotes, revalues active portfolios, and checks whether single-stock drift ($\ge 5\%$) or sector drift ($\ge 8\%$) has occurred.
+
+\subsection{Workflow 6: Friction-Aware Rebalancing Order Preview}
+When drift exceeds configured thresholds, Lucid generates a rebalancing alert. The user reviews a friction-aware order preview detailing exact BUY and SELL share quantities, net cash impact, and estimated statutory transaction fees (STT, exchange turnover, SEBI charges, stamp duty, and GST).
+
+\section{Key Architectural Design Decisions}
+\begin{enumerate}
+    \item \textbf{Why PostgreSQL 16 as Single Source of Truth?}: Financial systems require ACID compliance, foreign key constraints, and relational consistency across orders, holdings, and user ledgers. A normalized 63-table schema in PostgreSQL eliminated the synchronization overhead and eventual consistency risks associated with dual-database (graph + relational) setups.
+    \item \textbf{Why SciPy SLSQP over LLM-Generated Weights?}: Large Language Models cannot perform quadratic mathematical optimization reliably. Delegating numerical solver execution to SciPy SLSQP guarantees that allocations strictly sum to 100.0\% and respect diversification bounds.
+    \item \textbf{Why Whole-Share Lot Sizing?}: Real Indian equities cannot be purchased in fractional units. Implementing discrete lot allocation ensures that recommendations are 100\% executable on Indian exchanges.
+    \item \textbf{Why LangGraph StateGraph?}: LangGraph enables cyclical agent coordination with shared, typed state dictionaries (\texttt{TypedDict AgentState}), providing transparent execution telemetry, fallback handling, and structured JSON output validation.
+\end{enumerate}

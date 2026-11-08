@@ -1,0 +1,164 @@
+\chapter{Developer Setup, Installation, and Operational Guide}
+\label{app:installation_guide}
+
+This appendix provides exhaustive developer setup, automated installation, manual configuration, and runtime lifecycle instructions for the Lucid Indian Equity Portfolio Management Platform.
+
+\section{System Prerequisites}
+Before initializing Lucid, ensure the host machine satisfies the runtime requirements detailed in Table~\ref{tab:app_prereqs}:
+
+\begin{table}[H]
+\centering
+\caption{Lucid System Prerequisites and Runtime Dependencies}
+\label{tab:app_prereqs}
+\begin{tabular}{ll}
+\toprule
+\textbf{Component} & \textbf{Supported Versions / Requirements} \\
+\midrule
+\textbf{Operating System} & macOS 13+ (Apple Silicon / Intel), Linux (Ubuntu 22.04+, Debian 12+), Windows 11 \\
+\textbf{Python Runtime} & Python 3.11, 3.12, 3.13, or 3.14 (with \texttt{venv} and \texttt{pip}) \\
+\textbf{Node.js Engine} & Node.js 18.x, 20.x, 22.x, or 25.x (with \texttt{npm 9.x+}) \\
+\textbf{Database Engine} & PostgreSQL 15, 16, or 17 (Running on port 5432 or 5433) \\
+\textbf{API Keys} & Google Gemini API Key (\texttt{GEMINI\_API\_KEY}) for agentic LLM reasoning \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{One-Command Automated Launcher}
+Lucid provides a complete automated setup script that inspects prerequisites, creates virtual environments, installs Python and Node packages, configures \texttt{.env} with cryptographically secure random secrets, runs Alembic migrations, seeds the 2,639 security universe, orchestrates background daemons, and launches the application in the default browser.
+
+\subsection{macOS and Linux (Bash/Zsh)}
+\begin{lstlisting}[language=bash]
+# 1. Clone the GitHub repository
+git clone https://github.com/imankur0011/Lucid.git
+cd Lucid
+
+# 2. Grant executable permissions and launch the platform
+chmod +x start_lucid.sh
+./start_lucid.sh
+\end{lstlisting}
+
+\subsection{Windows (PowerShell)}
+\begin{lstlisting}[language=bash]
+# 1. Clone the GitHub repository
+git clone https://github.com/imankur0011/Lucid.git
+cd Lucid
+
+# 2. Execute the PowerShell automated launcher
+powershell -ExecutionPolicy Bypass -File .\start_lucid.ps1
+\end{lstlisting}
+
+Once completed, the services are accessible at:
+\begin{itemize}
+    \item \textbf{Investor Web Interface}: \url{http://localhost:3000}
+    \item \textbf{FastAPI Interactive Swagger UI}: \url{http://localhost:8000/docs}
+    \item \textbf{ReDoc Documentation}: \url{http://localhost:8000/redoc}
+    \item \textbf{OpenAPI Specification}: \url{http://localhost:8000/openapi.json}
+\end{itemize}
+
+\section{Companion Operational Lifecycle Scripts}
+Lucid provides dedicated lifecycle management scripts in the root directory:
+
+\begin{table}[H]
+\centering
+\caption{Lucid Operational Lifecycle Scripts}
+\label{tab:app_lifecycle_scripts}
+\begin{tabular}{llp{7.5cm}}
+\toprule
+\textbf{Script Name} & \textbf{Command} & \textbf{Operational Purpose} \\
+\midrule
+\texttt{start\_lucid.sh} & \texttt{./start\_lucid.sh} & Automated setup, database verification, and service launcher. \\
+\texttt{status\_lucid.sh} & \texttt{./status\_lucid.sh} & Inspects PIDs, ports 8000/3000, database tables, and memory usage. \\
+\texttt{logs\_lucid.sh} & \texttt{./logs\_lucid.sh all} & Streams live colorized logs from backend and frontend daemons. \\
+\texttt{stop\_lucid.sh} & \texttt{./stop\_lucid.sh} & Safely shuts down backend and frontend processes cleanly. \\
+\texttt{validate\_docs.sh} & \texttt{./scripts/validate\_documentation.py} & Executes 8-point architectural consistency checks. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Manual Step-by-Step Installation}
+For development environments where manual execution is preferred:
+
+\subsection{Step 1: PostgreSQL Database Setup}
+Create a dedicated PostgreSQL user and database:
+\begin{lstlisting}[language=sql]
+CREATE USER lucid_user WITH PASSWORD 'lucid_secure_pass';
+CREATE DATABASE portfolio_dev OWNER lucid_user;
+GRANT ALL PRIVILEGES ON DATABASE portfolio_dev TO lucid_user;
+\end{lstlisting}
+
+\subsection{Step 2: Backend Environment Configuration}
+\begin{lstlisting}[language=bash]
+# Navigate to backend directory and create Python virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install required Python dependencies
+pip install --upgrade pip
+pip install -r backend/requirements.txt
+
+# Configure environment variables in .env
+cat << EOF > .env
+DATABASE_URL=postgresql://lucid_user:lucid_secure_pass@localhost:5433/portfolio_dev
+JWT_SECRET=super_secret_cryptographic_key_32_bytes_min
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+GEMINI_API_KEY=your_google_gemini_api_key_here
+PORT=8000
+HOST=0.0.0.0
+EOF
+\end{lstlisting}
+
+\subsection{Step 3: Database Schema Migrations and Seeding}
+\begin{lstlisting}[language=bash]
+# Apply all Alembic schema migrations
+alembic upgrade head
+
+# Seed initial admin user, risk questions, and security universe
+python backend/seed/seed_data.py
+python backend/seed/seed_universe.py
+\end{lstlisting}
+
+\subsection{Step 4: Frontend Installation and Build}
+\begin{lstlisting}[language=bash]
+# Navigate to frontend and install npm packages
+cd frontend
+npm install
+
+# Configure frontend environment variables
+cat << EOF > .env.local
+NEXT_PUBLIC_API_URL=http://localhost:8000
+EOF
+
+# Start Next.js development server
+npm run dev
+\end{lstlisting}
+
+\subsection{Step 5: Backend Service Startup}
+\begin{lstlisting}[language=bash]
+# Start FastAPI ASGI server with Uvicorn
+uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+\end{lstlisting}
+
+\section{Testing and Verification Execution}
+
+\subsection{Automated Unit and Integration Testing}
+Execute the complete test suite of 216 tests via Pytest:
+\begin{lstlisting}[language=bash]
+source .venv/bin/activate
+pytest backend/tests/ -v --tb=short
+\end{lstlisting}
+
+\subsection{Repository and Architectural Consistency Verification}
+Run the consistency verification suite:
+\begin{lstlisting}[language=bash]
+python scripts/validate_documentation.py
+\end{lstlisting}
+
+\subsection{Postman Automated API Collection Execution}
+Execute the complete API test collection using the Postman Newman CLI:
+\begin{lstlisting}[language=bash]
+npx newman run tests/postman/Lucid_API_Contract_Test_Collection.json \
+  --environment tests/postman/Lucid_Local_Environment.json \
+  --reporters cli,json \
+  --reporter-json-export tests/postman/newman_report.json
+\end{lstlisting}

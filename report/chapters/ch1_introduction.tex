@@ -1,0 +1,88 @@
+\chapter{Introduction}
+
+\section{Background}
+The Indian equity capital market has undergone an unprecedented retail revolution over the past five years. Driven by nationwide smartphone penetration, biometric Know-Your-Customer (KYC) onboarding, zero-brokerage discount platforms, and the institutionalization of the Unified Payments Interface (UPI), individual retail investor participation across the National Stock Exchange of India (NSE) and the Bombay Stock Exchange (BSE) has surged dramatically. According to data published by the Securities and Exchange Board of India (SEBI) and the depository registries (CDSL and NSDL), the total number of operational Demat accounts in India expanded from approximately 36 million in March 2019 to over 160 million by early 2026.
+
+However, rapid growth in retail market participation has not been matched by a corresponding growth in financial literacy, quantitative risk management capability, or analytical sophistication. Individual investors routinely face an overwhelming deluge of unstructured and conflicting financial data: quarterly corporate earnings reports, regulatory disclosures, economic policy announcements by the Reserve Bank of India (RBI), daily stock price fluctuations, and speculative social media commentary. Inexperienced retail investors frequently succumb to classic behavioral finance traps, including performance chasing near cyclical market peaks, panic selling into market downturns, and extreme portfolio concentration in high-beta momentum stocks.
+
+To navigate this complexity, retail investors traditionally choose between actively managed mutual funds, thematic portfolio baskets (such as smallcases), or digital robo-advisory platforms. Yet, mutual funds impose recurring annual expense ratios between 1.5\% and 2.5\% that substantially erode long-term compounding while frequently underperforming broad market indices like the Nifty 50 or BSE Sensex. Conversely, existing commercial robo-advisors function predominantly as opaque ``black boxes'' that provide static, generic asset allocation buckets without personalized stock-level fiduciary justifications. When market volatility strikes, investors lack the conceptual conviction required to adhere to their investment plans, leading to premature capital liquidation.
+
+\section{Problem Statement}
+The objective of this Major Project is formulated as follows:
+
+\begin{quote}
+\textit{``To design, engineer, and evaluate an intelligent, fiduciary-grade equity investment portfolio platform that empowers Indian retail investors to construct, diagnose, continuously monitor, and rebalance personalized equity portfolios across NSE and BSE securities by providing transparent, context-aware, explainable reasoning traces while strictly enforcing mathematical safety and statutory regulatory constraints.''}
+\end{quote}
+
+\section{Challenges in Retail Portfolio Construction}
+Designing an autonomous portfolio decision-support system for Indian retail equities presents multiple complex challenges across computational, financial, and behavioral dimensions:
+
+\begin{enumerate}
+    \item \textbf{Information Fragmentation and Research Asymmetry}: Retail investors must manually gather financial data scattered across exchange portals, company filings, annual reports, financial news outlets, and central bank releases. Synthesizing these heterogeneous sources into a coherent investment thesis is computationally demanding and practically impossible for individual investors.
+    \item \textbf{Cognitive Biases and Emotional Drift}: Behavioral finance demonstrates that loss aversion causes retail investors to experience the psychological pain of a loss approximately twice as intensely as the pleasure of an equivalent gain \cite{kahneman1979}. In the absence of continuous, unattended portfolio monitoring, individual portfolios experience unmonitored drift, accumulating severe single-stock and sector concentration risks.
+    \item \textbf{The Black-Box Fallacy of Quantitative Robo-Advisors}: Commercial robo-advisory algorithms calculate portfolio weights using hidden parameters, offering users no explanation of why specific equities were selected or rejected. This lack of transparency undermines investor trust during market corrections.
+    \item \textbf{Arithmetic Hallucinations in Conversational AI}: While modern Large Language Models (LLMs) excel at qualitative document synthesis and thematic summarization, empirical research demonstrates that LLMs suffer from severe arithmetic inconsistencies when tasked with mathematical portfolio optimization \cite{kulpa2025}. LLM-generated allocations routinely violate budget normalization constraints ($\sum w_i \ne 100\%$), invent negative weights without short-selling permissions, and produce volatile, non-replicable allocations in response to minor prompt variations.
+    \item \textbf{Exchange-Level Whole-Share and Cash Conservation Constraints}: Unlike foreign jurisdictions that support fractional equity trading, Indian exchange regulations strictly mandate discrete, integer share execution. A theoretical weight of 3.42 shares of MRF Ltd. or Page Industries is legally impossible to execute. Converting continuous portfolio weights into whole shares without careful residual cash handling creates allocation skews and cash leakage.
+    \item \textbf{Dynamic Exchange-Wide Universe Scale}: Real-world Indian equity markets encompass over 2,600 actively traded companies. Ingesting, cleaning, validating, and filtering this extensive universe across market capitalization, daily turnover, and liquidity metrics requires robust data pipelines resilient to API rate limits and exchange corporate actions.
+\end{enumerate}
+
+\section{Motivation}
+The primary motivation behind \textbf{Lucid} is to democratize the fiduciary rigor, qualitative research depth, and mathematical discipline of professional Indian mutual fund managers for ordinary retail investors, without sacrificing execution safety or transparency. 
+
+Recent advancements in Agentic Artificial Intelligence provide a compelling architectural paradigm \cite{hajaghaie2025}. Rather than treating portfolio construction as a monolithic text-generation or pure black-box numerical task, the investment lifecycle can be decomposed into specialized cognitive roles: macroeconomic monetary assessment, market regime classification, fundamental balance-sheet screening, adversarial risk critique, and fiduciary explanation. 
+
+Crucially, execution safety can be guaranteed by strictly decoupling qualitative AI reasoning from mathematical optimization. By restricting the LLM to qualitative context synthesis and tasking a deterministic mathematical solver (SciPy SLSQP) with constraint enforcement, the system achieves the best of both worlds: rich, transparent, human-readable explanations combined with provable, hallucination-free mathematical correctness \cite{fatouros2024}.
+
+\section{Project Objectives}
+The specific technical and research objectives of this Major Project are:
+
+\begin{enumerate}
+    \item To design and implement a multi-agent AI architecture using cyclical state graphs (LangGraph) that coordinates specialized cognitive nodes to evaluate macroeconomic trends, market volatility regimes, corporate fundamentals, and company news.
+    \item To establish a strict mathematical decoupling architecture where qualitative agent outputs are validated and optimized by a deterministic Sequential Least Squares Programming (SLSQP) solver enforcing hard diversification bounds ($\le 25\%$ single-stock, $\le 40\%$ sector).
+    \item To implement a discrete whole-share integer lot allocation algorithm that translates continuous percentage weights into executable Indian equity share quantities while conserving residual cash balances.
+    \item To construct an institutional-grade, normalized relational database architecture (PostgreSQL 16) comprising 62 domain application tables (+1 alembic tracking table) housing the full synchronized universe of 2,639 NSE/BSE listed equities.
+    \item To develop a continuous, unattended background monitoring radar running every 5 minutes during Indian market hours (09:15--15:30 IST) that audits holding drift ($\ge 5\%$) and sector drift ($\ge 8\%$), generating friction-aware rebalancing trade previews factoring in statutory transaction costs (STT, GST, SEBI fees).
+    \item To engineer a Demat Consolidated Account Statement (CAS) diagnostic engine capable of parsing CDSL/NSDL portfolio statements, calculating Herfindahl-Hirschman (HHI) concentration indices, and detecting holding skews.
+\end{enumerate}
+
+\section{Scope of the Project}
+The operational scope of Lucid encompasses:
+\begin{itemize}
+    \item \textbf{Asset Class}: Equities listed and traded on the National Stock Exchange of India (NSE) and the Bombay Stock Exchange (BSE) in the cash delivery segment.
+    \item \textbf{Target Audience}: Indian retail investors seeking customized, goal-driven equity portfolio construction, health diagnosis of existing Demat holdings, and continuous drift monitoring.
+    \item \textbf{Execution Mechanics}: Discrete whole-share allocations; fractional lot trading is excluded as it is legally prohibited on Indian exchanges.
+    \item \textbf{Regulatory Stance}: Lucid operates as an intelligent decision-support platform providing transparent fiduciary reasoning. Internal single-stock and sector limits represent configurable risk policies and do not constitute statutory SEBI advisory certifications.
+    \item \textbf{Exclusions}: Intraday margin trading, derivative instruments (Futures and Options), short selling, and automated broker order placement (mock broker adapters are provided for simulation).
+\end{itemize}
+
+\section{Proposed Solution: Lucid}
+Lucid is engineered as a decoupled, multi-layered intelligent platform. The client presentation layer is implemented in Next.js 16.4.2 and React 19, communicating via type-safe REST APIs with a high-performance FastAPI 0.115+ backend. The core intelligence resides in a 13-node LangGraph StateGraph that orchestrates Google Gemini 3.8 Flash (backed by deterministic rule fallbacks). 
+
+The platform continuously maintains a synchronized catalog of 2,639 listed exchange securities, categorizing them into four institutional Liquidity Tiers, with 504 liquid securities eligible for portfolio recommendations. Portfolio generation requests undergo deterministic SciPy SLSQP optimization, followed by discrete lot sizing and statutory friction modeling. Post-creation, active portfolios are monitored by an asynchronous background scheduler during official exchange trading hours.
+
+\section{Key Contributions and Differentiators}
+The key contributions of this Major Project include:
+\begin{enumerate}
+    \item \textbf{Architectural Decoupling of LLM and Arithmetic}: Complete elimination of generative arithmetic hallucinations by confining the LLM to qualitative screening and delegating numerical optimization to SciPy SLSQP.
+    \item \textbf{Discrete Integer Lot Allocation \& Cash Conservation}: A production-tested lot-sizing algorithm ensuring 100\% executable share allocations on Indian exchanges with exact residual cash accounting.
+    \item \textbf{5-Minute Market Hours Drift Radar}: Unattended, session-locked background monitoring evaluating single-stock drift ($\ge 5\%$) and sector drift ($\ge 8\%$) during IST trading hours.
+    \item \textbf{Dual-Level Fiduciary Explainability}: Transparent, toggleable explanations providing intuitive natural language justifications for retail investors and verifiable econometric factor scores for institutional review.
+    \item \textbf{Full NSE/BSE Universe Integration}: A verified PostgreSQL 16 schema supporting 2,639 listed equities and 2,715 exchange listings, avoiding restricted sub-universe limitations.
+\end{enumerate}
+
+\section{Report Organization}
+The remainder of this report is organized as follows:
+\begin{itemize}
+    \item \textbf{Chapter 2} presents the Literature Review, Market Survey, and Competitive Analysis of existing robo-advisory and AI investment platforms.
+    \item \textbf{Chapter 3} details the High-Level Design (HLD), major architectural subsystems, and end-to-end user workflows.
+    \item \textbf{Chapter 4} presents the Low-Level Design (LLD), detailing module hierarchies, agent state graphs, and API schemas.
+    \item \textbf{Chapter 5} provides the complete Database Design and ER Architecture, documenting all 62 domain application tables (+1 alembic tracking table) across 8 functional domains.
+    \item \textbf{Chapter 6} explains the System Architecture, runtime execution topology, technology stack manifest, and security design.
+    \item \textbf{Chapter 7} details the Methodology, including mathematical formulations for Markowitz SLSQP optimization, integer lot sizing, and drift calculation.
+    \item \textbf{Chapter 8} documents the Datasets Used, external data providers, and exact payloads passed to the AI agents.
+    \item \textbf{Chapter 9} specifies the complete API Contract across all 82 REST endpoints and Postman integration assets.
+    \item \textbf{Chapter 10} demonstrates the Functional Requirements Implementation (FR-C01 through FR-D01) and application UI screens.
+    \item \textbf{Chapter 11} presents Empirical Results, Testing, and Evaluation across 216 automated tests and backtest comparisons.
+    \item \textbf{Chapter 12} concludes the report and outlines Future Scope.
+    \item \textbf{Appendices} provide supplementary technical inventories, diagrams, test matrices, and installation manuals.
+\end{itemize}

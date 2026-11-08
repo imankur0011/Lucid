@@ -1,0 +1,371 @@
+\documentclass[12pt, a4paper, openright, twoside]{report}
+\usepackage{emptypage}
+\pagenumbering{gobble}
+\usepackage[square,numbers]{natbib}
+
+% Rupee symbol
+\newcommand{\rupee}{\text{Rs.~}}
+
+\usepackage{makecell}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{afterpage}
+\usepackage{pdfpages}
+\usepackage{lscape}
+\usepackage{hyperref}
+\usepackage{tabularx}
+\usepackage{xltabular}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=black,
+    breaklinks=false,
+    citecolor=black,
+}
+
+\usepackage[nottoc,notlof,notlot]{tocbibind}
+\usepackage{framed}
+\usepackage{rotfloat}
+\usepackage{graphicx}
+\usepackage{caption}
+\captionsetup[table]{skip=10pt}
+\usepackage[utf8]{inputenc}
+\usepackage{verbatim}
+\usepackage{amsmath}
+\usepackage{setspace}
+\usepackage[english]{babel}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{pbox}
+\usepackage{url}
+\usepackage{array}
+\usepackage{amssymb}
+\usepackage{fancyvrb}
+\usepackage{listings}
+\usepackage{ragged2e}
+\usepackage{diagbox}
+
+\usepackage{sectsty}
+\usepackage{comment}
+\usepackage{chngcntr}
+\usepackage{cancel}
+\usepackage{multirow}
+\usepackage[toc,page]{appendix}
+\usetikzlibrary{shapes, arrows, positioning, fit, backgrounds, calc}
+\providecommand{\keywords}[1]{\textbf{\textit{Keywords:}} #1}
+\textwidth 161mm
+\textheight 210mm
+\linespread{1}
+\usepackage{titlesec}
+\chapterfont{\centering}
+\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{M}[1]{>{\centering\arraybackslash}m{#1}}
+\renewcommand{\baselinestretch}{1.3}
+
+\titleformat{\chapter}[display]  
+{\normalfont\huge\bfseries\centering}{\chaptertitlename\ \thechapter}{10pt}{\Huge\centering}  
+\titlespacing*{\chapter}{0pt}{-50pt}{5pt}
+
+\usepackage[  
+ top    = 1.5in,
+ bottom = 1in,
+ left   = 1.5in,
+ right  = 1in,
+ ]{geometry}
+
+\graphicspath{{images/}}
+
+\begin{document}
+\counterwithin{table}{chapter}
+\counterwithin{figure}{chapter}
+\thispagestyle{empty}
+
+% =====================================================================
+%  TITLE PAGE
+% =====================================================================
+\begin{center}
+Major Project (IT898) Report on \\
+ \null
+ \textbf{\Large AGENTIC AI APPLICATION FOR INTELLIGENT PORTFOLIO CREATION}\\
+ \vspace{0.4em}
+ \textbf{\large \textit{Lucid: Intelligent Investment Portfolio Platform for Indian Retail Equities}}\\
+ \null
+\null
+Submitted in partial fulfillment of the requirements for the degree of\\
+ \null
+MASTER OF TECHNOLOGY \\
+in\\
+INFORMATION TECHNOLOGY\\
+ \null
+
+by \\
+\large{\textbf{ANKUR PATEL}} \\
+{\textbf{(252IT004)}}\\
+\vspace{2em}
+  \large{\textit{under the guidance of}} \\
+  \vspace{0.2em}
+
+  \large{\textbf{Dr. Biju R Mohan}}\\
+\vspace{1em}
+\begin{figure}[h]
+ \centering{
+\includegraphics[width=4cm, height=4cm]{NITKLogo.jpeg}
+ }
+\end{figure}
+
+{\fontsize{13}{13} \selectfont DEPARTMENT OF INFORMATION TECHNOLOGY}\\
+{\fontsize{13}{13} \selectfont NATIONAL INSTITUTE OF TECHNOLOGY KARNATAKA, SURATHKAL}\\
+{\fontsize{13}{13} \selectfont MANGALORE - 575025}\\
+
+November 2026
+
+\end{center}
+
+\clearpage
+\newpage
+
+\ % The empty page
+
+\newpage
+\thispagestyle{empty}
+
+% =====================================================================
+%  DECLARATION
+% =====================================================================
+\begin{framed}
+\begin{center}
+\textbf{{\Large DECLARATION}}\\
+\textit{by the P.G. M.Tech.(IT) Student}\\
+\end{center}
+\null
+I hereby \textit{declare} that the Report of the P.G. IT898 - Major Project Work entitled ``\textbf{Agentic AI Application for Intelligent Portfolio Creation (Lucid)}'', which is being submitted to National Institute of Technology Karnataka, Surathkal in partial fulfillment of the requirements for the award of the Degree of Master of Technology in the Department of Information Technology, is a \textit{bonafide report of the work carried out by me.} The material contained in this report has not been submitted at any University or Institution for the award of any degree.\\
+\\
+\\
+\\
+\\
+\null \hfill ANKUR PATEL (252IT004)\\
+\null \hfill Dept. of Information Technology\\
+\\
+Place: NITK, SURATHKAL
+\\
+Date: November 2026
+\end{framed}
+\clearpage
+\newpage
+
+\ % The empty page
+
+\newpage
+
+% =====================================================================
+%  CERTIFICATE
+% =====================================================================
+\begin{framed}
+\begin{center}
+\textbf{{\Large CERTIFICATE}} \\
+\end{center}
+\null
+This is to \textit{certify} that the Report entitled ``\textbf{Agentic AI Application for Intelligent Portfolio Creation (Lucid)}'', submitted by \textbf{ANKUR PATEL (252IT004)} as the record of the work carried out by him, is \textit{accepted as the Project Work report submission} in partial fulfillment of the requirement for the award of the degree of \textbf{Master of Technology in Information Technology} in the Department of Information Technology, NITK Surathkal, India.
+
+\vspace{3cm}
+
+\begin{center}
+\textbf{Dr. Biju R Mohan}\\
+(Signature of the guide with Date and Seal)
+\end{center}
+
+\vspace{2cm}
+
+\begin{center}
+\textbf{Chairman - DPGC}\\
+(Signature with Date and Seal)
+\end{center}
+
+\end{framed}
+
+\thispagestyle{empty}
+
+\clearpage
+\newpage
+
+\ % The empty page
+
+\newpage
+\thispagestyle{empty}
+
+% =====================================================================
+%  ACKNOWLEDGEMENT
+% =====================================================================
+\begin{center}
+\textbf{{\Large ACKNOWLEDGEMENT}}\\
+\end{center}
+\null
+I would sincerely like to express my profound gratitude to my project supervisor, \textbf{Dr. Biju R Mohan}, for his unconditional support, technical guidance, and constructive critique throughout the research, design, implementation, and evaluation phases of this Major Project.
+
+I also express my gratitude to the faculty and staff of the Department of Information Technology, National Institute of Technology Karnataka, Surathkal, for providing the necessary computational infrastructure, academic resources, and encouragement that enabled the successful completion of this work.
+\\
+\\
+\null \hfill \textbf{ANKUR PATEL} (252IT004)
+\\
+
+% Blank page after Acknowledgement
+\clearpage
+\thispagestyle{empty}
+\null
+
+\clearpage
+\pagenumbering{roman}
+\setcounter{page}{1}
+
+% =====================================================================
+%  ABSTRACT
+% =====================================================================
+\thispagestyle{plain}
+\begin{center}
+\textbf{{\Large ABSTRACT}}\\
+\end{center}
+
+Indian retail equity investors face severe systemic barriers to disciplined wealth creation: cognitive information overload, emotional behavioral biases leading to mistimed market exits, and the lack of transparent, personalized portfolio guidance. Commercial quantitative robo-advisors operate as opaque ``black boxes'' offering zero fiduciary justification, while modern conversational Large Language Models (LLMs), when deployed naively in finance, suffer from catastrophic arithmetic hallucinations, generating non-normalizing allocations, negative weights, and economically unviable fractional share quantities on Indian stock exchanges.
+
+This project designs, engineers, and evaluates \textbf{Lucid}, an institutional-grade, transparent, agentic AI-driven portfolio construction, continuous monitoring, and rebalancing platform engineered specifically for Indian retail investors across the National Stock Exchange (NSE) and Bombay Stock Exchange (BSE). Lucid bridges the gap between qualitative financial reasoning and numerical rigor through a strict architectural decoupling: a \textbf{13-node LangGraph StateGraph multi-agent pipeline} (powered by Google Gemini 3.8 Flash with deterministic rule fallbacks) synthesizes macroeconomic monetary policies, market volatility regimes (India VIX), balance-sheet fundamental metrics (ROE, P/E, P/B, Debt/Equity), and corporate news. 
+
+Crucially, all numerical computations are strictly prohibited within the LLM; Markowitz mean-variance risk-adjusted weights are computed deterministically via \textbf{SciPy's Sequential Least Squares Programming (SLSQP)} solver subject to hard institutional diversification bounds ($\le 25\%$ single stock, $\le 40\%$ sector). To bridge the gap between theoretical weights and Indian exchange mechanics, Lucid executes a \textbf{discrete whole-share integer lot sizing algorithm} that computes legally executable share quantities while preserving cash balances. 
+
+Lucid features a continuous, unattended background drift radar running every 5 minutes during Indian market hours (09:15--15:30 IST) to detect asset and sector drift ($\ge 5\%$), triggering friction-aware rebalancing previews factoring in statutory Securities Transaction Tax (STT), exchange turnover fees, SEBI charges, stamp duty, and GST. The underlying database architecture comprises \textbf{62 domain application tables} (+1 alembic tracking table) in PostgreSQL 16 housing a synchronized exchange universe of \textbf{2,639 listed equities} with \textbf{504 liquid recommendation candidates}. Empirical backtesting over historical test scenarios demonstrates that Lucid's AI SLSQP strategy achieves an annualized return of \textbf{10.72\%} with an annualized volatility of \textbf{9.00\%}, a Sharpe ratio of \textbf{0.41}, and an institutional diversification score of \textbf{95.51/100}, strictly outperforming the market benchmark while providing transparent, dual-level fiduciary explanations for every investment decision.
+
+\vspace{1cm}
+\noindent \keywords{Agentic AI, LangGraph, Markowitz Mean-Variance Optimization, SciPy SLSQP, Indian Equities (NSE/BSE), Integer Lot Sizing, Demat CAS Diagnosis, Drift Radar, Explainable AI, Argon2id, PostgreSQL 16.}
+
+% Blank page after Abstract
+\clearpage
+\thispagestyle{empty}
+\null
+\newpage
+
+% =====================================================================
+%  TABLE OF CONTENTS, LIST OF FIGURES, LIST OF TABLES
+% =====================================================================
+\renewcommand*{\contentsname}{\MakeUppercase{Contents}}
+\renewcommand*{\listfigurename}{\MakeUppercase{List of Figures}}
+\renewcommand*{\listtablename}{\MakeUppercase{List of Tables}}
+\renewcommand{\bibname}{REFERENCES}
+\thispagestyle{plain}
+\addtocontents{toc}{\protect\thispagestyle{plain}}
+\tableofcontents
+\cleardoublepage
+
+\listoffigures
+\addcontentsline{toc}{chapter}{LIST OF FIGURES}
+\cleardoublepage
+
+\listoftables
+\addcontentsline{toc}{chapter}{LIST OF TABLES}
+\cleardoublepage
+
+% =====================================================================
+%  ABBREVIATIONS
+% =====================================================================
+\begin{center}
+\textbf{{\huge ABBREVIATIONS}}
+\addcontentsline{toc}{chapter}{ABBREVIATIONS}
+\vspace{0.5cm}
+
+\begin{tabbing}
+    \hspace*{3cm} \= \kill
+    \textbf{ADTV} \> Average Daily Traded Volume \\
+    \textbf{AI} \> Artificial Intelligence \\
+    \textbf{API} \> Application Programming Interface \\
+    \textbf{ASGI} \> Asynchronous Server Gateway Interface \\
+    \textbf{BSE} \> Bombay Stock Exchange \\
+    \textbf{CAGR} \> Compound Annual Growth Rate \\
+    \textbf{CAS} \> Consolidated Account Statement (CDSL/NSDL) \\
+    \textbf{CDSL} \> Central Depository Services (India) Limited \\
+    \textbf{CIN} \> Corporate Identity Number \\
+    \textbf{CPI} \> Consumer Price Index \\
+    \textbf{D/E} \> Debt-to-Equity Ratio \\
+    \textbf{DMA} \> Daily Moving Average \\
+    \textbf{GST} \> Goods and Services Tax \\
+    \textbf{HHI} \> Herfindahl-Hirschman Concentration Index \\
+    \textbf{HLD} \> High-Level Design \\
+    \textbf{HTTP} \> Hypertext Transfer Protocol \\
+    \textbf{ISIN} \> International Securities Identification Number \\
+    \textbf{IST} \> Indian Standard Time (UTC+05:30) \\
+    \textbf{JWT} \> JSON Web Token \\
+    \textbf{KYC} \> Know Your Customer \\
+    \textbf{LLD} \> Low-Level Design \\
+    \textbf{LLM} \> Large Language Model \\
+    \textbf{NAV} \> Net Asset Value \\
+    \textbf{NSDL} \> National Securities Depository Limited \\
+    \textbf{NSE} \> National Stock Exchange of India \\
+    \textbf{OHLCV} \> Open, High, Low, Close, Volume \\
+    \textbf{ORM} \> Object-Relational Mapping (SQLAlchemy) \\
+    \textbf{P/B} \> Price-to-Book Ratio \\
+    \textbf{P/E} \> Price-to-Earnings Ratio \\
+    \textbf{RBI} \> Reserve Bank of India \\
+    \textbf{REST} \> Representational State Transfer \\
+    \textbf{ROE} \> Return on Equity \\
+    \textbf{SEBI} \> Securities and Exchange Board of India \\
+    \textbf{SLSQP} \> Sequential Least Squares Programming \\
+    \textbf{SQL} \> Structured Query Language \\
+    \textbf{STT} \> Securities Transaction Tax \\
+    \textbf{UI} \> User Interface \\
+    \textbf{UUID} \> Universally Unique Identifier \\
+    \textbf{VIX} \> Volatility Index (India VIX)
+\end{tabbing}
+\end{center}
+
+\cleardoublepage
+
+% =====================================================================
+%  INTENTIONALLY BLANK PAGE BEFORE CHAPTER 1
+% =====================================================================
+\newpage
+\thispagestyle{empty}
+\null
+\clearpage
+
+\restoregeometry
+\newgeometry{
+  top    = 1.5in,
+  bottom = 1in,
+  inner  = 1.65in,
+  outer  = 1in,
+}
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+% =====================================================================
+%  CHAPTERS INCLUSION
+% =====================================================================
+\input{chapters/ch1_introduction.tex}
+\input{chapters/ch2_market_survey.tex}
+\input{chapters/ch3_hld.tex}
+\input{chapters/ch4_lld.tex}
+\input{chapters/ch5_database_design.tex}
+\input{chapters/ch6_system_architecture.tex}
+\input{chapters/ch7_methodology.tex}
+\input{chapters/ch8_dataset.tex}
+\input{chapters/ch9_api_contract.tex}
+\input{chapters/ch10_work_done.tex}
+\input{chapters/ch11_results_testing.tex}
+\input{chapters/ch12_conclusion.tex}
+
+% =====================================================================
+%  REFERENCES
+% =====================================================================
+\cleardoublepage
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+% =====================================================================
+%  APPENDICES
+% =====================================================================
+\cleardoublepage
+\begin{appendices}
+\input{appendices/app_a_api_inventory.tex}
+\input{appendices/app_b_db_tables.tex}
+\input{appendices/app_c_diagrams.tex}
+\input{appendices/app_d_installation_guide.tex}
+\end{appendices}
+
+\end{document}

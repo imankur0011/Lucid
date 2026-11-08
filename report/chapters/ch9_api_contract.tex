@@ -1,0 +1,164 @@
+\chapter{API Contract and Integration Design}
+
+\section{API Architecture and Design Principles}
+The Lucid backend exposes a comprehensive RESTful API built on \textbf{FastAPI 0.115+}. The API layer conforms to strict architectural design standards:
+\begin{itemize}
+    \item \textbf{Base URL and Versioning}: All resource routes are anchored under \texttt{/api/v1/}, ensuring backwards compatibility for future client iterations.
+    \item \textbf{Stateless Token Authentication}: Protected routes require an \texttt{Authorization: Bearer <JWT>} header. Tokens are signed using HMAC-SHA256 (HS256) with a 60-minute expiry window.
+    \item \textbf{Strict Schema Enforcement}: Incoming requests and outgoing responses are validated using Pydantic v2 schemas. Malformed payloads are rejected immediately with HTTP 422 Unprocessable Entity.
+    \item \textbf{Predictable HTTP Status Codes}: Standardized HTTP status codes indicate transaction outcomes: 200 OK, 201 Created, 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 429 Too Many Requests, and 500 Internal Server Error.
+\end{itemize}
+
+\section{Complete API Inventory: 82 Active Endpoints}
+The application registers exactly \textbf{82 unique API endpoints} across eleven functional modules:
+
+\begin{table}[H]
+\centering
+\caption{Lucid Complete API Endpoint Domain Inventory (82 Endpoints)}
+\label{tab:api_domain_inventory}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lll}
+\toprule
+\textbf{Functional API Domain} & \textbf{Count} & \textbf{Key Endpoint Routes} \\
+\midrule
+\textbf{1. Authentication \& Security} & 8 & \texttt{/auth/login}, \texttt{/auth/register}, \texttt{/auth/logout}, \texttt{/auth/refresh}, \texttt{/auth/me}, \texttt{/auth/change-password} \\
+\textbf{2. User Profile \& Preferences} & 6 & \texttt{/profile}, \texttt{/profile/preferences}, \texttt{/profile/security-preferences}, \texttt{/profile/sector-preferences} \\
+\textbf{3. Financial Goal Management} & 5 & \texttt{/goals}, \texttt{/goals/{goal\_id}}, \texttt{/goals/{goal\_id}/progress}, \texttt{/goals/{goal\_id}/link-portfolio} \\
+\textbf{4. Risk Questionnaire \& Scoring} & 5 & \texttt{/risk-questions}, \texttt{/risk-questions/{id}}, \texttt{/risk-assessments}, \texttt{/risk-assessments/latest} \\
+\textbf{5. Security Master \& Search} & 10 & \texttt{/securities}, \texttt{/securities/search}, \texttt{/securities/{isin}}, \texttt{/securities/sectors}, \texttt{/securities/tickers} \\
+\textbf{6. Market Data, Prices \& Regime} & 8 & \texttt{/market-data/prices/{symbol}}, \texttt{/market-data/regime}, \texttt{/market-data/indicators}, \texttt{/market-data/universe-stats} \\
+\textbf{7. Portfolio Engine \& Generation} & 12 & \texttt{/portfolio-generation-requests}, \texttt{/portfolios}, \texttt{/portfolios/{id}}, \texttt{/portfolios/{id}/versions/{v\_id}/stocks/{sym}/why} \\
+\textbf{8. Demat Statement Diagnosis} & 6 & \texttt{/diagnosis/upload-cas}, \texttt{/diagnosis/analyze/{id}}, \texttt{/diagnosis/{id}/chat}, \texttt{/diagnosis/{id}/holdings} \\
+\textbf{9. Continuous Monitoring \& Drift} & 6 & \texttt{/monitoring/{portfolio\_id}}, \texttt{/monitoring/{id}/drift}, \texttt{/monitoring/scheduler/status}, \texttt{/monitoring/run-cycle} \\
+\textbf{10. Rebalancing \& Orders} & 8 & \texttt{/rebalancing/evaluate/{id}}, \texttt{/rebalancing/preview/{id}}, \texttt{/rebalancing/orders/generate}, \texttt{/broker/orders} \\
+\textbf{11. Notifications \& System} & 8 & \texttt{/notifications}, \texttt{/notifications/unread-count}, \texttt{/notifications/{id}/read}, \texttt{/api/health}, \texttt{/health} \\
+\bottomrule
+\textbf{Total Active API Routes} & \textbf{82} & \textbf{100\% Documented and Verified via OpenAPI Schema} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\section{Detailed Specification of Core API Endpoints}
+
+\subsection{Endpoint: Create Portfolio Generation Request}
+\begin{itemize}
+    \item \textbf{Method \& Path}: \texttt{POST /api/v1/portfolio-generation-requests}
+    \item \textbf{Purpose}: Launches the 13-node LangGraph multi-agent pipeline and SciPy SLSQP optimizer to generate a whole-share portfolio.
+    \item \textbf{Auth}: Bearer JWT Token required.
+    \item \textbf{Request Body Schema}:
+\begin{verbatim}
+{
+  "investment_amount": 250000.0,
+  "risk_category": "moderate",
+  "goal_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "time_horizon_years": 10,
+  "excluded_sectors": ["FMCG_TOBACCO"]
+}
+\end{verbatim}
+    \item \textbf{Response Body Schema (HTTP 201 Created)}:
+\begin{verbatim}
+{
+  "portfolio_id": "c1f7b8a2-8924-4b5a-9311-c9182046ef12",
+  "version_number": 1,
+  "total_invested_amount": 248920.0,
+  "cash_balance": 1080.0,
+  "allocated_stocks_count": 12,
+  "expected_annual_return_pct": 14.8,
+  "annualized_volatility_pct": 11.2,
+  "sharpe_ratio": 0.70,
+  "holdings": [
+    {
+      "symbol": "TCS",
+      "company_name": "Tata Consultancy Services Ltd.",
+      "sector": "Information Technology",
+      "allocated_shares": 18,
+      "buy_price": 3850.0,
+      "allocated_amount": 69300.0,
+      "target_weight_pct": 24.5
+    }
+  ]
+}
+\end{verbatim}
+    \item \textbf{Errors}: 400 Bad Request (Capital $< \text{Rs.~}5,000$), 401 Unauthorized, 429 Rate Limit Exceeded.
+\end{itemize}
+
+\subsection{Endpoint: Stock-Why Fiduciary Explanation}
+\begin{itemize}
+    \item \textbf{Method \& Path}: \texttt{GET /api/v1/portfolios/{portfolio\_id}/versions/{version\_id}/stocks/{symbol}/why}
+    \item \textbf{Purpose}: Returns dual-level fiduciary explanations (plain-English retail narrative and institutional factor breakdown).
+    \item \textbf{Auth}: Bearer JWT Token required.
+    \item \textbf{Response (HTTP 200 OK)}:
+\begin{verbatim}
+{
+  "symbol": "TCS",
+  "company_name": "Tata Consultancy Services Ltd.",
+  "allocated_weight_pct": 24.5,
+  "retail_narrative": "TCS was selected as an anchor large-cap holding...",
+  "factor_metrics": {
+    "pe_ratio": 28.4,
+    "roe_pct": 46.2,
+    "debt_to_equity": 0.08,
+    "marginal_risk_contribution_pct": 18.2
+  }
+}
+\end{verbatim}
+\end{itemize}
+
+\subsection{Endpoint: Demat CAS Statement Upload \& Diagnosis}
+\begin{itemize}
+    \item \textbf{Method \& Path}: \texttt{POST /api/v1/diagnosis/upload-cas}
+    \item \textbf{Purpose}: Ingests CDSL/NSDL PDF statements, parses stock holdings, and computes HHI concentration risks.
+    \item \textbf{Request}: \texttt{multipart/form-data} with \texttt{file: <binary PDF>} and optional \texttt{password: <string>}.
+    \item \textbf{Response (HTTP 200 OK)}:
+\begin{verbatim}
+{
+  "diagnosis_id": "d9812401-291b-419a-9e12-b21908239014",
+  "total_holdings_count": 8,
+  "total_valuation": 412500.0,
+  "hhi_score": 2840.0,
+  "concentration_risk": "HIGH",
+  "overlapping_stocks": ["RELIANCE", "INFY"],
+  "recommendation_summary": "Portfolio is excessively skewed toward..."
+}
+\end{verbatim}
+\end{itemize}
+
+\section{API Sequence Interaction Flows}
+Figures~\ref{fig:api_auth_seq} through \ref{fig:api_diag_seq} display the sequence diagrams for the primary operational workflows:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{API_AUTH_FLOW.png}
+    \caption{API Sequence Diagram: Authentication and Session Token Flow}
+    \label{fig:api_auth_seq}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{API_PORTFOLIO_GENERATION_FLOW.png}
+    \caption{API Sequence Diagram: Portfolio Request and SLSQP Solver Flow}
+    \label{fig:api_port_seq}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{API_MONITORING_REBALANCE_FLOW.png}
+    \caption{API Sequence Diagram: Continuous Drift Radar and Rebalance Flow}
+    \label{fig:api_mon_seq}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{API_DIAGNOSIS_FLOW.png}
+    \caption{API Sequence Diagram: Demat CAS Statement PDF Diagnosis Flow}
+    \label{fig:api_diag_seq}
+\end{figure}
+
+\section{Postman Collection Integration and Verification}
+Lucid includes an importable Postman test suite located in \texttt{postman/}:
+\begin{itemize}
+    \item \textbf{Collection}: \texttt{postman/Lucid\_API\_Collection.json} comprising \textbf{96 individual API requests} grouped into 16 functional folders.
+    \item \textbf{Environment}: \texttt{postman/Lucid\_Development\_Environment.json} defining base URLs (\texttt{http://localhost:8000}), demo developer credentials (\texttt{developer@lucid.local}), and test parameters.
+    \item \textbf{Automated Test Scripts}: Login requests execute post-response test assertions that automatically capture and set the \texttt{{{accessToken}}} environment variable, enabling one-click test execution across the entire collection.
+\end{itemize}
