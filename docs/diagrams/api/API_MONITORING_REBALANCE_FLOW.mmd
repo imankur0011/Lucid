@@ -1,0 +1,26 @@
+sequenceDiagram
+    autonumber
+    participant Daemon as BackgroundMonitoringScheduler (300s)
+    participant API as FastAPI Router (/portfolios)
+    participant Svc as PortfolioMonitoringService
+    participant RebSvc as RebalancingService
+    participant DB as PostgreSQL 16
+    actor User as Investor (RebalancePreviewModal.tsx)
+
+    Daemon->>Svc: Timer tick: evaluate active portfolios
+    Svc->>DB: SELECT holdings and target weights
+    Svc->>Svc: Compute NAV, Asset Drift (|w_cur - w_tgt|), Sector Drift
+    
+    alt Drift > 5.0% (Single Asset) OR Total Drift > 15.0%
+        Svc->>DB: INSERT into notifications (DRIFT_WARNING)
+        Svc->>DB: INSERT into rebalance_suggestions (PENDING)
+    end
+
+    User->>API: GET /api/v1/portfolios/{id}/rebalance-preview
+    API->>RebSvc: generate_rebalance_preview(portfolio_id)
+    RebSvc->>RebSvc: Calculate delta shares & Indian statutory friction (STT, GST)
+    API-->>User: 200 OK (proposed BUY/SELL orders, transaction costs)
+
+    User->>API: POST /api/v1/portfolios/{id}/apply-rebalance
+    API->>DB: INSERT new PortfolioVersion (incremented version_number)
+    API-->>User: 200 OK (Updated portfolio active)

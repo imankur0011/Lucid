@@ -1,0 +1,25 @@
+sequenceDiagram
+    autonumber
+    actor User as Investor
+    participant UI as Next.js React UI (AuthView.tsx)
+    participant API as FastAPI Router (/auth)
+    participant AuthSvc as AuthService (Argon2id)
+    participant DB as PostgreSQL 16 (app_users, revoked_tokens)
+
+    User->>UI: Enter email & password
+    UI->>API: POST /api/v1/auth/login
+    API->>AuthSvc: verify_password(password, user.password_hash)
+    AuthSvc->>DB: Query user by email
+    AuthSvc->>AuthSvc: Argon2id verification ($m=65536, t=3, p=4)
+    AuthSvc-->>API: Authentication success
+    API->>API: create_access_token(user_id, email)
+    API-->>UI: 200 OK (access_token, token_type: bearer, expires_in: 86400)
+    UI->>UI: Store token in localStorage
+
+    opt Token Revocation / Logout
+        User->>UI: Click Logout
+        UI->>API: POST /api/v1/auth/logout (Bearer Token)
+        API->>DB: INSERT into revoked_tokens (token_hash, revoked_at)
+        API-->>UI: 200 OK (detail: 'Successfully logged out')
+        UI->>UI: Clear localStorage & redirect to login
+    end

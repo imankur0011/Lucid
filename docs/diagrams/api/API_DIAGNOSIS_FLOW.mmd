@@ -1,0 +1,32 @@
+sequenceDiagram
+    autonumber
+    actor User as Investor
+    participant UI as Next.js UI (DiagnosisView.tsx)
+    participant API as FastAPI Router (/diagnosis)
+    participant DiagSvc as PortfolioDiagnosisService
+    participant Resolver as CompanyResolutionService
+    participant DB as PostgreSQL 16
+    participant Copilot as DiagnosisCopilotService (Gemini)
+
+    User->>UI: Upload Demat Statement CSV (Zerodha/Groww)
+    UI->>API: POST /api/v1/diagnosis/upload-csv
+    API->>DiagSvc: parse_holdings_csv(file)
+    DiagSvc->>Resolver: resolve_company_to_isin(symbol, company_name)
+    Resolver-->>DiagSvc: Canonical ISINs & normalized symbols
+    DiagSvc->>DB: INSERT into existing_portfolios & existing_portfolio_holdings
+    API-->>UI: 200 OK (existing_portfolio_id, normalized_holdings)
+
+    User->>UI: Click 'Analyze Demat Portfolio'
+    UI->>API: POST /api/v1/diagnosis/analyze/{existing_portfolio_id}
+    API->>DiagSvc: analyze_portfolio_concentration(existing_portfolio_id)
+    DiagSvc->>DiagSvc: Calculate Herfindahl-Hirschman Index (HHI) & Sector Caps
+    DiagSvc->>DB: INSERT into portfolio_diagnoses (health_score, hhi)
+    API-->>UI: 200 OK (health_score, hhi_index, concentration_warnings)
+
+    opt Interactive Copilot Chat
+        User->>UI: Ask: "Why is my IT allocation too high?"
+        UI->>API: POST /api/v1/diagnosis/{id}/chat
+        API->>Copilot: chat_diagnosis(query, diagnosis_data)
+        Copilot-->>API: Structured explanation of sector concentration
+        API-->>UI: 200 OK (response_text)
+    end

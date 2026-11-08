@@ -354,3 +354,4 @@ Lucid partitions its data persistence across **8 functional relational domains**
 │                            │ notifications, audit_events                    │
 └────────────────────────────┴────────────────────────────────────────────────┘
 ```
+

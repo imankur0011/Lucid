@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Lucid — Repository-Wide Documentation and Architecture Consistency Validator.
-Verifies that documentation, configuration, database models, OpenAPI routes,
+Verifies that all 7 primary design documents, supporting documents, OpenAPI routes,
 diagram assets, and external integrations are in complete alignment.
 
 Usage:
@@ -22,8 +22,9 @@ WARN = "⚠️  WARN"
 
 
 def check_required_documents():
-    print("\n[1/7] Checking Core Documentation & Design Suite Artifacts...")
+    print("\n[1/7] Checking 7 Core Design Documents & Suite Deliverables...")
     required_docs = [
+        # Root Primary Documents
         "README.md",
         "HIGH_LEVEL_DESIGN.md",
         "LOW_LEVEL_DESIGN.md",
@@ -32,26 +33,40 @@ def check_required_documents():
         "AGENTIC_AI_ARCHITECTURE.md",
         "METHODOLOGY.md",
         "DATASET_USED.md",
+        "API_CONTRACT.md",
+        "API_INVENTORY.md",
         "DESIGN_DOCUMENTATION_INDEX.md",
         "DESIGN_TRACEABILITY_MATRIX.md",
         "DATABASE_ARCHITECTURE.md",
         "OPTIMIZATION_METHODOLOGY.md",
         "SECURITY_AND_RELIABILITY.md",
         "FUNCTIONAL_REQUIREMENT_MAPPING.md",
+        # Mirrored Design Documents
         "docs/design/HIGH_LEVEL_DESIGN.md",
         "docs/design/LOW_LEVEL_DESIGN.md",
         "docs/design/SYSTEM_ARCHITECTURE.md",
         "docs/design/AGENT_ARCHITECTURE.md",
         "docs/design/METHODOLOGY.md",
         "docs/design/DATASET_USED.md",
+        "docs/design/API_CONTRACT.md",
+        "docs/design/API_INVENTORY.md",
         "docs/design/DESIGN_DOCUMENTATION_INDEX.md",
         "docs/design/DESIGN_TRACEABILITY_MATRIX.md",
+        # Compiled PDF Deliverables
         "docs/exports/HIGH_LEVEL_DESIGN.pdf",
         "docs/exports/LOW_LEVEL_DESIGN.pdf",
         "docs/exports/SYSTEM_ARCHITECTURE.pdf",
         "docs/exports/AGENT_ARCHITECTURE.pdf",
         "docs/exports/METHODOLOGY.pdf",
         "docs/exports/DATASET_USED.pdf",
+        "docs/exports/API_CONTRACT.pdf",
+        "HIGH_LEVEL_DESIGN.pdf",
+        "LOW_LEVEL_DESIGN.pdf",
+        "SYSTEM_ARCHITECTURE.pdf",
+        "AGENT_ARCHITECTURE.pdf",
+        "METHODOLOGY.pdf",
+        "DATASET_USED.pdf",
+        "API_CONTRACT.pdf",
     ]
     missing = []
     for doc in required_docs:
@@ -66,7 +81,7 @@ def check_required_documents():
 
 
 def check_diagram_assets():
-    print("\n[2/7] Checking Visual Architecture & Methodology Diagram Assets...")
+    print("\n[2/7] Checking Visual Architecture, Methodology & API Diagram Assets...")
     diagrams = [
         "SYSTEM_ARCHITECTURE.mmd",
         "SYSTEM_ARCHITECTURE.svg",
@@ -80,6 +95,18 @@ def check_diagram_assets():
         "COMPLETE_DATA_FLOW.mmd",
         "COMPLETE_DATA_FLOW.svg",
         "COMPLETE_DATA_FLOW.png",
+        "docs/diagrams/api/API_AUTH_FLOW.mmd",
+        "docs/diagrams/api/API_AUTH_FLOW.svg",
+        "docs/diagrams/api/API_AUTH_FLOW.png",
+        "docs/diagrams/api/API_PORTFOLIO_GENERATION_FLOW.mmd",
+        "docs/diagrams/api/API_PORTFOLIO_GENERATION_FLOW.svg",
+        "docs/diagrams/api/API_PORTFOLIO_GENERATION_FLOW.png",
+        "docs/diagrams/api/API_MONITORING_REBALANCE_FLOW.mmd",
+        "docs/diagrams/api/API_MONITORING_REBALANCE_FLOW.svg",
+        "docs/diagrams/api/API_MONITORING_REBALANCE_FLOW.png",
+        "docs/diagrams/api/API_DIAGNOSIS_FLOW.mmd",
+        "docs/diagrams/api/API_DIAGNOSIS_FLOW.svg",
+        "docs/diagrams/api/API_DIAGNOSIS_FLOW.png",
     ]
     missing = []
     for d in diagrams:
@@ -171,10 +198,10 @@ def check_openapi_endpoint_coverage():
         openapi_spec = app.openapi()
         paths = openapi_spec.get("paths", {})
         path_count = len(paths)
-        if path_count < 80:
-            print(f"   {FAIL} Expected at least 80 endpoints in OpenAPI schema, found {path_count}!")
+        if path_count != 82:
+            print(f"   {FAIL} Expected exactly 82 endpoints in OpenAPI schema, found {path_count}!")
             return False
-        print(f"   {PASS} Verified {path_count} unique API paths active in FastAPI router.")
+        print(f"   {PASS} Verified exactly {path_count} unique API paths active in FastAPI router.")
 
         # Check key documented routes
         core_routes = [

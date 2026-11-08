@@ -1,0 +1,29 @@
+sequenceDiagram
+    autonumber
+    actor User as Investor
+    participant UI as Next.js UI (PortfolioGenerator.tsx)
+    participant API as FastAPI Router (/portfolios)
+    participant Engine as PortfolioEngine
+    participant LG as LangGraph Orchestrator (13 Nodes)
+    participant Optimizer as SciPy SLSQP Optimizer
+    participant DB as PostgreSQL 16
+
+    User->>UI: Specify ₹5,00,000, 36 Months, BALANCED
+    UI->>API: POST /api/v1/portfolio-generation-requests
+    API->>DB: INSERT into portfolio_generation_requests (RUNNING)
+    API->>Engine: start_portfolio_generation()
+    Engine->>LG: create_portfolio_graph(db).invoke(state)
+    
+    rect rgb(240, 248, 255)
+        Note over LG: Multi-Agent Analysis & Critic Loop
+        LG->>LG: manager -> suitability -> macro -> market -> fundamental -> news -> strategist
+        LG->>LG: critic (Independent Risk Audit: single-stock <=20%, sector <=30%)
+    end
+
+    LG->>Optimizer: deterministic_optimizer_node
+    Optimizer->>Optimizer: SLSQP Quadratic Optimization & Discrete Integer Lot Sizing
+    LG->>LG: critic_final_validation -> moderator (Two-Level Stock-Why)
+    LG->>DB: persistence_node (Atomic ACID Commit: PortfolioVersion, Holdings)
+    
+    API-->>UI: 201 Created (request_id, portfolio_id, version_id, positions, cash)
+    UI->>UI: Render HoldingsView, AllocationVisualizer, and Stock-Why buttons
