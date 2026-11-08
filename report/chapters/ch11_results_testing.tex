@@ -20,18 +20,18 @@ All software tests and performance benchmarks were executed in the standardized 
 \centering
 \caption{Lucid Verification and Test Environment Specification}
 \label{tab:test_env}
-\begin{tabularx}{\textwidth}{p{4.9cm} X}
+\begin{tabularx}{\textwidth}{>{\RaggedRight\arraybackslash\bfseries}p{5.2cm} >{\RaggedRight\arraybackslash}X}
 \toprule
-\textbf{Environment Parameter} & \textbf{Specification / Value} \\
+\textnormal{\textbf{Environment Parameter}} & \textbf{Specification / Value} \\
 \midrule
-\textbf{Host Computer Hardware} & Apple M-Series Silicon (arm64 Architecture, 10 CPU Cores, 16 GB Unified RAM) \\
-\textbf{Operating System} & macOS Darwin (Unix 24.3.0) \\
-\textbf{Python Runtime} & Python 3.14.7 (Virtual environment at \texttt{.venv}) \\
-\textbf{Node.js Runtime} & Node.js v25.2.1 / npm 11.6.2 \\
-\textbf{Database Engine} & PostgreSQL 16.4 (Running locally on port 5433, database: \texttt{portfolio\_dev}) \\
-\textbf{Automated Test Runner} & Pytest 8.3.4 with \texttt{pytest-asyncio} and HTTPX asynchronous test client \\
-\textbf{API Testing Suite} & Postman Desktop 11.20 with Newman Command-Line Runner \\
-\textbf{Browser Automation} & Puppeteer 24.4 (Headless Chrome) \\
+Host Hardware & Apple M-Series Silicon (arm64 Architecture, 10 CPU Cores, 16 GB Unified RAM) \\
+Operating System & macOS Darwin (Unix 24.3.0) \\
+Python Runtime & Python 3.14.7 (Virtual environment at \texttt{.venv}) \\
+Node.js Runtime & Node.js v25.2.1 / npm 11.6.2 \\
+Database Engine & PostgreSQL 16.4 (Running locally on port 5433, database: \texttt{portfolio\_dev}) \\
+Automated Test Runner & Pytest 8.3.4 with \texttt{pytest-asyncio} and HTTPX asynchronous test client \\
+API Testing Tool & Postman Desktop 11.20 with Newman CLI \\
+Browser Automation & Puppeteer 24.4 (Headless Chrome) \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -121,18 +121,18 @@ To ensure the repository remains clean and aligned with software engineering sta
 \small
 \caption{Repository Consistency and Architectural Validation Results}
 \label{tab:validator_results}
-\begin{tabularx}{\textwidth}{l p{3.2cm} >{\RaggedRight\arraybackslash}X c}
+\begin{tabularx}{\textwidth}{l >{\RaggedRight\arraybackslash}p{4.2cm} >{\RaggedRight\arraybackslash}X c}
 \toprule
 \textbf{Check ID} & \textbf{What Was Verified} & \textbf{Expected Standard} & \textbf{Audit Result} \\
 \midrule
 \textbf{Check 1} & Core Design Documents & 41 design documents \& PDF exports verified & \textbf{PASS (100\%)} \\
 \textbf{Check 2} & Diagram Assets & 24 vector diagrams, SVGs, and PNGs verified & \textbf{PASS (100\%)} \\
-\textbf{Check 3} & Database Schema Consistency & Exactly 62 domain application tables & \textbf{PASS (100\%)} \\
+\textbf{Check 3} & Database Schema Check & Exactly 62 domain application tables & \textbf{PASS (100\%)} \\
 \textbf{Check 4} & Clean Architecture Check & 0 references to unapproved external libraries & \textbf{PASS (100\%)} \\
-\textbf{Check 5} & Cryptography \& LLM Integrity & Argon2id password hashing \& Gemini 3.8 Flash & \textbf{PASS (100\%)} \\
-\textbf{Check 6} & OpenAPI Endpoint Compilation & Exactly 82 unique API routes active in router & \textbf{PASS (100\%)} \\
+\textbf{Check 5} & Cryptography and AI Safety & Argon2id password hashing \& Gemini 3.8 Flash & \textbf{PASS (100\%)} \\
+\textbf{Check 6} & OpenAPI Route Endpoints & Exactly 82 unique API routes active in router & \textbf{PASS (100\%)} \\
 \textbf{Check 7} & Markdown Reference Links & Internal relative cross-references validated & \textbf{PASS (100\%)} \\
-\textbf{Check 8} & Lifecycle Scripts Verification & All 6 launcher \& lifecycle scripts executable & \textbf{PASS (100\%)} \\
+\textbf{Check 8} & Lifecycle Scripts Check & All 6 launcher \& lifecycle scripts executable & \textbf{PASS (100\%)} \\
 \midrule
 \textbf{Overall} & \textbf{Master Consistency Suite} & \textbf{8 / 8 Verification Checks Passed} & \textbf{100\% PASSED} \\
 \bottomrule

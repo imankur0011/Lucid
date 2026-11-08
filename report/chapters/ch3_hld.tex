@@ -10,30 +10,29 @@ To make sure the application is fast, reliable, and safe, Lucid follows an impor
     \item \textbf{Storing and Protecting Data}: Storing user profiles, historical stock prices, and portfolio records is handled by an enterprise-grade relational database that ensures financial data is never lost or corrupted.
 \end{itemize}
 
-\section{The Seven Major Subsystems}
-Figure~\ref{fig:hld_architecture} shows the seven main parts that make up the Lucid platform and how information moves between them:
+\section{The Six Core Architectural Subsystems}
+Figure~\ref{fig:hld_architecture} shows the six decoupled functional tiers that make up the Lucid platform and how information moves between them:
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=\textwidth, height=0.65\textheight, keepaspectratio]{SYSTEM_ARCHITECTURE.pdf}
+    \includegraphics[width=\textwidth, height=0.48\textheight, keepaspectratio]{SYSTEM_ARCHITECTURE.pdf}
     \caption{Lucid High-Level System Architecture and Tier Decomposition}
     \label{fig:hld_architecture}
 \end{figure}
 
-Here is what each major component does:
+Here is what each major subsystem does in simple, clear language:
 \begin{enumerate}
-    \item \textbf{Client Presentation Subsystem (Web Interface)}: This is what the user sees on their phone, tablet, or laptop screen. Built using modern web technologies (Next.js and React), it provides a responsive, easy-to-use interface. Users can fill out the investment questionnaire, see their portfolio in colorful visual charts, click on individual stocks to understand why they were chosen, and upload past Demat statements.
-    \item \textbf{API Gateway and Security Subsystem}: An \textbf{API} (Application Programming Interface) works like a waiter in a restaurant. When the user clicks a button on the screen, the web interface gives an order to the API. The API carries the request to the backend server, checks that the user is safely logged in using a secure digital badge (called a \textbf{JSON Web Token}, or JWT), and protects the server from being flooded with too many requests at once (known as \textbf{rate limiting}).
-    \item \textbf{Business and Application Service Subsystem}: This is the central coordinator of the backend application. It handles user registration, saves financial goals, calculates how much money an existing portfolio is worth, and checks if stock allocations have moved away from their planned targets.
-    \item \textbf{Multi-Agent AI Orchestration Subsystem}: This is the ``research brain'' of Lucid. Powered by the \textbf{LangGraph} framework, this subsystem coordinates thirteen specialized digital analysts. Rather than asking a single general AI model to do everything, each agent focuses on one topic: one studies inflation and central bank interest rates, another reviews company profit margins and debt, a third reads recent financial news, and a fourth agent acts as a strict risk critic to find flaws in the proposal.
-    \item \textbf{Quantitative and Mathematical Optimization Subsystem}: This is the mathematical calculator of Lucid. Completely separate from the AI models, it uses a proven mathematical optimizer (SciPy SLSQP) to find the exact percentage of money that should go into each stock. It also rounds continuous percentages into exact full share quantities and calculates Indian government taxes and broker fees.
-    \item \textbf{Database and Persistence Subsystem}: The central filing cabinet of the application. Powered by PostgreSQL 16, it stores all information across 62 organized tables, keeping user logins, stock catalogs, daily prices, and past portfolio versions completely safe and consistent.
-    \item \textbf{External Market Data and Feeds Subsystem}: This component connects to outside data sources. It regularly downloads official stock lists from the National Stock Exchange of India (NSE) and Bombay Stock Exchange (BSE), fetches live daily stock prices and financial ratios from financial data providers, checks macroeconomic interest rates from the Reserve Bank of India (RBI), and communicates with Google Gemini AI models.
+    \item \textbf{Tier 1: Client Presentation Subsystem (Web Interface)}: This is what the user sees and interacts with on their computer or mobile phone. Built using \textbf{Next.js 16.4.2} and \textbf{React 19.3.0}, it provides 24 modular user interface components where investors can complete risk profiling questionnaires, inspect interactive portfolio donut charts, explore dual-level ``Stock-Why'' justifications with official exchange links, and upload monthly Demat CAS statements.
+    \item \textbf{Tier 2: Backend API Gateway and Services Subsystem}: Powered by \textbf{FastAPI 0.115.8} running on Uvicorn ASGI. It exposes 9 modular REST routers spanning 82 unique endpoints. This tier acts as the secure gatekeeper: it verifies user passwords using Argon2id encryption, issues session tokens (JWT), enforces strict rate limits (120 req/min), runs a 300-second drift detection radar during Indian market hours, and coordinates business workflows.
+    \item \textbf{Tier 3: Multi-Agent AI Intelligence Subsystem}: This is the qualitative research committee of Lucid. Built on \textbf{LangGraph 0.4.0}, this subsystem coordinates a 13-node agent workflow using Google Gemini 3.8 Flash. Individual agents analyze macroeconomic interest rates (RBI), financial balance sheet health (ROE, P/E, Debt-to-Equity), and recent corporate filings, while an adversarial risk critic challenges risky selections. If cloud latency spikes, an automated circuit-breaker falls back to a deterministic rule engine in 0.48 seconds.
+    \item \textbf{Tier 4: Deterministic Math and Financial Engine Subsystem}: Completely separated from the artificial intelligence text models to prevent calculation errors, this layer uses \textbf{SciPy 1.15.2 SLSQP} to calculate optimal portfolio weights along the Markowitz Efficient Frontier. It enforces statutory concentration limits (single stock $\le 25\%$, sector $\le 40\%$), converts weights into exact whole-share counts, and computes official Indian transaction taxes (STT, Stamp Duty, GST, and exchange fees).
+    \item \textbf{Tier 5: Relational Database and Persistence Subsystem}: The central filing cabinet of the application, powered by \textbf{PostgreSQL 16.4} with SQLAlchemy 2.0 ORM and Alembic migrations. It stores all data across exactly 62 application tables (565 columns and 102 foreign-key constraints), ensuring that user accounts, historical daily prices, recommended portfolios, and audit trails are permanently preserved with full ACID transaction guarantees.
+    \item \textbf{Tier 6: External Market Data and Cloud Feeds Subsystem}: This component connects Lucid to outside financial data sources. It downloads official stock lists from the National Stock Exchange of India (NSE) and Bombay Stock Exchange (BSE), fetches daily historical price bars and balance sheet metrics from Yahoo Finance, tracks monetary indicators from the Reserve Bank of India (RBI), and communicates with Google Gemini cloud models.
 \end{enumerate}
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=\textwidth, height=0.72\textheight, keepaspectratio]{COMPLETE_DATA_FLOW.pdf}
+    \includegraphics[width=\textwidth, height=0.55\textheight, keepaspectratio]{COMPLETE_DATA_FLOW.pdf}
     \caption{Lucid End-to-End Data Pipeline and Lifecycle Workflow}
     \label{fig:hld_data_flow}
 \end{figure}

@@ -1,31 +1,121 @@
 \chapter{System Architecture and Runtime Topology}
 
 \section{System Architecture Overview}
-The system architecture of Lucid describes how all the software tools, servers, AI models, and databases are organized so that the application runs smoothly, safely, and quickly.
+The system architecture of Lucid describes how all the user interface components, backend API gateways, artificial intelligence agents, mathematical optimization solvers, and relational databases are organized so that the application runs quickly, reliably, and securely.
 
-To understand the architecture, imagine a modern, well-organized office building with eight specialized floors. Work starts on the top floor where the client arrives, travels down through security, passes through the research and math departments, and reaches the central file archive on the ground floor. 
+To guarantee high speed and financial accuracy, Lucid strictly separates qualitative artificial intelligence reasoning from quantitative mathematical optimization. The entire platform is engineered as a \textbf{Six-Tier Decoupled Architecture} organized in an end-to-end processing loop across two balanced functional rows:
+\begin{itemize}
+    \item \textbf{Top Processing Row (Forward User \& Research Flow)}: Connects the investor from the Next.js client interface (Tier 1) through the FastAPI security gateway (Tier 2) to the LangGraph multi-agent intelligence committee (Tier 3).
+    \item \textbf{Bottom Processing Row (Optimization \& Storage)}: Dispatches vetted candidate stocks into the SciPy solver (Tier 4), saves portfolio decisions into PostgreSQL (Tier 5), and pulls live market feeds from Indian exchange archives (Tier 6).
+\end{itemize}
 
-Figure~\ref{fig:sys_arch_diagram} shows the complete eight-layer structure of Lucid:
+Figure~\ref{fig:sys_arch_diagram} illustrates the complete six-tier architectural topology of Lucid, detailing the exact technologies, component boundaries, inputs, and outputs across all subsystems:
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=\textwidth, height=0.65\textheight, keepaspectratio]{SYSTEM_ARCHITECTURE.pdf}
-    \caption{Lucid Eight-Layer Decoupled System Architecture}
+    \includegraphics[width=\textwidth, height=0.48\textheight, keepaspectratio]{SYSTEM_ARCHITECTURE.pdf}
+    \caption{Lucid Six-Tier Decoupled System Architecture and Runtime Topology}
     \label{fig:sys_arch_diagram}
 \end{figure}
 
-\section{The Eight Architectural Layers: Floor by Floor}
-Here is how each layer works in simple, clear language:
-\begin{enumerate}
-    \item \textbf{Layer 1: Client Presentation Layer (The Front Office)}: Built using modern web technologies (\textbf{Next.js 16.4.2} and \textbf{React 19.3.0}). This is the visual interface that investors see and interact with on their smartphones, tablets, or computers. It renders clean dashboards, interactive risk questionnaires, colorful sector allocation charts, and instant alert pop-ups.
-    \item \textbf{Layer 2: API Gateway and Security Layer (The Security Gate)}: Built using \textbf{FastAPI 0.115+}. Every request from the web screen passes through this security checkpoint. It inspects digital login badges (JSON Web Tokens), blocks suspicious traffic, and enforces rate limits so no single user can accidentally overload the server.
-    \item \textbf{Layer 3: Orchestration and Workflow Layer (The Project Manager)}: Powered by \textbf{LangGraph 0.4}. This layer acts as the coordinator of the research process. It ensures that data moves smoothly from one research agent to the next in the proper order and handles retries if an external network connection is temporarily slow.
-    \item \textbf{Layer 4: Agentic AI and Intelligence Layer (The Research Team)}: Houses the thirteen specialized AI agents. Using Google Gemini 3.8 Flash, this layer reads news articles, reviews corporate earnings announcements, evaluates central bank interest rate policies, and challenges potential investment selections.
-    \item \textbf{Layer 5: Quantitative and Mathematical Layer (The Math Department)}: Built with proven scientific Python libraries (\textbf{SciPy 1.15} and \textbf{NumPy 2.2}). Completely separated from the AI text models, this layer calculates exact portfolio percentage weights using Markowitz Modern Portfolio Theory, rounds weights into executable whole shares, and calculates Indian taxes and exchange fees.
-    \item \textbf{Layer 6: Operational Services and Background Scheduler (The Maintenance Crew)}: An automated background program that runs quietly during stock market hours (09:15 to 15:30 IST). Every 5 minutes, it checks live stock prices to see if an investor's portfolio has drifted away from its target balance and prepares rebalancing alerts. It also handles PDF statement reading and notification delivery.
-    \item \textbf{Layer 7: Data Persistence Layer (The Central Archive)}: Powered by \textbf{PostgreSQL 16}. Stores all 62 application tables securely. It ensures that user logins, portfolio version histories, stock prices, and audit records are permanently preserved and protected against corruption.
-    \item \textbf{Layer 8: External Integrations and Data Feeds (The External Couriers)}: Manages connections to outside data sources. It downloads official stock lists from the National Stock Exchange of India (NSE) and Bombay Stock Exchange (BSE), fetches market prices from Yahoo Finance, checks monetary policies from the Reserve Bank of India (RBI), and communicates with Google Gemini AI services.
-\end{enumerate}
+\section{The Six Architectural Layers: A Detailed Walkthrough}
+Each of the six architectural tiers performs a dedicated, specialized role in the portfolio creation and management lifecycle:
+
+\subsection{Tier 1: Client Presentation Layer}
+Tier 1 represents the user-facing web application running on local port \texttt{3000}. Built with \textbf{Next.js 16.4.2} (App Router with Turbopack) and \textbf{React 19.3.0}, this layer provides a clean, responsive workspace comprising 24 modular user interface components styled with \textbf{Tailwind CSS 4.1.1}:
+\begin{itemize}
+    \item \textbf{Investor Onboarding}: Collects investor capital ($\ge \text{Rs.~}10{,}000$), suitability answers (scoring 5 to 20), target milestones, and sector exclusions.
+    \item \textbf{Holdings Dashboard}: Renders interactive portfolio summaries, including a diversification donut ring (e.g., 95.5/100 across 12 stocks) powered by \textbf{Recharts}, and holding cards (e.g., HDFC Bank 32 shares / Rs.~54,976 and Reliance 16 shares / Rs.~45,440).
+    \item \textbf{Dual-Level Stock-Why Explanations}: Provides a two-level explainability modal featuring an instant plain-English summary (Level 1) and direct links to official exchange announcements on NSE and BSE (Level 2), guarded by \path{lib/linkUtils.ts}.
+    \item \textbf{Demat Health Audit and Rebalance Preview}: Allows users to upload monthly Demat PDF statements (CAS) or CSV files, view their portfolio concentration score (HHI), and inspect before-and-after rebalance trade proposals.
+    \item \textbf{Communication Pipeline}: Communicates with the backend using authenticated REST requests via \path{lib/api.ts}, transmitting Bearer JSON Web Tokens and running 30-second polling for real-time notifications.
+    \item \textbf{Input / Output Contract}: Accepts investor capital, risk responses, and Demat CAS statements; delivers whole-share investment recommendations and downloadable broker execution CSV files.
+\end{itemize}
+
+\subsection{Tier 2: Backend API Gateway and Services}
+Tier 2 is the central API gateway and business logic orchestrator running on local port \texttt{8000} via the \textbf{Uvicorn 0.34.0} ASGI web server. Built using \textbf{FastAPI 0.115.8} and \textbf{Pydantic 2.10.6}, this layer exposes \textbf{9 versioned routers} spanning \textbf{82 unique URL paths} (88 HTTP operations) and manages 13 active services:
+\begin{itemize}
+    \item \textbf{Authentication and Rate Limiting (\path{auth.py}, 13 Ops)}: Secures user accounts using salted \textbf{Argon2id} password hashing and issues encrypted JSON Web Tokens (JWT). Enforces a strict rate limit of 120 requests per minute to prevent denial-of-service abuse.
+    \item \textbf{Profile and Mandate Engine (\path{profile.py} \& \path{risk.py}, 14 Ops)}: Calculates psychometric suitability scores (5 to 20) and parses conversational natural-language investment targets into structured parameters.
+    \item \textbf{Universe Funnel Service (\path{market_data.py}, 13 Ops)}: Filters the broad universe of 2,639 listed Indian companies down to an active, liquid candidate pool of institutional-grade equities.
+    \item \textbf{Portfolio Generation and Explainability (\path{portfolios.py}, 25 Ops)}: Coordinates portfolio creation requests, tracks immutable version deltas, and generates dual-level ``Stock-Why'' justifications.
+    \item \textbf{Demat Statement Diagnosis (\path{diagnosis.py}, 9 Ops)}: Extracts stock holdings from uploaded Demat CAS PDF statements using \texttt{pypdf}, checks sector concentrations, and computes diversification metrics.
+    \item \textbf{300-Second Continuous Drift Radar (\path{monitoring.py}, 14 Ops)}: An automated monitoring engine that runs every 5 minutes during Indian market trading hours (09:15 to 15:30 IST), protected by PostgreSQL advisory lock \texttt{847291} to ensure only one drift scan runs at any given time.
+    \item \textbf{Input / Output Contract}: Receives authenticated REST Data Transfer Objects (DTOs); emits validated JSON response payloads and HTTP 201 Created status codes.
+\end{itemize}
+
+\subsection{Tier 3: Agentic Intelligence Layer}
+Tier 3 serves as the qualitative investment research committee of Lucid. Built on \textbf{LangGraph 0.4.0}, it coordinates digital analyst agents inside a structured \texttt{StateGraph} workflow (\path{backend/agent/graph.py}) passing a centralized \texttt{PortfolioAgentState} object containing 35 distinct telemetry fields:
+\begin{itemize}
+    \item \textbf{Directed Graph Workflow}: Execution follows a controlled sequential pipeline:
+    \begin{equation}
+    \begin{aligned}
+        \text{N1--N2 Gate} &\longrightarrow \text{N3--N6 Analysts} \longrightarrow \text{N7 Strategist} \\
+        &\longleftrightarrow \text{N8--N9 Critic} \longrightarrow \text{N10--N13 Persistence}
+    \end{aligned}
+    \end{equation}
+    \item \textbf{Specialized Digital Agents}:
+    \begin{itemize}
+        \item \textit{Node 3 (Macro Analyst)}: Evaluates Reserve Bank of India (RBI) repo interest rates, inflation (CPI), and government bond yields.
+        \item \textit{Nodes 4--5 (Market and Fundamental Analysts)}: Evaluates the India VIX volatility index, moving averages, Return on Equity (ROE), Price-to-Earnings (P/E), and Debt-to-Equity ratios.
+        \item \textit{Node 6 (News and Regulatory Analyst)}: Scans 30-day corporate announcements and SEBI regulatory filings for potential governance flags.
+        \item \textit{Node 7 (Lead Strategist)}: Selects an initial candidate pool of 10 to 16 promising stocks tailored to the investor's risk profile.
+        \item \textit{Nodes 8--9 (Adversarial Risk Critic)}: Thoroughly stress-tests the strategist's candidate list. If a stock carries excessive debt or valuation risk, the critic rejects it and mandates a rework pass (capped at a maximum of 2 iterations).
+    \end{itemize}
+    \item \textbf{Circuit-Breaker Governance (\path{nodes.py})}: Uses Google Gemini 3.8 Flash (temperature 0.1--0.2, $\le 1,500$ token budget) for qualitative reading. If cloud API latency spikes or an external network timeout occurs, an automated circuit-breaker immediately triggers a zero-latency deterministic financial rule engine (\textbf{Rule Engine v2}) in just \textbf{0.48 seconds}, ensuring the application never freezes.
+    \item \textbf{Stock-Why Synthesis and Telemetry}: Node 12 (Moderator) synthesizes the dual-level plain-English explanations, and Node 13 commits structured execution logs across 6 audit tables.
+    \item \textbf{Separation of Responsibilities}: Qualitative AI agents select and review candidates; all math and weight calculations are strictly forbidden in this tier and handled by Tier 4.
+    \item \textbf{Input / Output Contract}: Accepts the investor mandate and screened candidate pool; delivers a vetted basket of 10 to 16 Critic-approved stocks.
+\end{itemize}
+
+\subsection{Tier 4: Deterministic Math and Financial Engine}
+Tier 4 represents the mathematical calculation core of Lucid, built with proven scientific Python libraries (\textbf{SciPy 1.15.2} and \textbf{NumPy 2.2.3}). Completely separated from all artificial intelligence models, this layer executes pure deterministic calculations with zero hallucination risk:
+\begin{itemize}
+    \item \textbf{SciPy SLSQP Mathematical Optimizer}: Solves Markowitz Modern Portfolio Theory equations using Sequential Least Squares Programming (\texttt{scipy.optimize.minimize} with the SLSQP method). It finds optimal percentage weights ($w^*$) along the Efficient Frontier, maximizing the Sharpe ratio for Moderate and Aggressive profiles or minimizing portfolio variance for Conservative profiles.
+    \item \textbf{Institutional Safety Bounds}: Enforces hard concentration limits: no individual stock may exceed 20\% to 25\% of the total portfolio, and no single industry sector may exceed 30\% to 40\%.
+    \item \textbf{Mathematical Guardrails}: Raw return estimates are winsorized to the 5th and 95th percentiles with Z-scores bounded in $[-3, +3]$, and expected annual returns are constrained within $[4\%, 30\%]$ to prevent erratic mathematical weights.
+    \item \textbf{Whole-Share Integer Lot Rounding}: Because Indian exchanges do not permit fractional shares, the continuous percentage weights are converted into exact whole shares using a floor-rounding algorithm:
+    \begin{equation}
+        Q_i = \left\lfloor \frac{w_i^* \times V_{\text{total}}}{P_i} \right\rfloor
+    \end{equation}
+    where $Q_i$ is the number of whole shares for stock $i$, $w_i^*$ is its target percentage weight, $V_{\text{total}}$ is total investment capital, and $P_i$ is its current market price. All leftover funds remain safely in the investor's unallocated cash account ($C_{\text{res}} \ge \text{Rs.~}0$).
+    \item \textbf{SEBI Statutory Transaction Fee Schedule}: Models all official Indian delivery transaction charges (updated as of October 2024):
+    \begin{itemize}
+        \item Securities Transaction Tax (STT): 0.10\% on delivery equity transactions.
+        \item Exchange Turnover Fees: 0.00297\% on NSE and 0.00375\% on BSE.
+        \item SEBI Regulatory Turnover Fee: 0.0001\% (Rs.~10 per crore).
+        \item Stamp Duty: 0.015\% charged on purchases under the Indian Stamp Act.
+        \item Goods and Services Tax (GST): 18.0\% applied to brokerage and exchange charges.
+    \end{itemize}
+    \item \textbf{Input / Output Contract}: Accepts 10 to 16 vetted stocks, expected returns $\mu_i$, and covariance matrix $\Sigma_{\text{reg}}$; delivers integer share quantities $Q_i$ and non-negative residual cash ($C_{\text{res}} \ge \text{Rs.~}0$).
+\end{itemize}
+
+\subsection{Tier 5: Relational Persistence Layer}
+Tier 5 serves as the secure, permanent data store of Lucid, powered by \textbf{PostgreSQL 16.4} and managed via \textbf{SQLAlchemy 2.0.38} and \textbf{Alembic 1.14.1}:
+\begin{itemize}
+    \item \textbf{Database Architecture}: Contains exactly \textbf{62 domain application tables} comprising 565 columns, 102 foreign-key constraints, and 312 data integrity checks, organized into six functional domain clusters:
+    \begin{enumerate}
+        \item \textit{Identity and Risk (12 tables)}: User profiles, encrypted passwords, suitability scores, and sector exclusions.
+        \item \textit{Security Master (9 tables)}: Master catalog of 2,639 listed Indian companies, 2,716 exchange listings across NSE and BSE, and corporate taxonomy.
+        \item \textit{Market and News (11 tables)}: Historical daily OHLCV price bars, fundamental balance sheet ratios, economic indicators, and news sentiment records.
+        \item \textit{Portfolios and Why (13 tables)}: Recommended portfolios, immutable version snapshots, line-item security allocations, and dual-level Stock-Why explanations.
+        \item \textit{Demat Statement Diagnosis (4 tables)}: Imported Demat statements, parsed external holdings, and HHI health diagnostic reports.
+        \item \textit{Operations and Brokerage (13 tables)}: AI agent execution logs, simulated broker orders, order lifecycle event logs, and user notifications.
+    \end{enumerate}
+    \item \textbf{ACID Guarantees and Speed}: Configured with connection pooling (pool size 10, max overflow 20) and uses PostgreSQL extensions including \texttt{pgcrypto} (cryptographic functions), \texttt{uuid-ossp} (random 128-bit identifiers), and \texttt{pg\_trgm} (trigram fuzzy matching for company name resolution with similarity $> 0.4$).
+    \item \textbf{Input / Output Contract}: Accepts atomic ACID write commits from the API services and mathematical optimizer; emits indexed relational reads with average query response times under 5 milliseconds.
+\end{itemize}
+
+\subsection{Tier 6: External Market Data and Cloud Feeds}
+Tier 6 manages automated connections to official Indian market archives, financial data feeds, and cloud artificial intelligence models:
+\begin{itemize}
+    \item \textbf{Official Exchange Archives (NSE and BSE)}: Synchronizes with the National Stock Exchange master directory (\texttt{EQUITY\_L.csv}) and BSE scrip directory to maintain an accurate universe of 2,639 listed Indian equities and corporate action records.
+    \item \textbf{Yahoo Finance API Feed}: Fetches 252 market sessions of historical daily price bars, financial health ratios (ROE, P/E, Debt-to-Equity), and the India VIX volatility index.
+    \item \textbf{Macroeconomic Sources (RBI and MoSPI)}: Tracks country-wide monetary statistics, including the RBI Policy Repo Rate (6.50\%), Consumer Price Index inflation (5.10\%), 10-year Government Securities yield (7.04\%), and economic news.
+    \item \textbf{Google Gemini Cloud API}: Interfaces with the Gemini 3.8 Flash model via structured JSON schemas, backed by automated local rule fallbacks.
+    \item \textbf{Lean Zero-Bloat Engineering}: Lucid is built with an intentionally lean, zero-bloat tech stack. The platform requires \textbf{zero external graph databases} (no Neo4j), \textbf{zero in-memory caching servers} (no Redis), \textbf{zero distributed task queues} (no Celery), and \textbf{zero external vector stores} (no FAISS). Instead, high-performance PostgreSQL indexes and lightweight Python background threads handle all operations locally, ensuring resilient offline continuity and low operational cost.
+    \item \textbf{Input / Output Contract}: Sends HTTPS synchronization requests and structured prompts; returns clean, normalized market data and qualitative research payloads.
+\end{itemize}
 
 \section{Technology Stack Manifest: What Tools Were Chosen and Why}
 Table~\ref{tab:tech_stack} documents the verified software libraries and frameworks used to build Lucid, along with the simple reason why each tool was chosen:

@@ -41,6 +41,15 @@ When a user clicks a button, the web screen does not talk directly to the databa
 \section{Agent-Level Design: The 13-Node AI Research Team}
 Rather than relying on a single AI prompt, Lucid coordinates thirteen specialized digital agents organized in a structured sequence using \textbf{LangGraph 0.4}. 
 
+Figure~\ref{fig:agentic_ai_arch} illustrates the complete 13-node multi-agent workflow, shared state architecture, and deterministic fallback circuit-breaker:
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=\textwidth, height=0.48\textheight, keepaspectratio]{AGENTIC_AI_ARCHITECTURE.pdf}
+    \caption{Lucid 13-Node Multi-Agent LangGraph Workflow and State Topology}
+    \label{fig:agentic_ai_arch}
+\end{figure}
+
 All thirteen agents share a digital workspace (called the \textbf{AgentState}), storing user inputs, market observations, and research findings:
 
 \begin{footnotesize}
