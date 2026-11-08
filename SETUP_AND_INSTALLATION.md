@@ -320,3 +320,4 @@ If frontend displays stale pages or module resolution errors:
 rm -rf frontend/.next frontend/node_modules
 cd frontend && npm install && cd ..
 ```
+

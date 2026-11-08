@@ -98,3 +98,4 @@ fi
 
 echo -e "${CYAN}Note: PostgreSQL database server remains untouched and running.${NC}"
 echo -e "${BOLD}======================================================================${NC}"
+

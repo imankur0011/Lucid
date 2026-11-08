@@ -223,3 +223,4 @@ Write-Host "Opening Lucid in your default browser..." -ForegroundColor Cyan
 Start-Process "http://localhost:3000"
 
 Write-Host "`nTo stop services, run: Stop-Process -Id $($BackendProcess.Id),$($FrontendProcess.Id) -Force" -ForegroundColor Yellow
+

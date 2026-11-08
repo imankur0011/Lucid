@@ -90,3 +90,4 @@ case "$TARGET" in
         tail -n "$LINES" -f "$LOG_DIR/backend.log" "$LOG_DIR/frontend.log"
         ;;
 esac
+
