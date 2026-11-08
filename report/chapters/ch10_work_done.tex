@@ -186,27 +186,27 @@ Table~\ref{tab:traceability_matrix} establishes complete end-to-end traceability
 \toprule
 \textbf{Req ID} & \textbf{Frontend UI Component} & \textbf{Backend Router} & \textbf{Database Tables} & \textbf{Automated Test Suite} & \textbf{Status} \\
 \midrule
-\textbf{FR-C01} & \texttt{OnboardingWizard.tsx} & \texttt{api/v1/risk.py} & \makecell[l]{\texttt{app\_users},\\ \texttt{risk\_assessments}} & \makecell[l]{\texttt{test\_auth\_and\_}\\ \texttt{security.py}} & \textbf{Verified} \\
+\textbf{FR-C01} & \texttt{OnboardingWizard.tsx} & \texttt{api/v1/risk.py} & \makecell[l]{\texttt{app\_users},\\ \texttt{risk\_assessments}} & \texttt{test\_auth\_and\_security.py} & \textbf{Verified} \\
 \addlinespace[4pt]
-\textbf{FR-C02} & \makecell[l]{\texttt{Conversational}\\\texttt{Assistant.tsx}} & \texttt{api/v1/portfolios.py} & \makecell[l]{\texttt{financial\_goals},\\ \texttt{user\_profiles}} & \makecell[l]{\texttt{test\_natural\_}\\ \texttt{language\_}\\ \texttt{onboarding.py}} & \textbf{Verified} \\
+\textbf{FR-C02} & \makecell[l]{\texttt{Conversational}\\\texttt{Assistant.tsx}} & \texttt{api/v1/portfolios.py} & \makecell[l]{\texttt{financial\_goals},\\ \texttt{user\_profiles}} & \makecell[l]{\texttt{test\_natural\_language\_}\\\texttt{onboarding.py}} & \textbf{Verified} \\
 \addlinespace[4pt]
-\textbf{FR-C03} & \texttt{HoldingsView.tsx} & \texttt{api/v1/market\_data.py} & \makecell[l]{\texttt{economic\_obs},\\ \texttt{market\_prices}} & \makecell[l]{\texttt{test\_market\_}\\ \texttt{regime\_universe.py}} & \textbf{Verified} \\
+\textbf{FR-C03} & \texttt{HoldingsView.tsx} & \texttt{api/v1/market\_data.py} & \makecell[l]{\texttt{economic\_obs},\\ \texttt{market\_prices}} & \makecell[l]{\texttt{test\_market\_regime\_}\\\texttt{and\_universe.py}} & \textbf{Verified} \\
 \addlinespace[4pt]
-\textbf{FR-C04} & \texttt{HoldingsView.tsx} & \texttt{api/v1/market\_data.py} & \makecell[l]{\texttt{securities},\\ \texttt{listings}} & \makecell[l]{\texttt{test\_full\_}\\ \texttt{universe\_sync.py}} & \textbf{Verified} \\
+\textbf{FR-C04} & \texttt{HoldingsView.tsx} & \texttt{api/v1/market\_data.py} & \makecell[l]{\texttt{securities},\\ \texttt{instrument\_listings}} & \texttt{test\_full\_universe\_sync.py} & \textbf{Verified} \\
 \addlinespace[4pt]
-\textbf{FR-C05} & \texttt{StockWhyModal.tsx} & \texttt{agents/graph.py} & \makecell[l]{\texttt{agent\_runs},\\ \texttt{evidence\_items}} & \makecell[l]{\texttt{test\_multi\_agent\_}\\ \texttt{llm\_execution.py}} & \textbf{Verified} \\
+\textbf{FR-C05} & \texttt{StockWhyModal.tsx} & \texttt{agents/graph.py} & \makecell[l]{\texttt{agent\_runs},\\ \texttt{evidence\_items}} & \makecell[l]{\texttt{test\_multi\_agent\_llm\_}\\\texttt{execution.py}} & \textbf{Verified} \\
 \addlinespace[4pt]
-\textbf{FR-C06} & \makecell[l]{\texttt{Allocation}\\\texttt{Visualizer.tsx}} & \texttt{portfolio\_engine/} & \makecell[l]{\texttt{portfolio\_versions},\\ \texttt{decisions}} & \makecell[l]{\texttt{test\_portfolio\_}\\ \texttt{engine.py}} & \textbf{Verified} \\
+\textbf{FR-C06} & \makecell[l]{\texttt{Allocation}\\\texttt{Visualizer.tsx}} & \texttt{portfolio\_engine/} & \makecell[l]{\texttt{portfolio\_versions},\\ \texttt{decisions}} & \texttt{test\_portfolio\_engine.py} & \textbf{Verified} \\
 \addlinespace[4pt]
-\textbf{FR-C07} & \texttt{HoldingsView.tsx} & \texttt{api/v1/monitoring.py} & \makecell[l]{\texttt{performance\_}\\ \texttt{snapshots}} & \makecell[l]{\texttt{test\_monitoring\_}\\ \texttt{and\_rebalance.py}} & \textbf{Verified} \\
+\textbf{FR-C07} & \texttt{HoldingsView.tsx} & \texttt{api/v1/monitoring.py} & \makecell[l]{\texttt{portfolio\_snapshots}} & \makecell[l]{\texttt{test\_portfolio\_monitoring\_}\\\texttt{and\_rebalance.py}} & \textbf{Verified} \\
 \addlinespace[4pt]
-\textbf{FR-C08} & \makecell[l]{\texttt{Rebalance}\\\texttt{PreviewModal.tsx}} & \texttt{api/v1/rebalancing.py} & \makecell[l]{\texttt{rebalance\_sugg},\\ \texttt{broker\_orders}} & \makecell[l]{\texttt{test\_diagnosis\_}\\ \texttt{and\_rebalance.py}} & \textbf{Verified} \\
+\textbf{FR-C08} & \makecell[l]{\texttt{RebalancePreview}\\\texttt{Modal.tsx}} & \texttt{api/v1/rebalancing.py} & \makecell[l]{\texttt{rebalance\_suggestions},\\ \texttt{broker\_orders}} & \makecell[l]{\texttt{test\_diagnosis\_copilot.py}} & \textbf{Verified} \\
 \addlinespace[4pt]
-\textbf{FR-C09} & \makecell[l]{\texttt{Notifications}\\\texttt{Panel.tsx}} & \texttt{api/v1/notifications.py} & \texttt{notifications} & \makecell[l]{\texttt{test\_notifications\_}\\ \texttt{system.py}} & \textbf{Verified} \\
+\textbf{FR-C09} & \makecell[l]{\texttt{Notifications}\\\texttt{Panel.tsx}} & \texttt{api/v1/notifications.py} & \texttt{notifications} & \makecell[l]{\texttt{test\_notifications\_system.py}} & \textbf{Verified} \\
 \addlinespace[4pt]
-\textbf{FR-C10} & \texttt{DiagnosisView.tsx} & \texttt{api/v1/diagnosis.py} & \makecell[l]{\texttt{portfolios},\\ \texttt{diagnoses}} & \makecell[l]{\texttt{test\_diagnosis\_}\\ \texttt{copilot.py}} & \textbf{Verified} \\
+\textbf{FR-C10} & \texttt{DiagnosisView.tsx} & \texttt{api/v1/diagnosis.py} & \makecell[l]{\texttt{existing\_portfolios},\\ \texttt{portfolio\_diagnoses}} & \texttt{test\_diagnosis\_copilot.py} & \textbf{Verified} \\
 \addlinespace[4pt]
-\textbf{FR-D01} & \texttt{StockWhyModal.tsx} & \texttt{api/v1/portfolios.py} & \makecell[l]{\texttt{explanations},\\ \texttt{evidence\_items}} & \makecell[l]{\texttt{test\_stock\_why\_}\\ \texttt{experience.py}} & \textbf{Verified} \\
+\textbf{FR-D01} & \texttt{StockWhyModal.tsx} & \texttt{api/v1/portfolios.py} & \makecell[l]{\texttt{explanations},\\ \texttt{evidence\_items}} & \texttt{test\_stock\_why\_experience.py} & \textbf{Verified} \\
 \bottomrule
 \end{tabular}%
 }

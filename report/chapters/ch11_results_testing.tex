@@ -20,7 +20,7 @@ All software tests and performance benchmarks were executed in the standardized 
 \centering
 \caption{Lucid Verification and Test Environment Specification}
 \label{tab:test_env}
-\begin{tabularx}{\textwidth}{p{4.2cm} X}
+\begin{tabularx}{\textwidth}{p{4.9cm} X}
 \toprule
 \textbf{Environment Parameter} & \textbf{Specification / Value} \\
 \midrule
@@ -54,7 +54,7 @@ Table~\ref{tab:test_suites} provides a breakdown of the primary test files and w
 \texttt{test\_investor\_api.py} & User profiles, financial goals, risk questionnaire scoring & 12 & \textbf{100\% Passed} \\
 \makecell[l]{\texttt{test\_natural\_language\_}\\\texttt{onboarding.py}} & Entity extraction from conversational user sentences & 8 & \textbf{100\% Passed} \\
 \makecell[l]{\texttt{test\_market\_regime\_}\\\texttt{and\_universe.py}} & Nifty 50 moving averages and India VIX volatility tiers & 10 & \textbf{100\% Passed} \\
-\texttt{test\_full\_universe\_sync.py} & Downloading and synchronizing 2,639 listed NSE/BSE stocks & 9 & \textbf{100\% Passed} \\
+\makecell[l]{\texttt{test\_full\_universe\_}\\\texttt{sync.py}} & Downloading and synchronizing 2,639 listed NSE/BSE stocks & 9 & \textbf{100\% Passed} \\
 \makecell[l]{\texttt{test\_multi\_agent\_llm\_}\\\texttt{execution.py}} & 13-node LangGraph agent flow and Adversarial Critic checks & 11 & \textbf{100\% Passed} \\
 \texttt{test\_portfolio\_engine.py} & SciPy SLSQP optimization, single-stock and sector limits & 15 & \textbf{100\% Passed} \\
 \makecell[l]{\texttt{test\_portfolio\_monitoring\_}\\\texttt{and\_rebalance.py}} & 5-minute drift radar and before-and-after rebalance preview & 12 & \textbf{100\% Passed} \\
@@ -118,10 +118,10 @@ To ensure the repository remains clean and aligned with software engineering sta
 
 \begin{table}[H]
 \centering
+\small
 \caption{Repository Consistency and Architectural Validation Results}
 \label{tab:validator_results}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{cllc}
+\begin{tabularx}{\textwidth}{l p{3.2cm} >{\RaggedRight\arraybackslash}X c}
 \toprule
 \textbf{Check ID} & \textbf{What Was Verified} & \textbf{Expected Standard} & \textbf{Audit Result} \\
 \midrule
@@ -136,8 +136,7 @@ To ensure the repository remains clean and aligned with software engineering sta
 \midrule
 \textbf{Overall} & \textbf{Master Consistency Suite} & \textbf{8 / 8 Verification Checks Passed} & \textbf{100\% PASSED} \\
 \bottomrule
-\end{tabular}%
-}
+\end{tabularx}
 \end{table}
 
 \section{System Speed and Response Time Benchmarks}

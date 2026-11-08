@@ -93,6 +93,7 @@ Table~\ref{tab:schema_app_users} shows the structure of the main user identity t
     \item \texttt{audit\_events}: An unalterable security ledger that logs important actions (such as password changes, login attempts, or profile updates) to prevent unauthorized tampering.
 \end{itemize}
 
+\clearpage
 \subsection{Domain 2: Investor Suitability, Profiling, and Financial Goals}
 Domain 2 stores the investor's financial background, investment horizon, risk tolerance score, and savings goals across 10 tables:
 \begin{itemize}
@@ -110,13 +111,14 @@ Domain 2 stores the investor's financial background, investment horizon, risk to
 
 Figure~\ref{fig:er_domain2} displays the Entity-Relationship structure for Domain 2:
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.88\textwidth, height=0.48\textheight, keepaspectratio]{02_investor_suitability_and_goals_domain.pdf}
+    \includegraphics[width=0.88\textwidth, height=0.42\textheight, keepaspectratio]{02_investor_suitability_and_goals_domain.pdf}
     \caption{Domain 2 ER Diagram: Investor Suitability, Profiling and Financial Goals}
     \label{fig:er_domain2}
 \end{figure}
 
+\clearpage
 \subsection{Domain 3: Security Master and Corporate Registry}
 Domain 3 defines the universe of publicly traded companies, stock exchanges, and industry sectors across 8 tables:
 \begin{itemize}
@@ -132,13 +134,14 @@ Domain 3 defines the universe of publicly traded companies, stock exchanges, and
 
 Figure~\ref{fig:er_domain3} displays the Entity-Relationship structure for Domain 3:
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.88\textwidth, height=0.50\textheight, keepaspectratio]{03_security_master_and_companies_domain.pdf}
+    \includegraphics[width=0.88\textwidth, height=0.44\textheight, keepaspectratio]{03_security_master_and_companies_domain.pdf}
     \caption{Domain 3 ER Diagram: Security Master and Corporate Registry}
     \label{fig:er_domain3}
 \end{figure}
 
+\clearpage
 \subsection{Domain 4: Market Data, Historical Quotes, and Macroeconomic Regime}
 Domain 4 stores the financial information that Lucid uses to analyze stocks across 8 tables:
 \begin{itemize}
@@ -154,13 +157,14 @@ Domain 4 stores the financial information that Lucid uses to analyze stocks acro
 
 Figure~\ref{fig:er_domain4} displays the Entity-Relationship structure for Domain 4:
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.88\textwidth, height=0.50\textheight, keepaspectratio]{04_market_data_and_fundamentals_domain.pdf}
+    \includegraphics[width=0.88\textwidth, height=0.44\textheight, keepaspectratio]{04_market_data_and_fundamentals_domain.pdf}
     \caption{Domain 4 ER Diagram: Market Data, Historical Quotes and Macro Regime}
     \label{fig:er_domain4}
 \end{figure}
 
+\clearpage
 \subsection{Domain 5: Portfolio Engine, Quantitative Optimization, and Tracking}
 Domain 5 forms the transactional core of Lucid, recording recommended portfolios, version histories, and daily valuations across 10 tables:
 \begin{itemize}
@@ -178,13 +182,14 @@ Domain 5 forms the transactional core of Lucid, recording recommended portfolios
 
 Figure~\ref{fig:er_domain5} displays the Entity-Relationship structure for Domain 5:
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.88\textwidth, height=0.48\textheight, keepaspectratio]{05_portfolio_engine_and_optimization_domain.pdf}
+    \includegraphics[width=0.88\textwidth, height=0.40\textheight, keepaspectratio]{05_portfolio_engine_and_optimization_domain.pdf}
     \caption{Domain 5 ER Diagram: Portfolio Engine, Quantitative Optimization and Tracking}
     \label{fig:er_domain5}
 \end{figure}
 
+\clearpage
 \subsection{Domain 6: Broker Integration, Execution, and Order Lifecycle}
 Domain 6 manages connections to brokerage platforms and tracks simulated order execution across 5 tables:
 \begin{itemize}
@@ -197,13 +202,14 @@ Domain 6 manages connections to brokerage platforms and tracks simulated order e
 
 Figure~\ref{fig:er_domain6} displays the Entity-Relationship structure for Domain 6:
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth, height=0.34\textheight, keepaspectratio]{06_broker_integrations_and_orders_domain.pdf}
+    \includegraphics[width=0.85\textwidth, height=0.42\textheight, keepaspectratio]{06_broker_integrations_and_orders_domain.pdf}
     \caption{Domain 6 ER Diagram: Broker Integration, Execution and Order Lifecycle}
     \label{fig:er_domain6}
 \end{figure}
 
+\clearpage
 \subsection{Domain 7: Demat CAS Diagnosis and Portfolio Analytics}
 Domain 7 stores imported external Demat portfolios and health diagnostic assessments across 3 tables:
 \begin{itemize}
@@ -214,13 +220,14 @@ Domain 7 stores imported external Demat portfolios and health diagnostic assessm
 
 Figure~\ref{fig:er_domain7} displays the Entity-Relationship structure for Domain 7:
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth, height=0.36\textheight, keepaspectratio]{07_demat_diagnosis_and_rebalancing_domain.pdf}
+    \includegraphics[width=0.85\textwidth, height=0.42\textheight, keepaspectratio]{07_demat_diagnosis_and_rebalancing_domain.pdf}
     \caption{Domain 7 ER Diagram: Demat CAS Diagnosis and Portfolio Analytics}
     \label{fig:er_domain7}
 \end{figure}
 
+\clearpage
 \subsection{Domain 8: Multi-Agent AI Telemetry, Reasoning Traces, and Audits}
 Domain 8 stores the execution logs of the AI agents, plain-English explanations, and real-time user alerts across 13 tables:
 \begin{itemize}
@@ -241,7 +248,7 @@ Domain 8 stores the execution logs of the AI agents, plain-English explanations,
 
 Figure~\ref{fig:er_domain8} displays the Entity-Relationship structure for Domain 8:
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.85\textwidth, height=0.38\textheight, keepaspectratio]{08_multi_agent_telemetry_and_auditing_domain.pdf}
     \caption[Domain 8 ER Diagram: AI Telemetry and Verification]{Domain 8 ER Diagram: Multi-Agent AI Telemetry, Reasoning Traces and Verification}
