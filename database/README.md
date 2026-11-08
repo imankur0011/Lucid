@@ -11,7 +11,7 @@
 PostgreSQL is the **exclusive relational source of truth** for Lucid. All application state—including user identity, SEBI investor risk questionnaires, the full NSE/BSE security master (2,639 securities), historical market prices, LangGraph multi-agent execution telemetry, portfolio versions, integer share allocations, and audit logs—is strictly persisted here.
 
 > [!NOTE]
-> Neo4j and Redis are configured in `backend/config.py` for potential future extensions, but **neither is in the active runtime path**. A standard PostgreSQL 16 instance is all that is required to run Lucid.
+> PostgreSQL 16 is the **exclusive database** for Lucid. Unsupported legacy graph or cache databases (such as Neo4j or Redis) have been completely removed from active runtime configuration and dependencies. A standard PostgreSQL 16 instance is all that is required to run Lucid.
 
 ---
 

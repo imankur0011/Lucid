@@ -11,26 +11,26 @@ graph TD
         A2 --> A3{"Suitability & Feasibility<br/>(SEBI Risk Alignment & Lot Feasibility)"}:::logicNode
         A3 -- "Pass" --> A4["Macro Analyst Node<br/>(RBI Policy, Repo Rate, CPI Inflation)"]:::stepNode
         A3 -- "Fail" --> A_Persist["Persistence Node<br/>(Aborted Status & Actionable Notice)"]:::dbNode
-        A4 --> A5["Market Analyst Node<br/>(Nifty 50 Regime, Volatility, Breadth)"]:::stepNode
+        A4 --> A5["Market Analyst Node<br/>(Nifty 50 Regime, 50/200 DMA)"]:::stepNode
         A5 --> A6["Fundamental Analyst Node<br/>(P/E, ROE, D/E, Factor Scoring)"]:::stepNode
-        A6 --> A7["News & Sentiment Analyst Node<br/>(Corporate Filings, Material Events)"]:::stepNode
-        A7 --> A8["Lead Strategist Node<br/>(Target Weights & Regime Thesis)"]:::stepNode
+        A6 --> A7["News & Filings Analyst Node<br/>(30-Day Recency Filter, Filings)"]:::stepNode
+        A7 --> A8["Lead Strategist Node<br/>(Tactical Weights & Regime Thesis)"]:::stepNode
         A8 --> A9{"Independent Critic Node<br/>(Mandate, Caps, Liquidity Audit)"}:::logicNode
-        A9 -- "Approved" --> A10["Deterministic SLSQP Optimizer<br/>(Markowitz Utility + Simplex Projection)"]:::mathNode
+        A9 -- "Approved" --> A10["Deterministic SLSQP Optimizer<br/>(Markowitz Quadratic Utility)"]:::mathNode
         A9 -- "Rework (<=2)" --> A11["Strategist Bounded Rework Node"]:::stepNode
         A11 --> A9
         A9 -- "Reject / Exhausted" --> A_Persist
         A10 --> A12{"Critic Final Validation<br/>(Post-Optimizer Constraint Check)"}:::logicNode
-        A12 -- "Approved" --> A13["Fiduciary Moderator Node<br/>(Two-Level Retail & Pro Explanations)"]:::stepNode
+        A12 -- "Approved" --> A13["Fiduciary Moderator Node<br/>(Two-Level Institutional Explanations)"]:::stepNode
         A12 -- "Violation" --> A_Persist
         A13 --> A14["ACID PostgreSQL Persistence<br/>(Commit Portfolio & Audit Traces)"]:::dbNode
         A14 --> A15["Client Presentation & Execution Review"]:::stepNode
     end
 
-    subgraph FLOW_B ["FLOW B: Automated Unattended Portfolio Monitoring"]
-        B1["Background Scheduler Cron<br/>(Every 5 Mins, Market Hours 09:15-15:30 IST)"]:::stepNode --> B2["Fetch Live NSE/BSE Quotes<br/>(Market Data Service / Yahoo Finance)"]:::stepNode
+    subgraph FLOW_B ["FLOW B: Automated Portfolio Drift Monitoring"]
+        B1["Background Scheduler<br/>(Every 300s, Market Hours 09:15-15:30 IST)"]:::stepNode --> B2["Fetch Live NSE/BSE Quotes<br/>(Market Data Adapter / Yahoo Finance)"]:::stepNode
         B2 --> B3["Update Market Prices & Valuation<br/>(Current Portfolio NAV & Position Values)"]:::dbNode
-        B3 --> B4["Compute Drift Metrics<br/>(Holding Drift & Sector Allocation Drift)"]:::mathNode
+        B3 --> B4["Compute Drift Metrics<br/>(Asset Drift & Sector Allocation Drift)"]:::mathNode
         B4 --> B5{"Drift Threshold Breach?<br/>(Stock >= 5.0% OR Sector >= 8.0%)"}:::logicNode
         B5 -- "No Breach" --> B6["Healthy Status Logged<br/>(Sleep until next cycle)"]:::stepNode
         B5 -- "Breach Detected" --> B7["Trigger Rebalancing Alert<br/>(In-App Notification & Audit Log)"]:::alertNode
@@ -39,21 +39,20 @@ graph TD
     subgraph FLOW_C ["FLOW C: Unified Portfolio Rebalancing Engine"]
         C1["Rebalance Triggered<br/>(Drift Breach OR User Rebalance Request)"]:::stepNode --> C2["Retrieve Target Allocation<br/>(Active Strategy Definition & Cap Rules)"]:::dbNode
         C2 --> C3["Compute Required Delta<br/>(Target Capital Value - Current Market Value)"]:::mathNode
-        C3 --> C4["Whole-Share Integer Allocation<br/>(Math Floor Quantity & Integer Share Rounding)"]:::mathNode
-        C4 --> C5["Cash Conservation Invariant<br/>(Invested + Cash == Total NAV, Post Cash >= 0)"]:::logicNode
-        C5 --> C6["Statutory Indian Transaction Costs<br/>(STT + Brokerage + GST + Stamp Duty + Exchange)"]:::stepNode
+        C3 --> C4["Whole-Share Integer Allocation<br/>(Math Floor Quantity & Integer Rounding)"]:::mathNode
+        C4 --> C5["Cash Conservation Invariant<br/>(Invested + Cash == Total NAV, Residual Cash >= 0)"]:::logicNode
+        C5 --> C6["Statutory Indian Transaction Costs<br/>(STT + GST + Stamp Duty + Exchange/SEBI)"]:::stepNode
         C6 --> C7["Generate Trade Preview<br/>(BUY, SELL, HOLD Orders with Rationale)"]:::stepNode
-        C7 --> C8["User Discretionary Approval<br/>(Non-Custodial Advisory Gate)"]:::logicNode
-        C8 -- "Approve" --> C9["Create Portfolio Version (N+1)<br/>(ACID DB Commit & Broker Sync)"]:::dbNode
+        C7 --> C8["User Discretionary Review<br/>(Non-Custodial Advisory Gate)"]:::logicNode
+        C8 -- "Approve" --> C9["Create Portfolio Version (N+1)<br/>(ACID DB Commit & Order Instructions)"]:::dbNode
     end
 
     subgraph FLOW_D ["FLOW D: Demat Import & Portfolio Health Diagnosis"]
-        D1["CAS Consolidated Account Statement PDF<br/>(CDSL / NSDL Upload OR Broker API Sync)"]:::stepNode --> D2["pdfplumber Ingestion & Regex Extraction<br/>(Extract ISIN, Folio, Quantity, Unit Cost)"]:::stepNode
-        D2 --> D3["Security Master Reconciliation<br/>(Resolve 2,639 Universe Equities & Sectors)"]:::dbNode
-        D3 --> D4["Demat Diagnosis Service Engine<br/>(Analyze Health, Overlap, Factor Tilts)"]:::stepNode
-        D4 --> D5["Compute Concentration Risk<br/>(Herfindahl-Hirschman Index HHI & Sector Skew)"]:::mathNode
-        D4 --> D6["Valuation & Factor Stress Testing<br/>(Weighted P/E, P/B, Debt/Equity, Beta)"]:::mathNode
-        D5 & D6 --> D7["Generate Diagnostic Report & Rebalance Recommendations<br/>(Specific Trims, High-Conviction Replacements)"]:::stepNode
+        D1["Existing Holdings Submission<br/>(Manual Demat Entry or Structured CAS JSON)"]:::stepNode --> D2["Security Master Reconciliation<br/>(Resolve ISINs across 2,639 NSE/BSE Universe)"]:::dbNode
+        D2 --> D3["Demat Diagnosis Service Engine<br/>(Analyze Health, Overlap, Factor Tilts)"]:::stepNode
+        D3 --> D4["Compute Concentration Risk<br/>(Herfindahl-Hirschman Index HHI & Sector Skew)"]:::mathNode
+        D3 --> D5["Valuation & Factor Stress Testing<br/>(Weighted P/E, P/B, Debt/Equity, Beta)"]:::mathNode
+        D4 & D5 --> D6["Generate Diagnostic Report & Rebalance Recommendations<br/>(Specific Trims, High-Conviction Replacements)"]:::stepNode
     end
 
     subgraph FLOW_E ["FLOW E: Conversational AI & Fiduciary 'Stock-Why'"]
@@ -65,4 +64,4 @@ graph TD
     end
 
     B7 -.-> C1
-    D7 -.-> C1
+    D6 -.-> C1

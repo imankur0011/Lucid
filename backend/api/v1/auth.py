@@ -58,19 +58,35 @@ except ImportError:
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
+try:
+    import argon2
+    from argon2 import PasswordHasher
+    from argon2.exceptions import VerifyMismatchError, VerificationError
+    _ph = PasswordHasher(time_cost=3, memory_cost=65536, parallelism=4, hash_len=32, type=argon2.Type.ID)
+except ImportError:
+    _ph = None
+
 
 def hash_password(password: str) -> str:
-    """Hashes password using bcrypt with a secure salt."""
+    """Hashes password using canonical Argon2id with secure salt and memory parameters."""
+    if _ph:
+        return _ph.hash(password)
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
 
 
 def verify_password(password: str, hashed: Optional[str]) -> bool:
-    """Verifies plaintext password against stored bcrypt hash."""
+    """Verifies plaintext password against stored Argon2id hash (with legacy bcrypt fallback)."""
     if not hashed:
         # If no password has been set yet, permit login in dev mode
         return settings.app_env == "development"
     try:
+        if hashed.startswith("$argon2"):
+            if _ph:
+                try:
+                    return _ph.verify(hashed, password)
+                except Exception:
+                    return False
         return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
     except Exception:
         return False

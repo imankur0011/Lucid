@@ -43,9 +43,8 @@ except ImportError:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application startup and shutdown events."""
-    print(f"🚀 Starting Major Project Backend ({settings.app_env})")
+    print(f"🚀 Starting Lucid Backend ({settings.app_env})")
     print(f"   LLM Provider: {settings.llm_provider} ({settings.llm_model})")
-    print(f"   Neo4j: {settings.neo4j_uri}")
     print(f"   PostgreSQL: {settings.postgres_host}:{settings.postgres_port}/{settings.postgres_db}")
 
     # Validate Security Keys in non-dev environments

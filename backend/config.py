@@ -11,30 +11,19 @@ import os
 class Settings(BaseSettings):
     """Application settings loaded from .env file."""
 
-    # --- LLM ---
+    # --- LLM & AI ---
     gemini_api_key: Optional[str] = None
-    llm_provider: str = "gemini"  # gemini | ollama
+    llm_provider: str = "gemini"
     llm_model: str = "gemini-3.8-flash"
-    ollama_base_url: str = "http://localhost:11434"
 
-    # --- Neo4j ---
-    neo4j_uri: str = "bolt://localhost:7687"
-    neo4j_user: str = "neo4j"
-    neo4j_password: str = "password"
-
-    # --- PostgreSQL ---
+    # --- PostgreSQL 16 (Authoritative Relational Database) ---
     postgres_host: str = "localhost"
     postgres_port: int = 5432
     postgres_db: str = "majorproject"
     postgres_user: str = "postgres"
     postgres_password: str = "password"
 
-    # --- Redis ---
-    redis_host: str = "localhost"
-    redis_port: int = 6379
-    redis_db: int = 0
-
-    # --- API Keys ---
+    # --- External Financial APIs ---
     fred_api_key: Optional[str] = None
     news_api_key: Optional[str] = None
 
@@ -52,7 +41,6 @@ class Settings(BaseSettings):
     # --- Data Paths ---
     data_raw_dir: str = "../data/raw"
     data_processed_dir: str = "../data/processed"
-    faiss_index_dir: str = "../data/faiss_index"
 
     @property
     def postgres_url(self) -> str:
@@ -87,9 +75,6 @@ class Settings(BaseSettings):
                     f"a non-default APP_SECRET_KEY."
                 )
 
-    @property
-    def redis_url(self) -> str:
-        return f"redis://{self.redis_host}:{self.redis_port}/{self.redis_db}"
 
     model_config = SettingsConfigDict(
         env_file=(

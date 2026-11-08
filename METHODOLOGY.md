@@ -210,19 +210,14 @@ User Discretionary Approval ──► Commit New Portfolio Version (N+1) & Broke
 
 ## FLOW D: Demat Import & Health Diagnosis Flow
 
-Flow D allows investors to upload their existing CDSL or NSDL Consolidated Account Statement (CAS) PDF and receive an immediate institutional health audit.
+Flow D allows investors to input their existing equity portfolio holdings (either via structured manual entry or CAS statement data import) and receive an immediate institutional health and concentration audit.
 
 ```text
-CAS PDF Upload (CDSL / NSDL)
+Existing Demat Holdings (Manual Entry / CAS JSON)
          │
          ▼
 ┌────────────────────────┐
-│ pdfplumber Extraction  │ ── Extract ISIN, Folio Number, Quantity, and Valuation
-└────────┬───────────────┘
-         │
-         ▼
-┌────────────────────────┐
-│ Master Reconciliation  │ ── Match ISIN against Lucid 2,639 Universe Equities & Sectors
+│ Security Reconciliation│ ── Match ISIN against Lucid 2,639 Universe Equities & Sectors
 └────────┬───────────────┘
          │
          ▼
@@ -241,11 +236,11 @@ Diagnostic Report & Rebalancing Suggestions (Trims, Replacements, Risk Warnings)
 
 ### 1. Key Metrics Evaluated
 - **Herfindahl-Hirschman Index (HHI)**:
-  $$	ext{HHI} = \sum_{i=1}^n (	ext{Weight}_i\%)^2$$
-  - $	ext{HHI} < 1500$: Diversified.
-  - $1500 \le 	ext{HHI} \le 2500$: Moderately Concentrated.
-  - $	ext{HHI} > 2500$: Highly Concentrated (High Risk).
-- **Sector Concentration**: Detects sectors with exposure exceeding 30%.
+  $$\text{HHI} = \sum_{i=1}^n (\text{Weight}_i\%)^2$$
+  - $\text{HHI} < 1500$: Diversified.
+  - $1500 \le \text{HHI} \le 2500$: Moderately Concentrated.
+  - $\text{HHI} > 2500$: Highly Concentrated (High Risk).
+- **Sector Concentration**: Detects sectors with exposure exceeding 35%.
 - **Penny Stock / Illiquidity Flags**: Highlights holdings outside the verified liquid universe.
 
 ---

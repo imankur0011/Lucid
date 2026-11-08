@@ -376,7 +376,7 @@ Lucid calculates exact statutory Indian equity transaction levies for delivery e
 | (yfinance)           | ^INDIAVIX, ^NSEI         | historical returns,   | (deterministic offline |
 |                      |                          | beta, market cap      | fixture quotes)        |
 +----------------------+--------------------------+-----------------------+------------------------+
-| Google Gemini        | gemini-2.5-flash / Pro   | LLM agent reasoning,  | Rule-based heuristic   |
+| Google Gemini        | gemini-3.8-flash         | LLM agent reasoning,  | Rule-based heuristic   |
 | (google-genai SDK)   |                          | NLP parsing, summaries| deterministic fallback |
 +----------------------+--------------------------+-----------------------+------------------------+
 | Federal Reserve FRED | DFF, GS10, CPIAUCSL      | Global macro yields,  | Domestic RBI baseline  |

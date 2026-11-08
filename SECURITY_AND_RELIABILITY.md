@@ -9,8 +9,13 @@ This document outlines the security controls, authentication mechanisms, network
 Implemented across `backend/auth/` and `backend/api/v1/auth.py`:
 
 ### 1.1 Password Hashing & Key Derivation
-- Passwords are never stored in plaintext. Lucid utilizes **bcrypt** via Python `passlib` with work factor salt rounds ($2^{12} = 4096$ iterations).
-- Immune to rainbow table lookups and brute-force GPU attacks.
+- Passwords are never stored in plaintext. Lucid utilizes **Argon2id** via `argon2-cffi` (`backend/api/v1/auth.py`) configured with institutional parameters:
+  - Memory cost: $m = 65,536 \text{ KiB}$ (64 MiB)
+  - Time cost: $t = 3 \text{ iterations}$
+  - Parallelism: $p = 4 \text{ lanes}$
+  - Salt: Cryptographically random 16-byte salt per password
+- Memory-hard defense resistant against specialized GPU, ASIC, and FPGA brute-force cracking attacks.
+- Backward compatibility: Seamlessly verifies legacy bcrypt hashes (`$2b$`) and transparently re-hashes them on password updates.
 
 ### 1.2 JWT Token Lifecycle & Instant Session Invalidation
 - **Access Tokens**: Short-lived (60 minutes) JSON Web Tokens signed using HMAC-SHA256 (`HS256`).

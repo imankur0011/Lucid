@@ -1,0 +1,34 @@
+graph TD
+    classDef entryNode fill:#1E293B,stroke:#0F172A,stroke-width:2px,color:#F8FAFC,font-weight:bold;
+    classDef ruleNode fill:#FEF3C7,stroke:#F59E0B,stroke-width:1.5px,color:#78350F;
+    classDef llmNode fill:#EFF6FF,stroke:#3B82F6,stroke-width:1.5px,color:#1E3A8A;
+    classDef mathNode fill:#ECFDF5,stroke:#10B981,stroke-width:2px,color:#065F46,font-weight:bold;
+    classDef dbNode fill:#F1F5F9,stroke:#64748B,stroke-width:1.5px,color:#0F172A;
+    classDef terminalNode fill:#FEE2E2,stroke:#EF4444,stroke-width:1.5px,color:#991B1B;
+
+    START((Start Request)) --> N1["1. Manager Node<br/><i>Orchestration & State Initialization</i>"]:::entryNode
+    N1 --> N2{"2. Suitability & Feasibility<br/><i>Rule-based Gatekeeper</i>"}:::ruleNode
+    
+    N2 -- "Fail (Infeasible / Risk Mismatch)" --> N13["13. ACID PostgreSQL Persistence<br/><i>Commit Aborted State & Reason</i>"]:::dbNode
+    N2 -- "Pass (Feasible)" --> N3["3. Macro Analyst Node<br/><i>RBI Repo, CPI Inflation, G-Sec Yield</i>"]:::llmNode
+    
+    subgraph RESEARCH_GANG ["Parallel / Chained Research Specialists"]
+        N3 --> N4["4. Market Analyst Node<br/><i>Nifty 50 Trend, 50/200 DMA, Volatility</i>"]:::llmNode
+        N4 --> N5["5. Fundamental Analyst Node<br/><i>P/E, ROE, D/E, Factor Scores (Winsorized)</i>"]:::llmNode
+        N5 --> N6["6. News & Filings Analyst Node<br/><i>Corporate Disclosures, Material Risks, Sentiment</i>"]:::llmNode
+    end
+
+    N6 --> N7["7. Lead Strategist Node<br/><i>Asset Allocation & Candidate Selection</i>"]:::llmNode
+    N7 --> N8{"8. Independent Risk Critic<br/><i>Fiduciary & Policy Audit Gate</i>"}:::ruleNode
+
+    N8 -- "Rework Required (Count < 2)" --> N9["9. Strategist Bounded Rework<br/><i>Targeted Parameter Adjustment</i>"]:::llmNode
+    N9 --> N8
+    N8 -- "Rejected / Rework Exhausted" --> N13
+    N8 -- "Approved" --> N10["10. Deterministic SLSQP Optimizer<br/><i>SciPy Markowitz Quadratic Utility + Simplex</i>"]:::mathNode
+
+    N10 --> N11{"11. Critic Final Validation<br/><i>Post-Optimizer Allocation Audit</i>"}:::ruleNode
+    N11 -- "Constraint Violation" --> N13
+    N11 -- "Pass All Invariants" --> N12["12. Fiduciary Moderator Node<br/><i>Two-Level Fiduciary Explanations</i>"]:::llmNode
+
+    N12 --> N13
+    N13 --> END_SUCCESS(((Final Portfolio Active)))

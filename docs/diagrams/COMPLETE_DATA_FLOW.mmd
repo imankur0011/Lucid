@@ -1,0 +1,87 @@
+flowchart LR
+    classDef extNode fill:#FEF2F2,stroke:#EF4444,stroke-width:2px,color:#991B1B;
+    classDef pipeNode fill:#EFF6FF,stroke:#3B82F6,stroke-width:1.5px,color:#1E3A8A;
+    classDef dbNode fill:#F1F5F9,stroke:#64748B,stroke-width:2px,color:#0F172A;
+    classDef agentNode fill:#FAF5FF,stroke:#A855F7,stroke-width:1.5px,color:#581C87;
+    classDef mathNode fill:#ECFDF5,stroke:#10B981,stroke-width:2px,color:#065F46;
+    classDef outNode fill:#F8FAFC,stroke:#0EA5E9,stroke-width:2px,color:#0F172A;
+
+    subgraph S1 ["1. External APIs & Exchange Data"]
+        E_NSE["NSE Official EQUITY_L.csv"]:::extNode
+        E_BSE["BSE Directory & Corporate Actions"]:::extNode
+        E_YF["Yahoo Finance Live & Historical"]:::extNode
+        E_RBI["RBI Monetary Bulletins"]:::extNode
+        E_News["NewsAPI & Financial RSS"]:::extNode
+        E_LLM["Google Gemini API (gemini-3.8-flash)"]:::extNode
+    end
+
+    subgraph S2 ["2. Data Ingestion & Normalization"]
+        P_Sync["Universe Sync & ISIN Resolver"]:::pipeNode
+        P_Clean["Stale Price Filter (<=14 Days)"]:::pipeNode
+        P_Fact["Winsorized Factor Z-Score Normalizer"]:::pipeNode
+        P_Liquidity["Liquidity Tiering (ADTV & Turnover)"]:::pipeNode
+    end
+
+    subgraph S3 ["3. PostgreSQL 16 Master (62 Tables)"]
+        D_Sec[("securities, listings, companies")]:::dbNode
+        D_Prices[("market_prices & fundamentals")]:::dbNode
+        D_Macro[("economic_indicators & news")]:::dbNode
+        D_Users[("app_users & risk_assessments")]:::dbNode
+    end
+
+    subgraph S4 ["4. Application Services & State Assembly"]
+        S_Cand["Candidate Universe Selector"]:::pipeNode
+        S_State["PortfolioAgentState Assembly"]:::pipeNode
+        S_Diag["Demat Diagnosis Service"]:::pipeNode
+    end
+
+    subgraph S5 ["5. LangGraph Agentic Intelligence"]
+        A_Suit["Suitability & Feasibility Node"]:::agentNode
+        A_Gang["Specialized Analysts (Macro, Mkt, Fund, News)"]:::agentNode
+        A_Strat["Lead Strategist Proposal"]:::agentNode
+        A_Crit["Independent Risk Critic (Mandate Audit)"]:::agentNode
+    end
+
+    subgraph S6 ["6. Quantitative Optimization Engine"]
+        M_SLSQP["Deterministic SLSQP Optimizer"]:::mathNode
+        M_Int["Whole-Share Integer Allocation"]:::mathNode
+        M_Cash["Residual Cash Conservation"]:::mathNode
+        M_Cost["Statutory Transaction Fees (STT, GST)"]:::mathNode
+    end
+
+    subgraph S7 ["7. Fiduciary Validation & Audit"]
+        V_Crit["Critic Post-Optimizer Final Audit"]:::pipeNode
+        V_Mod["Two-Level Institutional Explanation Engine"]:::pipeNode
+    end
+
+    subgraph S8 ["8. Client Delivery & Monitoring"]
+        U_Persist[("ACID Portfolio Persistence")]:::dbNode
+        U_UI["Next.js 16.4.2 Investor Dashboard"]:::outNode
+        U_Cron["Market Hours Drift Monitor (09:15-15:30 IST)"]:::outNode
+    end
+
+    E_NSE & E_BSE --> P_Sync
+    E_YF --> P_Clean
+    E_RBI & E_News --> P_Fact
+    P_Sync & P_Clean & P_Fact --> P_Liquidity
+    
+    P_Liquidity --> D_Sec & D_Prices & D_Macro
+    
+    D_Sec & D_Prices & D_Users --> S_Cand
+    S_Cand --> S_State
+    
+    S_State --> A_Suit
+    A_Suit --> A_Gang --> A_Strat --> A_Crit
+    E_LLM -.-> A_Gang & A_Strat & A_Crit
+    
+    A_Crit -->|Approved Candidates| M_SLSQP
+    M_SLSQP --> M_Int --> M_Cash --> M_Cost
+    
+    M_Cost --> V_Crit
+    V_Crit --> V_Mod
+    E_LLM -.-> V_Mod
+    
+    V_Mod --> U_Persist
+    U_Persist --> U_UI
+    U_Persist --> U_Cron
+    U_Cron -.->|Drift Alert| U_UI

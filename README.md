@@ -63,7 +63,7 @@ graph LR
     C --> D["Whole-Share Portfolio (Active NAV)"]
     D --> E["5-Minute Drift Radar Monitoring"]
     E --> F["Friction-Aware Rebalance Preview"]
-    G["CAS Demat PDF Upload"] --> H["HHI Overlap & Health Diagnosis"]
+    G["Demat Holdings Entry / CAS Import"] --> H["HHI Overlap & Health Diagnosis"]
     H --> F
 ```
 
@@ -116,8 +116,8 @@ Verify that your local workstation meets the following prerequisites:
 
 ### Infrastructure Clarifications (Code Reality):
 > [!NOTE]
-> - **PostgreSQL 16**: The **exclusive runtime database**. All 62 relational tables reside here.
-> - **Neo4j & Redis**: Configured in `backend/config.py` for future graph/caching extensions, but **neither is in the active runtime path**. Do NOT install or run Neo4j/Redis to run Lucid.
+> - **PostgreSQL 16**: The **exclusive runtime database**. All 62 domain application tables reside here.
+> - **Excluded Legacy Infrastructure**: Neo4j, Redis, Celery, FAISS, and Ollama are not used and have been completely removed from active configuration and runtime dependencies. Do NOT install or run external graph, cache, or vector infrastructure to run Lucid.
 > - **Docker**: Optional for containerization; direct native terminal execution is faster and recommended for local development.
 
 ---

@@ -1,5 +1,5 @@
 # ============================================================
-# Major Project Backend Dependencies
+# Lucid Backend Dependencies (Authoritative Runtime)
 # ============================================================
 
 # --- Web Framework ---
@@ -8,54 +8,41 @@ uvicorn[standard]>=0.34.0
 python-multipart>=0.0.20
 
 # --- Configuration ---
-pydantic>=2.11.0
-pydantic-settings>=2.9.0
+pydantic>=2.10.0
+pydantic-settings>=2.8.0
 python-dotenv>=1.0.0
 
-# --- LLM & Agents ---
+# --- LLM & Multi-Agent Orchestration ---
 langchain>=0.3.0
 langchain-google-genai>=2.0.0
-langgraph>=0.4.0
+langgraph>=0.3.0
 
-# --- Data & Computation ---
+# --- Financial Computation & Optimization ---
 numpy>=2.2.0
 pandas>=2.2.0
 scipy>=1.15.0
 yfinance>=0.2.50
 
-# --- Databases ---
+# --- Relational Database (PostgreSQL 16) ---
 alembic>=1.14.0
-neo4j>=5.29.0
 psycopg2-binary>=2.9.0
-redis>=5.2.0
 sqlalchemy>=2.0.30
 
-# --- Vector Store & Embeddings ---
-faiss-cpu>=1.12.0
-sentence-transformers>=3.0.0
-
-# --- PDF Parsing ---
-pdfplumber>=0.11.0
-
-# --- News & Web Scraping ---
+# --- News & Exchange Web Feeds ---
 requests>=2.32.0
 beautifulsoup4>=4.12.0
 feedparser>=6.0.0
 
-# --- Authentication ---
+# --- Authentication & Password Security ---
+argon2-cffi>=25.1.0
+bcrypt>=4.0.0
 PyJWT>=2.10.0
 passlib[bcrypt]>=1.7.4
 
-# --- Logging ---
+# --- Logging & Telemetry ---
 loguru>=0.7.0
 
-# --- Background Tasks ---
-celery>=5.4.0
-
-# --- Rate Limiting ---
-slowapi>=0.1.9
-
-# --- Testing ---
+# --- Testing Suite ---
 pytest>=8.3.0
 pytest-asyncio>=0.24.0
 httpx>=0.28.0

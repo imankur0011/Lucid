@@ -143,16 +143,18 @@ erDiagram
 - **`portfolio_validation_results`**: Individual constraint test outcomes (e.g. Single-Stock-Cap: PASS).
 - **`portfolio_scenarios`**: Stress test simulations (e.g. 2008 Crash, 2020 COVID shock, Rate Spike).
 
-### Domain 6: Broker Accounts & Execution (6 Tables)
-- **`broker_providers`**: Registry of supported broker APIs (Zerodha Kite Connect, Upstox, Groww).
-- **`user_broker_accounts`**: Encrypted broker credentials, OAuth refresh tokens, and account status.
-- **`broker_orders`**: Individual trade orders generated during initial investment or rebalancing.
+### Domain 6: Broker Accounts & Execution Models (6 Tables — Non-Custodial Decision Support)
+> [!NOTE]
+> Domain 6 models are defined in the schema for decision-support trade instructions and historical performance snapshots. In accordance with Lucid's non-custodial fiduciary architecture, live broker order routing is **PLANNED / DEFERRED** to preserve retail non-custodial boundaries.
+- **`broker_providers`**: Registry of supported broker interfaces (Zerodha, Upstox, Groww).
+- **`user_broker_accounts`**: Broker configuration metadata and account status.
+- **`broker_orders`**: Individual trade orders generated for investor manual review during initial allocation or rebalancing.
 - **`broker_order_events`**: Audit lifecycle events (SUBMITTED, ACKNOWLEDGED, FILLED, REJECTED).
-- **`broker_executions`**: Execution fill records storing exact fill prices, quantities, and execution exchange.
+- **`broker_executions`**: Execution fill records storing simulated or reported fill prices and quantities.
 - **`portfolio_performance_snapshots`**: Periodic portfolio valuation, NAV, and return records.
 
 ### Domain 7: Demat Diagnosis & Rebalancing (4 Tables)
-- **`existing_portfolios`**: Uploaded CAS Demat portfolios imported via CDSL/NSDL PDF statements.
+- **`existing_portfolios`**: Investor Demat portfolios entered manually or imported via structured CAS statement data.
 - **`existing_portfolio_holdings`**: Individual parsed holding lines (ISIN, quantity, acquisition cost, market value).
 - **`portfolio_diagnoses`**: Comprehensive health assessment results (HHI concentration score, sector overlap, risk flags).
 - **`rebalance_suggestions`**: Specific suggested whole-share BUY/SELL trades to remediate health flags.
