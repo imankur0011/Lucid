@@ -32,13 +32,43 @@ cd Lucid
 powershell -ExecutionPolicy Bypass -File .\start_lucid.ps1
 ```
 
-### Service Lifecycle Commands
-| Command | Purpose |
-|---|---|
-| `./start_lucid.sh` | Full automated setup and application launcher (FastAPI + Next.js) |
-| `./status_lucid.sh` | Real-time diagnostic status of database, backend, and frontend |
-| `./logs_lucid.sh [backend\|frontend\|all]` | Stream live application logs |
-| `./stop_lucid.sh` | Gracefully terminate all Lucid background services |
+---
+
+### Service Lifecycle & Operational Scripts
+
+Lucid includes a dedicated suite of root lifecycle scripts to manage your local environment effortlessly:
+
+| Script | Command | Purpose |
+|---|---|---|
+| **Launcher** | `./start_lucid.sh` | Full automated 10-step installation, environment setup, DB provisioning, and dual-server launcher. |
+| **Status Inspector** | `./status_lucid.sh` | Displays real-time diagnostic table: Python/Node versions, DB connection, table counts, securities count, and backend/frontend PIDs & health. |
+| **Log Streamer** | `./logs_lucid.sh [target] [lines]` | Live-streams application logs (`backend`, `frontend`, `all`, `pip`, `npm`, or `clear`). |
+| **Service Stopper** | `./stop_lucid.sh` | Gracefully terminates backend and frontend processes, freeing ports 8000 & 3000 while preserving PostgreSQL. |
+| **Windows Launcher** | `powershell -File .\start_lucid.ps1` | Native PowerShell one-command setup for Windows environments. |
+| **DB Provisioner** | `python scripts/init_database.py` | Standalone script to create DB, run migrations, and seed universe. |
+
+#### How to Run the Lifecycle Scripts:
+
+```bash
+# Make all lifecycle scripts executable (one-time setup):
+chmod +x start_lucid.sh stop_lucid.sh status_lucid.sh logs_lucid.sh
+
+# 1. Start the complete application (Backend + Frontend + Database Setup)
+./start_lucid.sh
+
+# 2. Check real-time service and database health anytime:
+./status_lucid.sh
+
+# 3. Stream live application logs:
+./logs_lucid.sh               # Stream both backend and frontend concurrently
+./logs_lucid.sh backend       # Stream FastAPI backend server logs
+./logs_lucid.sh frontend      # Stream Next.js frontend server logs
+./logs_lucid.sh backend 100   # View the last 100 lines of backend logs
+./logs_lucid.sh clear         # Truncate and clean all log files in logs/
+
+# 4. Gracefully terminate running services:
+./stop_lucid.sh
+```
 
 > **Default Demo Login**: `developer@lucid.local` / `LucidDevPass123!`  
 > **Frontend**: [http://localhost:3000](http://localhost:3000) | **API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)  
@@ -57,7 +87,7 @@ powershell -ExecutionPolicy Bypass -File .\start_lucid.ps1
 7. [PostgreSQL Database Setup & Distribution](#7-postgresql-database-setup--distribution)
 8. [Backend Setup from Scratch (FastAPI)](#8-backend-setup-from-scratch-fastapi)
 9. [Frontend Setup from Scratch (Next.js)](#9-frontend-setup-from-scratch-nextjs)
-10. [Correct Multi-Terminal Startup Sequence](#10-correct-multi-terminal-startup-sequence)
+10. [Service Startup: Automated vs Multi-Terminal Manual](#10-service-startup-automated-vs-multi-terminal-manual)
 11. [Exact URLs & Service Ports](#11-exact-urls--service-ports)
 12. [First-Time Setup Verification Checklist](#12-first-time-setup-verification-checklist)
 13. [Postman API Testing Guide](#13-postman-api-testing-guide)
@@ -319,21 +349,46 @@ npm run start
 
 ---
 
-## 10. Correct Multi-Terminal Startup Sequence
+## 10. Service Startup: Automated vs Multi-Terminal Manual
 
-To ensure clean dependency resolution, start services across 3 dedicated terminals:
+### Option A: Automated One-Command Launch (Recommended)
+
+Run the unified startup script from the repository root:
+
+```bash
+chmod +x start_lucid.sh
+./start_lucid.sh
+```
+
+This single command automatically performs the entire pipeline:
+1. Validates Python 3.11+, Node.js 18+, and PostgreSQL client tools.
+2. Creates `.venv` and installs dependencies from `backend/requirements.txt` (cached via hash).
+3. Installs frontend packages in `frontend/node_modules`.
+4. Generates `.env` with cryptographically secure random JWT and App secrets.
+5. Verifies PostgreSQL connectivity and starts the service if needed.
+6. Runs Alembic database migrations and seeds the 2,639-stock NSE/BSE security universe.
+7. Automatically checks and frees ports `8000` and `3000` from any stale processes.
+8. Starts FastAPI backend on port `8000` with health check readiness polling.
+9. Starts Next.js frontend on port `3000` with HTTP readiness polling.
+10. Automatically launches `http://localhost:3000` in your default browser.
+
+To stop services, simply press `Ctrl+C` in the terminal, or run `./stop_lucid.sh` from any terminal.
+
+### Option B: Multi-Terminal Manual Startup (Alternative)
+
+If you prefer to run services in separate dedicated terminals for debugging:
 
 ```text
 ┌────────────────────────────────────────────────────────────┐
 │ TERMINAL 1: PostgreSQL Database                            │
 │ $ brew services start postgresql@16                        │
-│ $ psql -U postgres -f database/create_database.sql         │
+│ $ PYTHONPATH=. python scripts/init_database.py             │
 └────────────────────────────┬───────────────────────────────┘
                              │
                              ▼
 ┌────────────────────────────────────────────────────────────┐
 │ TERMINAL 2: FastAPI Backend API Server                     │
-│ $ cd backend && source .venv/bin/activate                  │
+│ $ source .venv/bin/activate                                │
 │ $ uvicorn backend.main:app --host 0.0.0.0 --port 8000     │
 └────────────────────────────┬───────────────────────────────┘
                              │
@@ -411,16 +466,36 @@ Lucid includes an importable, pre-configured Postman suite in the `postman/` dir
 
 ## 15. One-Page Developer Quick-Start
 
-For developers returning to Lucid after initial setup:
+### Recommended: One-Command Lifecycle Workflow
+
+For daily development, use the automated script suite:
+
+```bash
+# 1. Start application (automated setup + backend + frontend)
+./start_lucid.sh
+
+# 2. Inspect real-time status of services and database (in another terminal)
+./status_lucid.sh
+
+# 3. Live-stream backend or frontend logs
+./logs_lucid.sh backend
+./logs_lucid.sh frontend
+
+# 4. Stop all running Lucid services cleanly
+./stop_lucid.sh
+```
+
+### Manual Multi-Terminal Fallback
+
+For developers wishing to start components individually:
 
 ```bash
 # 1. Start Database
 brew services start postgresql@16
 
 # 2. Start Backend (Terminal 1)
-cd backend
 source .venv/bin/activate
-uvicorn backend.main:app --reload --port 8000
+uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 
 # 3. Start Frontend (Terminal 2)
 cd frontend
