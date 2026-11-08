@@ -1,0 +1,114 @@
+flowchart TB
+    %% =========================================================================
+    %% Lucid Master Database Entity-Relationship Architecture (62 Tables, 8 Domains)
+    %% Cleaned, balanced, highly readable diagram using exact codebase table names
+    %% =========================================================================
+
+    subgraph D1 ["Domain 1: User Identity & Security (5 Tables)"]
+        direction TB
+        U_USERS["<div style='width: 250px;'><b>app_users</b> (Primary Account)<br/>• <b>user_id</b>: UUID (PK)<br/>• email: VARCHAR(255)<br/>• password_hash: Argon2id<br/>• account_status: VARCHAR(50)</div>"]
+        U_REVOKED["<div style='width: 250px;'><b>revoked_tokens</b> (Token Blacklist)<br/>• token_id: UUID (PK)<br/>• <b>user_id</b>: UUID (FK)<br/>• expires_at: TIMESTAMPTZ</div>"]
+        U_AUDIT["<div style='width: 250px;'><b>audit_events</b> (Security Audit)<br/>• event_id: UUID (PK)<br/>• <b>user_id</b>: UUID (FK)<br/>• event_type: VARCHAR(100)</div>"]
+        U_USERS --> U_REVOKED
+        U_USERS --> U_AUDIT
+    end
+
+    subgraph D2 ["Domain 2: Suitability & Financial Goals (10 Tables)"]
+        direction TB
+        P_PROFILE["<div style='width: 260px;'><b>user_profiles</b> (Financial Reality)<br/>• profile_id: UUID (PK)<br/>• <b>user_id</b>: UUID (FK)<br/>• annual_income, savings, tax_bracket</div>"]
+        P_GOALS["<div style='width: 260px;'><b>financial_goals</b> (Target Milestones)<br/>• <b>goal_id</b>: UUID (PK)<br/>• <b>user_id</b>: UUID (FK)<br/>• target_amount, horizon_months</div>"]
+        P_RISK["<div style='width: 260px;'><b>risk_assessments</b> (SEBI Suitability)<br/>• assessment_id: UUID (PK)<br/>• <b>user_id</b>: UUID (FK)<br/>• risk_score (0-100), risk_category</div>"]
+    end
+
+    subgraph D3 ["Domain 3: Security Master & Corporate Registry (8 Tables)"]
+        direction TB
+        S_SEC["<div style='width: 260px;'><b>securities</b> (Exchange Universe Master)<br/>• <b>security_id</b>: UUID (PK)<br/>• isin: VARCHAR(12) UNIQUE<br/>• symbol: VARCHAR(20) (NSE/BSE)<br/>• liquidity_tier (High, Mid, Mod, Ext)</div>"]
+        S_COMP["<div style='width: 260px;'><b>companies</b> (Legal Entities)<br/>• company_id: UUID (PK)<br/>• cin: VARCHAR(21) UNIQUE<br/>• company_name: VARCHAR(255)</div>"]
+        S_LIST["<div style='width: 260px;'><b>instrument_listings</b> (Dual Listings)<br/>• listing_id: UUID (PK)<br/>• <b>security_id</b>: UUID (FK)<br/>• exchange_code: NSE | BSE</div>"]
+        S_SEC --> S_COMP
+        S_SEC --> S_LIST
+    end
+
+    subgraph D4 ["Domain 4: Market Data & Fundamentals (8 Tables)"]
+        direction TB
+        M_PRICE["<div style='width: 260px;'><b>market_prices</b> (Daily OHLCV Bars)<br/>• price_id: UUID (PK)<br/>• <b>security_id</b>: UUID (FK)<br/>• price_date, open, high, low, close, volume</div>"]
+        M_FUND["<div style='width: 260px;'><b>fundamental_metrics</b> (Financial Health)<br/>• metric_id: UUID (PK)<br/>• <b>security_id</b>: UUID (FK)<br/>• roe, pe_ratio, pb_ratio, debt_to_equity</div>"]
+        M_MACRO["<div style='width: 260px;'><b>economic_observations</b> (Macro Regime)<br/>• observation_id: UUID (PK)<br/>• repo_rate (RBI), cpi_inflation, vix</div>"]
+    end
+
+    subgraph D5 ["Domain 5: Portfolio Engine & Optimization (10 Tables)"]
+        direction TB
+        O_REQ["<div style='width: 280px;'><b>portfolio_generation_requests</b><br/>• <b>request_id</b>: UUID (PK)<br/>• <b>user_id</b>: UUID (FK), <b>goal_id</b>: UUID (FK)<br/>• initial_capital: NUMERIC(15,2)</div>"]
+        O_PORT["<div style='width: 280px;'><b>investor_portfolios</b> (Active Accounts)<br/>• <b>portfolio_id</b>: UUID (PK)<br/>• <b>user_id</b>: UUID (FK)<br/>• portfolio_name, status, created_at</div>"]
+        O_VERS["<div style='width: 280px;'><b>portfolio_versions</b> (Immutable Snaps)<br/>• <b>version_id</b>: UUID (PK)<br/>• <b>portfolio_id</b>: UUID (FK)<br/>• version_number, unallocated_cash</div>"]
+        O_DEC["<div style='width: 280px;'><b>portfolio_security_decisions</b> (Allocations)<br/>• decision_id: UUID (PK)<br/>• <b>version_id</b>: UUID (FK)<br/>• <b>security_id</b>: UUID (FK)<br/>• target_weight, whole_shares, buy_price</div>"]
+        O_PORT --> O_VERS --> O_DEC
+        O_REQ --> O_VERS
+    end
+
+    subgraph D8 ["Domain 8: Multi-Agent AI Telemetry & Alerts (13 Tables)"]
+        direction TB
+        A_RUNS["<div style='width: 260px;'><b>agent_execution_runs</b> (LangGraph Telemetry)<br/>• run_id: UUID (PK)<br/>• <b>request_id</b>: UUID (FK)<br/>• agent_name (13 Nodes), duration_ms, tokens</div>"]
+        A_EXPL["<div style='width: 260px;'><b>recommendation_explanations</b> (Stock-Why)<br/>• explanation_id: UUID (PK)<br/>• <b>version_id</b>: UUID (FK)<br/>• <b>security_id</b>: UUID (FK)<br/>• retail_narrative, quantitative_rationale</div>"]
+        A_NOTIF["<div style='width: 260px;'><b>notifications</b> (5-Min Drift Radar Alerts)<br/>• notification_id: UUID (PK)<br/>• <b>user_id</b>: UUID (FK), <b>portfolio_id</b>: UUID (FK)<br/>• drift_percentage, alert_type, is_read</div>"]
+    end
+
+    subgraph D6 ["Domain 6: Broker Integration (5 Tables)"]
+        direction TB
+        B_ACC["<div style='width: 260px;'><b>user_broker_accounts</b> (Encrypted Links)<br/>• account_id: UUID (PK)<br/>• <b>user_id</b>: UUID (FK)<br/>• broker_name (Zerodha, Upstox, Groww)</div>"]
+        B_ORD["<div style='width: 260px;'><b>broker_orders</b> (Parent Order Batches)<br/>• <b>order_id</b>: UUID (PK)<br/>• <b>portfolio_id</b>: UUID (FK)<br/>• order_status, total_gross_amount</div>"]
+        B_EXEC["<div style='width: 260px;'><b>broker_executions</b> (Friction & Fills)<br/>• execution_id: UUID (PK)<br/>• <b>order_id</b>: UUID (FK), <b>security_id</b>: UUID (FK)<br/>• filled_quantity, execution_price, stt_tax</div>"]
+        B_ACC --> B_ORD --> B_EXEC
+    end
+
+    subgraph D7 ["Domain 7: Demat CAS Diagnosis (3 Tables)"]
+        direction TB
+        C_PORT["<div style='width: 260px;'><b>existing_portfolios</b> (Uploaded Statements)<br/>• <b>existing_portfolio_id</b>: UUID (PK)<br/>• <b>user_id</b>: UUID (FK)<br/>• upload_filename, source: NSDL | CDSL</div>"]
+        C_HOLD["<div style='width: 260px;'><b>existing_portfolio_holdings</b> (Parsed)<br/>• holding_id: UUID (PK)<br/>• <b>existing_portfolio_id</b>: UUID (FK)<br/>• <b>security_id</b>: UUID (FK)<br/>• quantity, purchase_price, current_value</div>"]
+        C_DIAG["<div style='width: 260px;'><b>portfolio_diagnoses</b> (Health Score)<br/>• diagnosis_id: UUID (PK)<br/>• <b>existing_portfolio_id</b>: UUID (FK)<br/>• hhi_score, diversification_grade, verdict</div>"]
+        C_PORT --> C_HOLD
+        C_PORT --> C_DIAG
+    end
+
+    %% Cross-Domain Foreign Key Relationships
+    U_USERS ==> P_PROFILE
+    U_USERS ==> P_GOALS
+    U_USERS ==> P_RISK
+    U_USERS ==> O_PORT
+    U_USERS ==> B_ACC
+    U_USERS ==> C_PORT
+    U_USERS ==> A_NOTIF
+
+    P_GOALS -.->|goal_id| O_REQ
+    O_REQ -.->|request_id| A_RUNS
+
+    S_SEC ==> M_PRICE
+    S_SEC ==> M_FUND
+    S_SEC ==> O_DEC
+    S_SEC ==> C_HOLD
+    S_SEC ==> A_EXPL
+    S_SEC ==> B_EXEC
+
+    O_VERS -.->|version_id| A_EXPL
+    O_PORT -.->|portfolio_id| B_ORD
+    O_PORT -.->|portfolio_id| A_NOTIF
+    C_DIAG -.->|suggested rebalance| O_PORT
+
+    %% Styling
+    classDef d1 fill:#EFF6FF,stroke:#3B82F6,stroke-width:2px,color:#1E3A8A;
+    classDef d2 fill:#F0FDF4,stroke:#22C55E,stroke-width:2px,color:#14532D;
+    classDef d3 fill:#FAF5FF,stroke:#A855F7,stroke-width:2px,color:#581C87;
+    classDef d4 fill:#FFFBEB,stroke:#F59E0B,stroke-width:2px,color:#78350F;
+    classDef d5 fill:#ECFEFF,stroke:#06B6D4,stroke-width:2px,color:#164E63;
+    classDef d6 fill:#FFF1F2,stroke:#F43F5E,stroke-width:2px,color:#881337;
+    classDef d7 fill:#F5F3FF,stroke:#8B5CF6,stroke-width:2px,color:#4C1D95;
+    classDef d8 fill:#FDF4FF,stroke:#D946EF,stroke-width:2px,color:#701A75;
+
+    class U_USERS,U_REVOKED,U_AUDIT d1;
+    class P_PROFILE,P_GOALS,P_RISK d2;
+    class S_SEC,S_COMP,S_LIST d3;
+    class M_PRICE,M_FUND,M_MACRO d4;
+    class O_REQ,O_PORT,O_VERS,O_DEC d5;
+    class B_ACC,B_ORD,B_EXEC d6;
+    class C_PORT,C_HOLD,C_DIAG d7;
+    class A_RUNS,A_EXPL,A_NOTIF d8;

@@ -1,0 +1,71 @@
+flowchart TD
+    %% =========================================================================
+    %% Lucid Exchange Universe Ingestion & Fiduciary Candidate Selection Pipeline
+    %% 2-Tier Balanced Layout (Phase 1 Ingestion + Phase 2 Fiduciary Screening)
+    %% =========================================================================
+
+    subgraph ROW1 ["PHASE 1: Exchange Ingestion, Normalization & Relational Persistence"]
+        direction LR
+
+        subgraph S1 ["1. Official Feeds & Sources"]
+            direction TB
+            SRC_NSE["<div style='width: 190px;'><b>NSE Official Archive</b><br/><code>EQUITY_L.csv</code><br/>2,639 Listed Equities</div>"]
+            SRC_BSE["<div style='width: 190px;'><b>BSE Scrip Registry</b><br/>Universal ISIN Matching<br/>72+ Dual Listings</div>"]
+            SRC_YFIN["<div style='width: 190px;'><b>Yahoo Finance Feed</b><br/>Daily OHLCV Bars<br/>Corporate Action Splits</div>"]
+            SRC_RBI["<div style='width: 190px;'><b>Reserve Bank of India</b><br/>Repo Rate &amp; Inflation</div>"]
+        end
+
+        subgraph S2 ["2. Ingestion & Normalizer"]
+            direction TB
+            ING_HTTP["<div style='width: 190px;'><b>HTTP Stream Ingestion</b><br/>User-Agent Rotation<br/>Timeout &amp; Retry Guards</div>"]
+            ING_NORM["<div style='width: 190px;'><b>CSV Parser &amp; Sanitizer</b><br/>UTF-8 Normalization<br/>Type &amp; Date Casting</div>"]
+            ING_ISIN["<div style='width: 190px;'><b>ISIN Reconciler</b><br/>Preserves Price History<br/>Dedupes Dual Listings</div>"]
+            ING_SECT["<div style='width: 190px;'><b>Taxonomy Mapper</b><br/>Maps 20 NSE Sectors<br/>to Macro Industries</div>"]
+            ING_HTTP --> ING_NORM --> ING_ISIN --> ING_SECT
+        end
+
+        subgraph S3 ["3. PostgreSQL Master (62 Tables)"]
+            direction TB
+            DB_SEC["<div style='width: 190px;'><b>securities Table</b><br/>2,639 Listed Equities<br/>ISIN, Ticker &amp; Tiers</div>"]
+            DB_LIST["<div style='width: 190px;'><b>instrument_listings</b><br/>2,640 NSE Listings +<br/>72 Verified BSE Listings</div>"]
+            DB_PRICES["<div style='width: 190px;'><b>market_prices Table</b><br/>Adjusted OHLCV Bars<br/>Closing Trade Quotes</div>"]
+            DB_FUND["<div style='width: 190px;'><b>fundamental_metrics</b><br/>ROE, P/E, D/E Ratios<br/>Quarterly Statements</div>"]
+        end
+
+        S1 ==> S2 ==> S3
+    end
+
+    subgraph ROW2 ["PHASE 2: Fiduciary Candidate Screening Funnel & Optimization Dispatch"]
+        direction LR
+
+        subgraph S4 ["4. Fiduciary Candidate Screening Funnel (CandidateUniverseSelector)"]
+            direction TB
+            F1["<div style='width: 290px;'><b>Filter 1: Active Status Audit</b><br/>Screens full 2,639 listed exchange securities.<br/>Excludes 34 delisted, suspended, or BZ stocks.<br/><b>Result: 2,605 Active Listed Stocks</b></div>"]
+            F2["<div style='width: 290px;'><b>Filter 2: Investor Exclusion Mandates</b><br/>Enforces user-specified negative sectors<br/>(e.g. Tobacco, Defense) &amp; banned securities.<br/><b>Result: Personalized Investment Pool</b></div>"]
+            F3["<div style='width: 290px;'><b>Filter 3: Market Price Freshness Audit</b><br/>Excludes inactive microcaps with stale quotes<br/>(last traded date &gt; 14 calendar days).<br/><b>Result: Fresh, Liquid Active Securities</b></div>"]
+            F4["<div style='width: 290px;'><b>Filter 4: Institutional Liquidity Tiers</b><br/>Categorizes into High (Nifty 50), Mid (Next 50),<br/>Moderate (Mid/Small 400), and Extended Tiers.<br/><b>Result: Full Liquidity-Ranked Master</b></div>"]
+            F1 ==> F2 ==> F3 ==> F4
+        end
+
+        subgraph S5 ["5. Final Recommendation Pool & Optimization Dispatch"]
+            direction TB
+            POOL_ALL["<div style='width: 290px; font-size: 13px;'><b>Full Active Exchange Recommendation Universe<br/>(Up to 2,605 Liquid Equities)</b><br/><br/>Passed directly to <b>13-Node LangGraph Multi-Agent Committee</b> (Fundamental, Macro, Market, News, Critic) for deep reasoning.<br/><br/>Dispatched to <b>SciPy SLSQP Solver</b> for deterministic mathematical weight optimization.<br/><br/>Post-processed with <b>Whole-Share Floor Rounding</b>, cash conservation, and statutory Indian friction modeling (STT, Stamp Duty, GST).</div>"]
+        end
+
+        S4 ==> S5
+    end
+
+    ROW1 ==> ROW2
+
+    %% Styling
+    classDef s1 fill:#EFF6FF,stroke:#3B82F6,stroke-width:2px,color:#1E3A8A;
+    classDef s2 fill:#F0FDFA,stroke:#0D9488,stroke-width:2px,color:#134E4A;
+    classDef s3 fill:#FFFBEB,stroke:#F59E0B,stroke-width:2px,color:#78350F;
+    classDef s4 fill:#FAF5FF,stroke:#8B5CF6,stroke-width:2px,color:#4C1D95;
+    classDef s5 fill:#F0FDF4,stroke:#16A34A,stroke-width:2.5px,color:#14532D;
+
+    class SRC_NSE,SRC_BSE,SRC_YFIN,SRC_RBI s1;
+    class ING_HTTP,ING_NORM,ING_ISIN,ING_SECT s2;
+    class DB_SEC,DB_LIST,DB_PRICES,DB_FUND s3;
+    class F1,F2,F3,F4 s4;
+    class POOL_ALL s5;

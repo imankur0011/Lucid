@@ -8,93 +8,99 @@ graph TD
     classDef l7 fill:#F1F5F9,stroke:#64748B,stroke-width:2px,color:#0F172A;
     classDef l8 fill:#FEF2F2,stroke:#EF4444,stroke-width:2px,color:#991B1B;
 
-    subgraph L1 ["Layer 1: Client Presentation Layer (Next.js 16.4.2 React UI)"]
-        UI_Dash["Investor Dashboard & NAV View"]:::l1
-        UI_Gen["Portfolio Wizard & Risk Profiler"]:::l1
-        UI_Mon["Continuous Monitoring & Drift Radar"]:::l1
-        UI_Reb["Rebalance Execution & Order Preview"]:::l1
-        UI_Diag["Demat Statement Diagnostics (HHI)"]:::l1
-        UI_Chat["Copilot Chat & Fiduciary Stock-Why"]:::l1
+    subgraph L1 ["Layer 1: Client Presentation Layer (Next.js 16.4.2 & React 19.3.0 UI)"]
+        direction LR
+        UI_Port["<div style='width: 175px;'><b>My Portfolio</b><br/>HoldingsView.tsx<br/>Live NAV &amp; Drift Radar</div>"]:::l1
+        UI_Gen["<div style='width: 175px;'><b>Portfolio Generator</b><br/>PortfolioGenerator.tsx<br/>Risk Questionnaire</div>"]:::l1
+        UI_Why["<div style='width: 175px;'><b>Why This Portfolio?</b><br/>StockWhyModal.tsx<br/>Retail Thesis &amp; Factors</div>"]:::l1
+        UI_Stress["<div style='width: 175px;'><b>Stress Tests &amp; AI</b><br/>ConversationalAssistant<br/>What-If Crash Scenarios</div>"]:::l1
+        UI_Diag["<div style='width: 175px;'><b>Demat Diagnosis</b><br/>DiagnosisView.tsx<br/>CAS PDF Health Audit</div>"]:::l1
+        UI_Reb["<div style='width: 175px;'><b>Rebalance Preview</b><br/>RebalancePreviewModal<br/>Taxes, STT &amp; Lot Orders</div>"]:::l1
     end
 
-    subgraph L2 ["Layer 2: API Gateway & Middleware Layer (FastAPI 0.115)"]
-        API_GW["FastAPI Core Application (backend/main.py)"]:::l2
-        API_Auth["JWT Authentication & RBAC (backend/auth/)"]:::l2
-        API_Rate["In-Memory Sliding-Window Rate Limiter"]:::l2
-        API_Sec["Strict HTTP Security Headers (CSP, HSTS, XFO)"]:::l2
-        API_Cors["CORS Policy Validation (localhost:3000)"]:::l2
-        API_Routes["Modular REST Routers (9 Routers, 82 Endpoints)"]:::l2
+    subgraph L2 ["Layer 2: API Gateway & Security Layer (FastAPI 0.115 Backend)"]
+        direction LR
+        API_Sec["<div style='width: 270px;'><b>Security &amp; Rate Limits</b><br/>Argon2id Hasher &amp; JWT Bearer Tokens<br/>Sliding-Window Rate Limiter (middleware/)</div>"]:::l2
+        API_R1["<div style='width: 270px;'><b>Investor &amp; Market Routers</b><br/>api/v1/auth.py &amp; profile.py<br/>api/v1/risk_assessments.py &amp; market_data.py</div>"]:::l2
+        API_R2["<div style='width: 270px;'><b>Portfolio &amp; Operational Routers</b><br/>api/v1/portfolios.py &amp; rebalancing.py<br/>api/v1/diagnosis.py &amp; notifications.py</div>"]:::l2
+        API_Sec --- API_R1 --- API_R2
     end
 
-    subgraph L3 ["Layer 3: Orchestration & State Management Layer (LangGraph)"]
-        LG_Graph["StateGraph Orchestrator (backend/agent/graph.py)"]:::l3
-        LG_State["PortfolioAgentState TypedDict (backend/agent/state.py)"]:::l3
-        LG_Edges["Conditional Routing & Fiduciary Gate Logic"]:::l3
-        LG_Trace["Full Step-by-Step Telemetry & LLM Audit Logging"]:::l3
+    subgraph L3 ["Layer 3: Orchestration & State Management (LangGraph 0.4)"]
+        direction LR
+        LG_Graph["<div style='width: 200px;'><b>StateGraph Orchestrator</b><br/>backend/agent/graph.py<br/>Dynamic Agent Flow</div>"]:::l3
+        LG_State["<div style='width: 200px;'><b>AgentState Dataclass</b><br/>backend/agent/state.py<br/>Context &amp; Shared Memory</div>"]:::l3
+        LG_Gate["<div style='width: 200px;'><b>Fiduciary Gate Loops</b><br/>Critic Rejection &amp;<br/>Rework Self-Correction</div>"]:::l3
+        LG_Audit["<div style='width: 200px;'><b>Execution Telemetry</b><br/>agent_execution_runs<br/>Token &amp; Latency Tracing</div>"]:::l3
+        LG_Graph --- LG_State --- LG_Gate --- LG_Audit
     end
 
-    subgraph L4 ["Layer 4: Agentic AI & Intelligence Layer (13 Specialized Nodes)"]
-        A_Mgr["Manager Node (Task Decomposition)"]:::l4
-        A_Suit["Suitability & Feasibility Node (SEBI Gate)"]:::l4
-        A_Macro["Macro Analyst Node (RBI & Inflation)"]:::l4
-        A_Mkt["Market Analyst Node (NIFTY 50 50/200 DMA)"]:::l4
-        A_Fund["Fundamental Analyst Node (P/E, ROE, Factors)"]:::l4
-        A_News["News & Corporate Filings Analyst Node"]:::l4
-        A_Strat["Lead Strategist Node (Tactical Candidate Weights)"]:::l4
-        A_Critic["Independent Risk Critic Node (Mandate Audit)"]:::l4
-        A_Rewk["Strategist Bounded Rework Node (Max 2 Loops)"]:::l4
-        A_Opt["Deterministic SLSQP Optimizer Node"]:::l4
-        A_CritFin["Critic Final Validation Node (Constraint Audit)"]:::l4
-        A_Mod["Fiduciary Moderator Node (Two-Level Explanations)"]:::l4
-        A_Pers["ACID PostgreSQL Persistence Node"]:::l4
+    subgraph L4 ["Layer 4: Multi-Agent AI & Intelligence Layer (13 LangGraph Nodes)"]
+        direction LR
+        subgraph L4_Col1 ["1. Coordination & Suitability"]
+            direction TB
+            A_Mgr["<div style='width: 260px;'><b>manager_node</b><br/>Coordinates Workflow &amp; Subtasks</div>"]:::l4
+            A_Suit["<div style='width: 260px;'><b>suitability_check_node</b><br/>Enforces SEBI Suitability Rules</div>"]:::l4
+        end
+        subgraph L4_Col2 ["2. Specialized Research (Gemini 3.8 Flash)"]
+            direction TB
+            A_Macro["<div style='width: 260px;'><b>macro_analyst_node</b>: RBI Repo &amp; Inflation</div>"]:::l4
+            A_Mkt["<div style='width: 260px;'><b>market_analyst_node</b>: Nifty 50 Trend &amp; VIX</div>"]:::l4
+            A_Fund["<div style='width: 260px;'><b>fundamental_analyst_node</b>: ROE &gt;= 15%, D/E</div>"]:::l4
+            A_News["<div style='width: 260px;'><b>news_analyst_node</b>: Corporate Sentiment</div>"]:::l4
+        end
+        subgraph L4_Col3 ["3. Strategy, Risk Critique & Persistence"]
+            direction TB
+            A_Strat["<div style='width: 260px;'><b>analyst_node</b>: Lead Strategist Allocation</div>"]:::l4
+            A_Critic["<div style='width: 260px;'><b>critic_node</b>: Adversarial Fiduciary Critic</div>"]:::l4
+            A_Mod["<div style='width: 260px;'><b>moderator_explanation_node</b>: Stock-Why</div>"]:::l4
+            A_Pers["<div style='width: 260px;'><b>persistence_node</b>: Atomic PostgreSQL Commit</div>"]:::l4
+        end
     end
 
-    subgraph L5 ["Layer 5: Quantitative & Mathematical Engine Layer (SciPy & NumPy)"]
-        M_Opt["Deterministic SLSQP Optimizer (Markowitz Quadratic Utility)"]:::l5
-        M_Int["Whole-Share Integer Allocation & Cash Conservation Engine"]:::l5
-        M_Drift["Asset & Sector Allocation Drift Engine (Threshold: 5%/8%)"]:::l5
-        M_Cost["Statutory Indian Equity Transaction Costs Engine (STT, GST)"]:::l5
-        M_Fact["Multi-Factor Scoring & Winsorized Z-Score Normalizer"]:::l5
-        M_Risk["Risk Engine (Sharpe, Sortino, Beta, Max Drawdown)"]:::l5
+    subgraph L5 ["Layer 5: Quantitative & Mathematical Engine (SciPy & NumPy)"]
+        direction LR
+        M_Opt["<div style='width: 200px;'><b>optimizer.py</b><br/>SciPy SLSQP Solver<br/>Max Sharpe / Min Risk</div>"]:::l5
+        M_Round["<div style='width: 200px;'><b>allocation_rounding.py</b><br/>Whole-Share Floor Rounding<br/>Discrete Lot Sizing</div>"]:::l5
+        M_Cash["<div style='width: 200px;'><b>Cash Conservation</b><br/>Preserves Unallocated Cash<br/>Exact Budget Matching</div>"]:::l5
+        M_Taxes["<div style='width: 200px;'><b>transaction_costs.py</b><br/>Indian Statutory Frictions<br/>STT, Stamp Duty, GST</div>"]:::l5
+        M_Opt --- M_Round --- M_Cash --- M_Taxes
     end
 
-    subgraph L6 ["Layer 6: Operational Services & Scheduler Layer"]
-        S_Cron["Background Monitoring Scheduler (300s, 09:15-15:30 IST)"]:::l6
-        S_Notif["Notification Service (In-App Unread Alerts)"]:::l6
-        S_Diag["Demat Diagnosis Service (HHI Concentration & Overlap)"]:::l6
-        S_Why["Stock-Why Service (Institutional Citations & Proofs)"]:::l6
-        S_Reb["Rebalancing Service (Trade Preview & Invariant Checks)"]:::l6
-        S_Sync["Security Universe Sync Service (NSE/BSE Ingestion)"]:::l6
+    subgraph L6 ["Layer 6: Operational Services & Background Monitoring"]
+        direction LR
+        S_Sched["<div style='width: 200px;'><b>monitoring_scheduler.py</b><br/>Market Hours Daemon<br/>(09:15-15:30 IST)</div>"]:::l6
+        S_Notif["<div style='width: 200px;'><b>notification_service.py</b><br/>Drift Alerts (&gt;= 5%)<br/>In-App &amp; Email Notices</div>"]:::l6
+        S_Diag["<div style='width: 200px;'><b>diagnosis/service.py</b><br/>Demat CAS PDF Parser<br/>HHI Concentration Score</div>"]:::l6
+        S_Reb["<div style='width: 200px;'><b>rebalancing_service.py</b><br/>Before/After Preview<br/>Execution Order Delta</div>"]:::l6
+        S_Sched --- S_Notif --- S_Diag --- S_Reb
     end
 
-    subgraph L7 ["Layer 7: Data Access & Persistence Layer (PostgreSQL 16 Master)"]
-        DB_Engine["SQLAlchemy 2.0 ORM & Connection Pooling"]:::l7
-        DB_Master[("PostgreSQL 16 Database (majorproject)<br/>62 Domain Tables + alembic_version")]:::l7
-        DB_Sec["Security Master (2,639 Securities, 2,715 Listings)"]:::l7
-        DB_Port["Portfolio Store (Versions, Decisions, Trades)"]:::l7
-        DB_Audit["Telemetry & System Audit Logs"]:::l7
+    subgraph L7 ["Layer 7: Relational Data Persistence (PostgreSQL 16 - 62 Tables Master)"]
+        direction LR
+        D_User["<div style='width: 200px;'><b>Users &amp; Security</b><br/>app_users, user_profiles<br/>risk_assessments, goals</div>"]:::l7
+        D_Mkt["<div style='width: 200px;'><b>Securities &amp; Prices</b><br/>securities (2,639 Listed)<br/>market_prices, fundamentals</div>"]:::l7
+        D_Port["<div style='width: 200px;'><b>Portfolios &amp; Decisions</b><br/>investor_portfolios, versions<br/>portfolio_security_decisions</div>"]:::l7
+        D_Audit["<div style='width: 200px;'><b>Telemetry &amp; Alerts</b><br/>agent_execution_runs<br/>explanations, notifications</div>"]:::l7
+        D_User --- D_Mkt --- D_Port --- D_Audit
     end
 
-    subgraph L8 ["Layer 8: External Integrations & Market Data Layer"]
-        EXT_NSE["NSE India Archives (Official EQUITY_L Master)"]:::l8
-        EXT_BSE["BSE India Corporate Directory (ISIN Cross-Reference)"]:::l8
-        EXT_YF["Yahoo Finance API (yfinance Live Quotes & History)"]:::l8
-        EXT_RBI["Reserve Bank of India Bulletins (Policy Repo Rate)"]:::l8
-        EXT_News["NewsAPI & RSS Financial News Feeds"]:::l8
-        EXT_LLM["Google Gemini API (gemini-3.8-flash / Local Fallback)"]:::l8
+    subgraph L8 ["Layer 8: External Integrations & Market Data Feeds"]
+        direction LR
+        E_NSE["<div style='width: 175px;'><b>NSE Official Archive</b><br/>EQUITY_L.csv<br/>(2,639 Listed Equities)</div>"]:::l8
+        E_BSE["<div style='width: 175px;'><b>BSE Directory</b><br/>Dual-Listed Scrip Matching<br/>Universal ISIN Keys</div>"]:::l8
+        E_YF["<div style='width: 175px;'><b>Yahoo Finance API</b><br/>Daily OHLCV Historical Bars<br/>Corporate Action Splits</div>"]:::l8
+        E_RBI["<div style='width: 175px;'><b>Reserve Bank of India</b><br/>Official Policy Bulletins<br/>Repo Rate &amp; Inflation</div>"]:::l8
+        E_Gemini["<div style='width: 175px;'><b>Google Gemini API</b><br/>Gemini 3.8 Flash<br/>Multi-Agent Committee</div>"]:::l8
+        E_NSE --- E_BSE --- E_YF --- E_RBI --- E_Gemini
     end
 
-    L1 <--> L2
-    L2 <--> L3
-    L3 <--> L4
-    L4 <--> L5
-    L3 <--> L5
-    L2 <--> L6
-    L6 <--> L5
-    L4 <--> L7
-    L5 <--> L7
-    L6 <--> L7
-    L6 <--> L8
-    L7 <--> L8
-    L4 <--> L8
-
+    L1 ==> L2
+    L2 ==> L3
+    L3 ==> L4
+    L4 ==> L5
+    L4 --> L7
+    L5 --> L7
+    L6 --> L7
+    L8 ==> L7
+    L6 -.->|Drift Alert >= 5%| UI_Port
