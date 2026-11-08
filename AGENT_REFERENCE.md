@@ -55,7 +55,7 @@ flowchart TD
 | # | Agent / Node Name | Python Module & Function | Exact Input State Fields | Database Queries & External APIs | Processing Mode | Exact Output State Fields | Next Destination Node |
 |---|---|---|---|---|---|---|---|
 | **1** | **Manager** | `nodes.py:manager_node` | `generation_request_id`, `user_profile`, `investment_amount`, `currency_code` | Reads user and request metadata from state | Deterministic | `status='running'`, `workflow_status='RUNNING'`, `current_stage='manager'`, `execution_trace` | `suitability` |
-| **2** | **Suitability & Feasibility** | `nodes.py:suitability_check_node` | `user_profile`, `investment_amount`, `investment_horizon_months`, `preferences` | `db.query(Security).filter(active)` via `CandidateUniverseSelector` | Deterministic | `suitability_passed`, `suitability_notes`, `eligible_candidates` (~504), `feasibility_result` | `macro_analyst` (if passed) or `persistence` |
+| **2** | **Suitability & Feasibility** | `nodes.py:suitability_check_node` | `user_profile`, `investment_amount`, `investment_horizon_months`, `preferences` | `db.query(Security).filter(active)` via `CandidateUniverseSelector` | Deterministic | `suitability_passed`, `suitability_notes`, `eligible_candidates` (up to 2,605 eligible), `feasibility_result` | `macro_analyst` (if passed) or `persistence` |
 | **3** | **Macro Analyst** | `nodes.py:macro_analyst_node` | `eligible_candidates`, `user_prompt` | `db.query(EconomicObservation)`, `detect_market_regime()`, `^INDIAVIX` via yfinance | LLM + Rule Fallback | `macro_output`, `market_regime` (`BULL`, `NORMAL`, `VOLATILE`), `cash_buffer_pct`, `macro_evidence` | `market_analyst` |
 | **4** | **Market Analyst** | `nodes.py:market_analyst_node` | `eligible_candidates`, `market_regime` | `db.query(MarketPrice)`, Nifty 50 50/200 DMA trend via yfinance | LLM + Rule Fallback | `market_output`, `market_breadth`, `nifty_trend`, `candidate_technicals` | `fundamental_analyst` |
 | **5** | **Fundamental Analyst** | `nodes.py:fundamental_analyst_node` | `eligible_candidates`, `user_prompt` | `db.query(FundamentalMetric)`, ROE, PE, PB, D/E via `fundamental_research_tool` | LLM + Rule Fallback | `fundamental_output`, `vetted_securities`, `valuation_evidence`, `fiduciary_flags` | `news_analyst` |
@@ -89,7 +89,7 @@ flowchart TD
     "INDIA_10Y_GSEC_YIELD": 7.04,
     "REAL_POLICY_RATE": 1.40
   },
-  "eligible_candidates_count": 504
+  "eligible_candidates_count": 2605
 }
 ```
 

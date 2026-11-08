@@ -452,7 +452,7 @@ The backend service layer decouples API routing from domain business logic. All 
 
 | Service | File Path | Class / Entry Point | Responsibility |
 |---|---|---|---|
-| **Candidate Universe Selector** | `backend/portfolio_engine/candidate_selection.py` | `CandidateUniverseSelector` | Screens 2,639 listed stocks to produce ~504 liquid candidates based on turnover, market cap, and listing history |
+| **Candidate Universe Selector** | `backend/portfolio_engine/candidate_selection.py` | `CandidateUniverseSelector` | Screens the full 2,639 listed stock universe to identify eligible candidates based on liquidity tiers, investor exclusions, and price freshness |
 | **Factor Modeling Service** | `backend/portfolio_engine/factors.py` | `get_equity_factors()` | Calculates Winsorized Z-scores across Value (P/E), Quality (ROE), Momentum, and Volatility factors |
 | **SLSQP Optimizer** | `backend/portfolio_engine/optimizer.py` | `optimize_portfolio_allocations()` | Executes SciPy SLSQP constrained mean-variance quadratic optimization to maximize Sharpe ratio |
 | **Allocation Rounding Service** | `backend/portfolio_engine/allocation_rounding.py` | `calculate_integer_shares_and_amounts()` | Converts continuous optimization weights into discrete whole shares while strictly conserving cash |
@@ -1448,12 +1448,14 @@ Lucid implements **17 production-grade quantitative algorithms**. Each algorithm
 - **Output:** Ingestion run summary with total records processed, inserted, updated, and failed.
 
 ### Algorithm 3: Candidate Filtering & Liquidity Evaluation (`candidate_selection.py`)
-- **Purpose:** Filters the 2,639 stored securities down to the ~504 liquid candidates eligible for recommendations.
+- **Purpose:** Dynamically evaluates the full 2,639 stored securities across institutional liquidity tiers to identify eligible candidates for portfolio recommendations.
 - **Input:** Universe of 2,639 securities.
 - **Filter Criteria:**
-  - **Tier 1 (Nifty 50 / Large-Cap):** Average Daily Turnover (ADTV) $\ge$ ₹10 Crore, Market Cap $\ge$ ₹20,000 Crore.
-  - **Tier 2 (Mid-Cap / Liquid Small-Cap):** ADTV $\ge$ ₹2 Crore, Market Cap $\ge$ ₹5,000 Crore, minimum 250 trading days history.
-- **Output:** Pre-screened universe of ~504 securities with active trading status and sufficient liquidity for whole-share allocation.
+  - **Tier 1 (Ultra-Liquid):** ADTV $\ge$ 100,000 shares, Turnover $\ge$ ₹1 Crore.
+  - **Tier 2 (Broad-Liquid):** ADTV $\ge$ 25,000 shares, Turnover $\ge$ ₹25 Lakhs.
+  - **Tier 3 (Emerging Liquid):** ADTV $\ge$ 5,000 shares, Turnover $\ge$ ₹5 Lakhs.
+  - **Tier 4 (Restricted):** Sub-threshold or suspended series (BZ) excluded from fresh allocations.
+- **Output:** Active recommendation candidate universe of up to 2,605 securities with active trading status and verified price freshness.
 
 ### Algorithm 4: Multi-Factor Scoring & Winsorized Z-Scores (`factors.py`)
 - **Purpose:** Scores securities across Value, Quality, Momentum, and Volatility factors.

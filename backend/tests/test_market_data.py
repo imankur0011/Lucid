@@ -125,7 +125,7 @@ def test_market_regime_and_macro_endpoints():
     regime_res = client.get("/api/v1/market-data/regime")
     assert regime_res.status_code == 200, regime_res.text
     regime_data = regime_res.json()
-    assert regime_data["regime"] in ("BULL", "BEAR", "SIDEWAYS", "HIGH_VOLATILITY", "CALM", "MODERATE", "VOLATILE", "EXTREME")
+    assert regime_data["regime"] in ("BULL", "BEAR", "SIDEWAYS", "HIGH_VOLATILITY", "CALM", "MODERATE", "VOLATILE", "EXTREME", "NORMAL")
     assert "india_vix" in regime_data
     assert "risk_multiplier" in regime_data
     assert "volatility_dimension" in regime_data

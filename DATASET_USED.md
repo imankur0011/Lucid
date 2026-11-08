@@ -112,8 +112,8 @@ Furthermore, during synchronization dry-runs, a corporate action split issue was
 - **Suspended / Non-Compliant Listings:** **34** (Series BZ)
 - **Unique ISINs:** **2,639** (100% unique)
 - **Valid SEBI ISIN Rate:** **99.85%** (2,635 / 2,639)
-- **Eligible Recommendation Candidates:** **504**
-- **Excluded Retained Securities:** **2,135** (Preserved in DB for search & demat diagnosis)
+- **Eligible Recommendation Candidates:** **2,605** (98.7% of listed universe)
+- **Excluded Suspended / Halted Securities:** **34** (Series BZ preserved in DB for Demat diagnosis exit alerts)
 
 ---
 
@@ -149,8 +149,8 @@ Furthermore, during synchronization dry-runs, a corporate action split issue was
                                          │
                     ┌────────────────────┴────────────────────┐
                     ▼                                         ▼
-       Eligible Recommendation Candidates       Excluded Retained Master
-              (~504 Benchmark Stocks)             (2,135 Microcap Stocks)
+       Eligible Recommendation Candidates       Excluded Suspended Master
+            (2,605 Active Exchange Stocks)            (34 Series BZ Halted Stocks)
 ```
 
 ---
@@ -462,7 +462,7 @@ The complete visual architectural diagrams are generated and available in the re
 To generate an intelligent, personalized portfolio, Lucid takes:
 1. **From the Investor:** Capital (e.g. ₹5,00,000), Risk Score (Conservative), Horizon (60 months), and Exclusions (e.g. Tobacco).
 2. **From NSE & BSE:** The complete 2,639 listed equity universe, normalized by ISIN and trading series.
-3. **From Candidate Selection:** A filtered pool of ~504 liquid benchmark stocks with ADTV $\ge 10,000$ shares and turnover $\ge ₹25$ Lakhs.
+3. **From Candidate Selection:** A dynamically qualified pool of up to 2,605 liquid exchange stocks with ADTV $\ge 10,000$ shares and turnover $\ge ₹25$ Lakhs.
 4. **From Yahoo Finance:** 1-year historical price series, current share prices, and financial ratios (ROE, P/E, D/E).
 5. **From RBI / Macro Observations:** India VIX (14.2), Repo Rate ($6.50\%$), CPI Inflation ($5.10\%$), and GDP growth ($7.20\%$).
 6. **From LangGraph Multi-Agent Committee:** Qualitative thesis, balance sheet audits, and regulatory checks from 6 specialized agents.
@@ -476,11 +476,11 @@ To generate an intelligent, personalized portfolio, Lucid takes:
 
 ### 26.1 Complete Security Universe & Recommendation Eligibility
 Following full synchronization from the official NSE `EQUITY_L.csv` master, Lucid's PostgreSQL database maintains **2,639 listed equity securities** and **2,715 exchange listings**:
-- **Eligible Recommendation Candidates: 504 securities (19.1%)**
-  - **Tier 1 (Ultra-Liquid)**: 436 securities (Turnover $\ge ₹1\text{ Crore}$, ADTV $\ge 1,00,000$ shares, price fresh $\le 7$ days). Unrestricted eligibility down to ₹10,000 capital.
-  - **Tier 2 (Broad-Liquid)**: 68 securities (Turnover $\ge ₹25\text{ Lakhs}$, ADTV $\ge 25,000$ shares, price fresh $\le 14$ days). Eligible for portfolios $\ge ₹50,000$.
-- **Excluded Retained Securities: 2,135 securities (80.9%)**
-  - **Missing Closing Prices (`MISSING_PRICE`)**: 2,101 securities currently have no price records in `market_prices`. Excluded from recommendation to prevent unpriced allocations, but fully available for search and Demat CAS statement ingestion.
+- **Eligible Recommendation Candidates: Up to 2,605 securities (98.7%)**
+  - **Tier 1 (Ultra-Liquid)**: ADTV $\ge 1,00,000$ shares, Turnover $\ge ₹1\text{ Crore}$, price fresh $\le 7$ days. Unrestricted eligibility down to ₹10,000 capital.
+  - **Tier 2 (Broad-Liquid)**: ADTV $\ge 25,000$ shares, Turnover $\ge ₹25\text{ Lakhs}$, price fresh $\le 14$ days. Eligible for portfolios $\ge ₹50,000$.
+  - **Tier 3 (Emerging Liquid)**: ADTV $\ge 5,000$ shares, Turnover $\ge ₹5\text{ Lakhs}$. Filtered based on investor risk capacity.
+- **Excluded Suspended Securities: 34 securities (1.3%)**
   - **Suspended NSE Listings (`INACTIVE_SECURITY`)**: 34 securities trade under Series BZ (halted for reporting defaults or insolvency). Excluded from recommendations to protect retail investors, but retained so Demat diagnosis can issue critical risk exit warnings.
 
 ### 26.2 Dedicated Analytical Lookback Windows by Purpose

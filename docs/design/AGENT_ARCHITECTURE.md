@@ -242,7 +242,7 @@ PostgreSQL user_profiles table, policy constraints engine (policy.py), Candidate
 
 **5. Processing Logic:**
 1. Executes suitability_assessment_tool to evaluate risk profile alignment.
-2. Runs CandidateUniverseSelector to retrieve liquid equity candidates (~504 stocks).
+2. Runs CandidateUniverseSelector to retrieve liquid equity candidates across the full 2,639 listed exchange universe.
 3. Evaluates pre-optimization capital feasibility (check_portfolio_feasibility).
 
 **6. Prompt Construction & Model Configuration:**

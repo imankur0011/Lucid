@@ -172,7 +172,7 @@ graph TD
 |---|---|---|---|---|---|---|
 | **FR-C01** | User Onboarding & Risk Profiling | 5 psychometric risk answers | `backend/api/v1/risk_assessments.py`, `suitability_check_node` | Evaluates risk capacity, horizon, and drawdown tolerance into Conservative, Moderate, or Aggressive. | `risk_assessments`, `user_profiles` | **IMPLEMENTED** |
 | **FR-C02** | Conversational Strategy & Exclusions | Natural language text string | `nlp_profile_extractor.py`, `conversational_assistant.py` | Regex and LLM extraction of sector exclusions, capital, and goals. | `user_sector_preferences`, `user_preferences` | **IMPLEMENTED** |
-| **FR-C03** | Candidate Stock Universe Screening | Generation trigger | `candidate_selection.py:CandidateUniverseSelector` | Screens 2,639 equities against Tier 1/2 liquidity (ADTV $\ge 25\text{k}$, turnover $\ge ₹25\text{L}$, freshness $\le 14\text{d}$). | In-memory candidate list (~504 stocks) | **IMPLEMENTED** |
+| **FR-C03** | Candidate Stock Universe Screening | Generation trigger | `candidate_selection.py:CandidateUniverseSelector` | Screens the full 2,639 listed exchange universe against investor exclusions, active status, and liquidity tiers. | In-memory candidate list (up to 2,605 eligible stocks) | **IMPLEMENTED** |
 | **FR-C04** | Deterministic SLSQP Optimization | Approved candidate basket | `optimizer.py`, `deterministic_optimizer_node` | Solves $\min 0.5 \lambda \mathbf{w}^T \boldsymbol{\Sigma} \mathbf{w} - \mathbf{w}^T \boldsymbol{\mu}$ subject to simplex and concentration bounds. | Continuous asset weights $\mathbf{w}^*$ | **IMPLEMENTED** |
 | **FR-C05** | Integer Share Allocation & Cash Balance | Capital in INR | `math_engine.py:compute_integer_share_allocation` | Maps continuous weights to discrete integer lots: $N_i = \lfloor \frac{w_i C}{P_i} \rfloor$ with residual cash tracking. | `portfolio_security_decisions` | **IMPLEMENTED** |
 | **FR-C06** | Mathematical Guardrails & Safety Caps | Risk policy parameters | `constraints.py`, `critic_node`, `critic_final_validation_node` | Enforces hard ceilings: single-stock $\le 25\%$, sector $\le 35\%$, minimum 5 stocks, zero penny-stocks. | `portfolio_validation_results` | **IMPLEMENTED** |
@@ -260,10 +260,10 @@ graph TD
 - **Rationale**: All entity relationships (companies, securities, listings, holdings, agent traces) are modeled with full ACID integrity in relational tables with foreign keys and indexes. Eliminating external databases significantly simplifies developer onboarding and system reliability.
 - **Trade-Off**: Complex recursive graph queries are replaced with indexed multi-table SQL joins and relational association entities.
 
-### 9.4 Strict Liquidity Filtering (504 Eligible / 2,639 Stored)
-- **Decision**: While Lucid stores the entire 2,639 listed equity universe for stock search and Demat statement diagnostics, only securities passing Tier 1 and Tier 2 liquidity (ADTV $\ge 25,000$, Turnover $\ge$ ₹25 Lakhs) are eligible for portfolio recommendations (~504 stocks).
-- **Rationale**: Prevents retail investors from being allocated illiquid, micro-cap, or circuit-locked equities that suffer from high market impact and slippage.
-- **Trade-Off**: High-risk micro-cap growth opportunities are excluded from automated recommendations.
+### 9.4 Full Exchange Universe Integration with Dynamic Liquidity Tiering
+- **Decision**: Lucid ingests, synchronizes, and qualifies the entire 2,639 listed equity universe across NSE and BSE for portfolio recommendations, evaluating candidates dynamically across four institutional liquidity tiers (Tier 1 Ultra-Liquid, Tier 2 Broad-Liquid, Tier 3 Emerging Liquid). Only halted or suspended securities (Series BZ) are excluded from fresh allocations to protect retail investors.
+- **Rationale**: Eliminates artificial sub-universe restrictions, empowering retail investors to benefit from broad-market discovery while safeguarding capital through dynamic volume and turnover filters.
+- **Trade-Off**: Broad universe screening requires robust caching and efficient SQL indexing across the 2,639 security master.
 
 ### 9.5 Non-Custodial Advisory Operating Boundary
 - **Decision**: Lucid operates strictly as an advisory decision-support platform. It generates trade instructions and order previews, but does not route real-money custodial orders to broker APIs.

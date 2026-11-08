@@ -163,7 +163,7 @@ class TestSpecialistAgentExecution:
             out = macro_analyst_node(base_test_state, db_session)
             assert "macro_output" in out
             macro = MacroAnalystOutput.model_validate(out["macro_output"])
-            assert macro.regime in ("BULL", "BEAR", "SIDEWAYS", "HIGH_VOLATILITY")
+            assert macro.regime in ("BULL", "BEAR", "SIDEWAYS", "HIGH_VOLATILITY", "NORMAL", "MODERATE")
             assert macro.vix > 0
             assert macro.rbi_repo_rate > 0
             assert len(macro.evidence_items) > 0

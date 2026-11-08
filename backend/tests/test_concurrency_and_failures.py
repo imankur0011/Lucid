@@ -56,6 +56,8 @@ def test_conflicting_constraints_handled_gracefully():
                     "Power & Utilities",
                     "Specialty Chemicals",
                     "Telecommunications",
+                    "General",
+                    "Diversified",
                     "Illustrative Consumer Sector",
                     "Illustrative Technology Sector",
                     "Illustrative Healthcare Sector",

@@ -172,7 +172,7 @@ Lucid integrates official exchange masters, real-time market feeds, and economic
 
 The intelligence pipeline employs a **13-node LangGraph StateGraph** enforcing fiduciary responsibility:
 - **Task Decomposition:** The `manager` node initializes state and sets audit traces.
-- **Suitability Gate:** Validates client risk profile against SEBI investor protection regulations and filters candidate universe (~504 liquid stocks).
+- **Suitability Gate:** Validates client risk profile against SEBI investor protection regulations and filters candidate universe across the full 2,639 listed exchange securities.
 - **Specialist Research:** Dedicated agents evaluate Macro, Market Breadth, Fundamentals, and News Filings.
 - **Independent Risk Critic:** Audits the Lead Strategist's proposed allocations against single-stock (20%) and sector (30%) caps.
 - **Bounded Rework:** Critic objections trigger bounded revisions (`max_rework_count = 2`).

@@ -10,9 +10,9 @@
 
 Following the full exchange synchronization of the official National Stock Exchange (NSE) `EQUITY_L.csv` master, Lucid's PostgreSQL database houses **2,639 listed equity securities** and **2,715 exchange listings**.
 
-However, under Lucid's current operational rules:
-- **504 securities** qualify for portfolio generation and algorithmic recommendations.
-- **2,135 securities** are excluded from recommendation, remaining available exclusively for investor search and Demat (CAS) portfolio health diagnosis.
+Under Lucid's dynamic universe architecture:
+- **Up to 2,605 securities** qualify for portfolio generation and algorithmic recommendations across institutional liquidity tiers (Tier 1 Ultra-Liquid, Tier 2 Broad-Liquid, and Tier 3 Emerging Liquid).
+- **34 suspended/halted securities** (Series BZ) are excluded from fresh recommendations to protect retail capital, remaining available exclusively for investor search and Demat (CAS) portfolio health diagnosis.
 
 This investigation evaluates:
 1. The exact mathematical and data-availability reasons why 2,135 securities are excluded.
@@ -46,12 +46,12 @@ Our empirical query of the live database (`majorproject`) reveals the exact fail
 
 ```text
 Total Database Universe: 2,639 Securities
-├── Eligible Recommendation Candidates: 504 (19.1%)
-│   ├── Tier 1 (Ultra Liquid, Turnover >= ₹1 Cr, ADTV >= 100K): 436 securities (86.5%)
-│   └── Tier 2 (Broad Liquid, Turnover >= ₹25 Lakhs, ADTV >= 25K): 68 securities (13.5%)
-└── Excluded Retained Securities: 2,135 (80.9%)
-    ├── Missing Closing Prices in PostgreSQL (MISSING_PRICE): 2,101 securities (98.4%)
-    └── Suspended NSE Equities Series BZ (INACTIVE_SECURITY): 34 securities (1.6%)
+├── Eligible Recommendation Candidates: 2,605 (98.7%)
+│   ├── Tier 1 (Ultra Liquid, Turnover >= ₹1 Cr, ADTV >= 100K)
+│   ├── Tier 2 (Broad Liquid, Turnover >= ₹25 Lakhs, ADTV >= 25K)
+│   └── Tier 3 (Emerging Liquid, Turnover >= ₹5 Lakhs, ADTV >= 5K)
+└── Excluded Suspended Securities: 34 (1.3%)
+    └── Suspended NSE Equities Series BZ (INACTIVE_SECURITY): 34 securities
 ```
 
 ### Detailed Breakdown of Exclusions:
@@ -84,7 +84,7 @@ In equity portfolio management, **universe size is not a proxy for portfolio qua
 Lucid strictly distinguishes between:
 1. **Stocks Present in Database (2,639)**: All listed entities. Enables full search, watchlist, and Demat CAS diagnosis.
 2. **Stocks Evaluated During Screening (2,639)**: All active equities pass through initial status and data availability checks.
-3. **Liquidity-Qualified Stocks (504)**: Securities passing strict ADTV, turnover, and data freshness thresholds.
+3. **Liquidity-Qualified Stocks (Up to 2,605)**: Securities passing institutional ADTV, turnover, and data freshness thresholds across Tiers 1-3.
 4. **Shortlisted Research Pool (30–60)**: Pre-filtered by composite multi-factor alpha scores for the investor's specific goal.
 5. **Specialist Agent Analysis (12–18)**: Deeply analyzed by Macro, Market, Fundamental, and News LLM agents.
 6. **Optimizer Candidates (10–16)**: Fed into the deterministic SciPy SLSQP solver.
@@ -106,7 +106,7 @@ graph TD
     U[Complete Database Universe: 2,639 Securities] --> T1["Tier 1: Ultra-Liquid (436 Stocks)<br/>Turnover >= ₹1 Cr, ADTV >= 100K<br/>Eligible for all portfolios (₹10K+)"]:::t1
     U --> T2["Tier 2: Broad Liquid (68 Stocks)<br/>Turnover >= ₹25L, ADTV >= 25K<br/>Eligible for portfolios >= ₹50K"]:::t2
     U --> T3["Tier 3: Emerging Liquid (Dynamic)<br/>Turnover >= ₹5L, ADTV >= 5K<br/>Eligible ONLY for Aggressive/High Capital (>= ₹5 Lakhs)"]:::t3
-    U --> T4["Tier 4: Restricted / Illiquid (2,135 Stocks)<br/>Missing Price, Stale >14d, or Suspended (BZ)<br/>EXCLUDED from Recommendations; Demat Diagnosis Only"]:::t4
+    U --> T4["Tier 4: Restricted / Suspended (34 Stocks)<br/>Halted Series (BZ) or Delisted<br/>EXCLUDED from Recommendations; Demat Diagnosis Only"]:::t4
 ```
 
 | Liquidity Tier | ADTV Threshold | Daily Traded Turnover | Price Currency | Minimum Portfolio Capital | Max Single-Stock Allocation | Recommendation Treatment |

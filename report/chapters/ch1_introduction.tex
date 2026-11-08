@@ -55,7 +55,7 @@ The operational scope of Lucid encompasses:
 \section{Proposed Solution: Lucid}
 Lucid is engineered as a decoupled, multi-layered intelligent platform. The client presentation layer is implemented in Next.js 16.4.2 and React 19, communicating via type-safe REST APIs with a high-performance FastAPI 0.115+ backend. The core intelligence resides in a 13-node LangGraph StateGraph that orchestrates Google Gemini 3.8 Flash (backed by deterministic rule fallbacks). 
 
-The platform continuously maintains a synchronized catalog of 2,639 listed exchange securities, categorizing them into four institutional Liquidity Tiers, with 504 liquid securities eligible for portfolio recommendations. Portfolio generation requests undergo deterministic SciPy SLSQP optimization, followed by discrete lot sizing and statutory friction modeling. Post-creation, active portfolios are monitored by an asynchronous background scheduler during official exchange trading hours.
+The platform continuously maintains a synchronized catalog of 2,639 listed exchange securities, categorizing them into four institutional Liquidity Tiers, with the complete exchange universe of 2,639 listed securities eligible for portfolio recommendations based on investor criteria, data freshness, and risk suitability. Portfolio generation requests undergo deterministic SciPy SLSQP optimization, followed by discrete lot sizing and statutory friction modeling. Post-creation, active portfolios are monitored by an asynchronous background scheduler during official exchange trading hours.
 
 \section{Key Contributions and Differentiators}
 The key contributions of this Major Project include:
@@ -81,5 +81,4 @@ The remainder of this report is organized as follows:
     \item \textbf{Chapter 10} demonstrates the Functional Requirements Implementation (FR-C01 through FR-D01) and application UI screens.
     \item \textbf{Chapter 11} presents Empirical Results, Testing, and Evaluation across 216 automated tests and backtest comparisons.
     \item \textbf{Chapter 12} concludes the report and outlines Future Scope.
-    \item \textbf{Appendices} provide supplementary technical inventories, diagrams, test matrices, and installation manuals.
 \end{itemize}

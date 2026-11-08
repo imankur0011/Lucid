@@ -44,7 +44,7 @@ Lucid executes an institutional investment lifecycle divided into 22 discrete, d
 6. **Market Intelligence Retrieval:** Ingests live NSE indices, India VIX, and repo rates from PostgreSQL cache.
 7. **Market-Regime Classification:** Classifies market climate into `BULL_TREND`, `BEAR_TREND`, `HIGH_VOLATILITY`, or `NEUTRAL`.
 8. **Security Universe Retrieval:** Loads active security master (2,639 listed equities).
-9. **Candidate Eligibility Screening:** Liquidity screen extracts ~504 candidate stocks meeting ADTV $\ge$ ₹2 Crore and market cap thresholds.
+9. **Candidate Eligibility Screening:** Liquidity screen evaluates the full 2,639 listed exchange universe across institutional liquidity tiers.
 10. **Fundamental Multi-Factor Scoring:** Computes Winsorized Z-scores across Value ($P/E^{-1}$), Quality (ROE/ROCE), Momentum, and Low Volatility.
 11. **News & Disclosure Research:** Scans BSE/NSE corporate filings for promoter pledging, audit qualifications, and regulatory alerts.
 12. **Agentic Context Synthesis:** Specialist agents construct structured domain payloads.
@@ -199,10 +199,11 @@ Flow G filters the full Indian exchange universe into a high-liquidity recommend
 ```
 Total Stored Exchange Securities (PostgreSQL): 2,639
                 │
-                ▼ (Tier 1 & Tier 2 Liquidity Filter)
-Recommendation Universe: 504 Candidates
-  - Nifty 50 / Nifty Next 50 (ADTV ≥ ₹10 Cr, MCap ≥ ₹20k Cr)
-  - Liquid Mid-Caps (ADTV ≥ ₹2 Cr, MCap ≥ ₹5k Cr, 250+ days trading)
+                ▼ (Tier 1 to Tier 3 Liquidity Screening)
+Eligible Candidate Universe: Up to 2,605 Candidates
+  - Tier 1 Ultra-Liquid (ADTV ≥ 100k, Turnover ≥ ₹1 Cr)
+  - Tier 2 Broad-Liquid (ADTV ≥ 25k, Turnover ≥ ₹25 Lakhs)
+  - Tier 3 Emerging Liquid (ADTV ≥ 5k, Turnover ≥ ₹5 Lakhs)
                 │
                 ▼ (Pre-Screening: Sector Exclusions & Quality Thresholds)
 Top Ranked Candidate Pool: 30 - 50 Candidates

@@ -52,8 +52,8 @@ def test_reconciliation_and_candidate_filtering_separation():
     """
     Verify clean separation between:
     - Broad Security Master (>2,600)
-    - Recommendation Eligible Universe (approx 500 liquid benchmark equities)
-    - Excluded illiquid micro-caps (>2,100 excluded for retail protection)
+    - Full Active Recommendation Eligible Universe (>2,500 active equities)
+    - Excluded suspended/halted securities (Series BZ excluded for retail protection)
     """
     db = SessionLocal()
     try:
@@ -61,9 +61,9 @@ def test_reconciliation_and_candidate_filtering_separation():
         db_stats = audit["database_universe"]
 
         assert db_stats["total_securities"] >= 2600
-        assert db_stats["eligible_recommendation_candidates"] > 0
+        assert db_stats["eligible_recommendation_candidates"] >= 2500
         assert db_stats["eligible_recommendation_candidates"] <= db_stats["total_securities"]
-        assert db_stats["excluded_from_recommendations_count"] > 2000
+        assert db_stats["excluded_from_recommendations_count"] >= 30
 
         # Run CandidateUniverseSelector directly
         selector = CandidateUniverseSelector(db)
@@ -72,7 +72,8 @@ def test_reconciliation_and_candidate_filtering_separation():
 
         assert len(candidates) == report["eligible_candidates_count"]
         assert report["initial_universe_size"] >= 2600
-        assert report["excluded_candidates_count"] > 2000
+        assert report["eligible_candidates_count"] >= 2500
+        assert report["excluded_candidates_count"] >= 30
     finally:
         db.close()
 

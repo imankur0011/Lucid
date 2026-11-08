@@ -55,5 +55,17 @@ logs/
 .lucid_*.pid
 .requirements.hash
 
+# LaTeX
+*.aux
+*.bbl
+*.blg
+*.lof
+*.lot
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+report/main.pdf
+
 # Neo4j data (managed by Docker)
 neo4j_data/

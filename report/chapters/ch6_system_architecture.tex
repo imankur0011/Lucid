@@ -77,7 +77,7 @@ The pipeline executes through four sequential phases:
     \item \textbf{Universe Ingestion}: The synchronization service (\texttt{sync\_full\_exchange\_universe()}) downloads the official NSE equity master (\texttt{EQUITY\_L.csv}) and queries the BSE scrip directory. It resolves ISIN collisions resulting from historical corporate splits (e.g., BAJFINANCE, DRREDDY, HAL) and persists \textbf{2,639 canonical equities} into \texttt{securities}.
     \item \textbf{Historical Price Retrieval}: A 1-year historical lookback window (252 trading sessions) is retrieved via Yahoo Finance for each security, validated for trading day continuity, and stored in \texttt{market\_prices}.
     \item \textbf{Fundamental Metric Normalization}: Balance sheet ratios (P/E, P/B, ROE, Debt-to-Equity, Operating Margin, Market Cap) are extracted and recorded in \texttt{fundamental\_metrics}.
-    \item \textbf{Liquidity Tier Categorization}: Securities are partitioned into four institutional tiers based on Average Daily Traded Volume (ADTV) and daily turnover, establishing a liquid recommendation candidate pool of \textbf{504 equities}.
+    \item \textbf{Liquidity Tier Categorization}: Securities are partitioned into four institutional tiers based on Average Daily Traded Volume (ADTV) and daily turnover, dynamically qualifying equities across the full 2,639 listed exchange universe for portfolio recommendation and risk-aligned allocation.
 \end{enumerate}
 
 \section{Runtime Execution Flow: Portfolio Generation Request}

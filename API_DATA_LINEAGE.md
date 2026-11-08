@@ -102,5 +102,5 @@ Instead, Lucid implements a **5-tier progressive data refinement architecture**:
 
 ### Truncation & Lookback Boundaries
 - **Historical Price Lookback:** Constrained to **35 calendar days** (approx. 25 trading sessions) for liquidity ADTV calculation and **252 trading sessions (1 year)** for covariance optimization.
-- **Candidate Pool Slicing:** Reduced from **2,639 securities** to **~504 liquid candidates** by the Candidate Selector, and further distilled to **8–15 top candidates** by the Lead Strategist before optimization.
+- **Candidate Pool Slicing:** Dynamically evaluated across the full **2,639 securities** universe by the Candidate Selector (yielding up to 2,605 eligible liquid stocks), and further distilled to **8–15 top candidates** by the Lead Strategist before optimization.
 - **News Announcements Lookback:** Truncated to the **latest 5 verified announcements** within the past 90 days.

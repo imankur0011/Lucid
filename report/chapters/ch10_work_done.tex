@@ -30,7 +30,7 @@ The implementation of Lucid translates the architectural blueprints and low-leve
 \begin{itemize}
     \item \textbf{Implementation}: Developed in \texttt{backend/portfolio\_engine/candidate\_selection.py} and \texttt{backend/market\_data/exchange\_universe\_sync.py}.
     \item \textbf{Functionality}: Ingests the full 2,639 listed exchange universe, applying automated liquidity filters (ADTV $\ge 10,000$ shares, daily turnover $\ge \text{Rs.~}25,00,000$).
-    \item \textbf{Output}: Extracts an active, recommendation-eligible basket of exactly \textbf{504 liquid equities}, excluding illiquid micro-caps.
+    \item \textbf{Output}: Screens and evaluates the complete 2,639 listed exchange equity universe, dynamically extracting candidates across institutional liquidity tiers to formulate risk-adjusted portfolio recommendations.
 \end{itemize}
 
 \subsection{FR-C05: Multi-Agent Reasoning via LangGraph StateGraph}

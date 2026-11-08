@@ -132,7 +132,7 @@ graph LR
 ```
 
 1. **Intelligent Goal-Driven Creation**: Generates customized equity portfolios tailored to investor risk capacity (Conservative, Moderate, Aggressive) and specific financial milestones.
-2. **Full NSE/BSE Universe Directory**: Houses 2,639 listed equities and 2,715 listings, with 504 liquid candidates eligible for recommendations across 4 institutional liquidity tiers.
+2. **Full NSE/BSE Universe Directory**: Houses 2,639 listed equities and 2,715 listings, with the broad exchange universe eligible for recommendations across institutional liquidity tiers.
 3. **Continuous Background Monitoring**: Tracks asset and sector drift automatically during market hours.
 4. **Friction-Aware Rebalancing**: Produces executable whole-share trade orders with exact net cash calculations.
 5. **Demat Statement (CAS) Health Diagnosis**: Ingests CDSL/NSDL PDF statements to detect hidden stock overlaps, sector skews, and Herfindahl-Hirschman (HHI) concentration risks.
@@ -426,7 +426,7 @@ python scripts/verify_setup.py
 
 ### Manual Verification Checklist:
 - [x] **Database Connectivity**: `curl http://localhost:8000/health` returns `{"api": "up", "database": {"status": "healthy"}}`.
-- [x] **Security Universe**: `curl http://localhost:8000/api/v1/market-data/universe-stats` returns 2,639 securities and 504 recommendation candidates.
+- [x] **Security Universe**: `curl http://localhost:8000/api/v1/market-data/universe-stats` returns 2,639 securities across the broad market universe.
 - [x] **User Registration**: `POST /api/v1/auth/register` creates a new investor and returns JWT tokens.
 - [x] **Market Regime**: `GET /api/v1/market-data/regime` returns Nifty 50 DMA trend and India VIX volatility regime.
 - [x] **Portfolio Creation**: `POST /api/v1/portfolio-generation-requests` runs the 13-node LangGraph pipeline and outputs whole-share allocations.
