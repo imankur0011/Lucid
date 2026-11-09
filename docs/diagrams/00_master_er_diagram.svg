@@ -1,0 +1,250 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-30 0 1100 780" width="100%" height="100%" style="background:#FFFFFF; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <filter id="mShadow" x="-2%" y="-2%" width="104%" height="106%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+    </marker>
+    <marker id="arrBlue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrAmber" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#D97706"/>
+    </marker>
+    <marker id="arrGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arrPurple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7C3AED"/>
+    </marker>
+  </defs>
+
+  <!-- Title & Subtitle -->
+  <text x="525" y="36" text-anchor="middle" font-size="24" font-weight="800" fill="#0F172A" letter-spacing="-0.3">Lucid: Master Database Architecture (62 Tables, 8 Domains)</text>
+  <text x="525" y="58" text-anchor="middle" font-size="13" font-weight="500" fill="#64748B">Relational Schema Topology, Multi-Tenant Boundaries &amp; Fiduciary Cross-Domain Foreign Keys</text>
+
+  <!-- ==================== ROW 1 (y = 80 to 220) ==================== -->
+  <!-- DOMAIN 1: Identity & Security -->
+  <g transform="translate(40, 80)">
+    <rect width="455" height="135" rx="8" fill="#F8FAFC" stroke="#64748B" stroke-width="1.8" filter="url(#mShadow)"/>
+    <rect width="455" height="26" rx="8" fill="#E2E8F0"/>
+    <rect y="16" width="455" height="10" fill="#E2E8F0"/>
+    <text x="16" y="18" font-size="12" font-weight="800" fill="#334155">DOMAIN 1: USER IDENTITY &amp; SECURITY</text>
+    <text x="439" y="18" text-anchor="end" font-size="11" font-weight="700" fill="#64748B">5 TABLES</text>
+
+    <!-- Table Cards -->
+    <rect x="15" y="36" width="205" height="85" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+    <text x="25" y="54" font-size="12" font-weight="800" fill="#0F172A">app_users</text>
+    <text x="25" y="72" font-size="11" font-weight="700" fill="#2563EB">• user_id: UUID (PK)</text>
+    <text x="25" y="88" font-size="10.5" font-weight="500" fill="#475569">• email, password_hash</text>
+    <text x="25" y="104" font-size="10.5" font-weight="500" fill="#64748B">• Argon2id, account_status</text>
+
+    <rect x="235" y="36" width="205" height="85" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+    <text x="245" y="54" font-size="12" font-weight="800" fill="#0F172A">user_sessions / tokens</text>
+    <text x="245" y="72" font-size="11" font-weight="700" fill="#2563EB">• session_id: UUID (PK)</text>
+    <text x="245" y="88" font-size="10.5" font-weight="700" fill="#D97706">• user_id: UUID (FK)</text>
+    <text x="245" y="104" font-size="10.5" font-weight="500" fill="#64748B">• revoked_tokens, audit_events</text>
+  </g>
+
+  <!-- DOMAIN 2: Suitability & Goals -->
+  <g transform="translate(555, 80)">
+    <rect width="455" height="135" rx="8" fill="#F0FDFA" stroke="#0D9488" stroke-width="1.8" filter="url(#mShadow)"/>
+    <rect width="455" height="26" rx="8" fill="#CCFBF1"/>
+    <rect y="16" width="455" height="10" fill="#CCFBF1"/>
+    <text x="16" y="18" font-size="12" font-weight="800" fill="#0F766E">DOMAIN 2: SUITABILITY &amp; FINANCIAL GOALS</text>
+    <text x="439" y="18" text-anchor="end" font-size="11" font-weight="700" fill="#0D9488">10 TABLES</text>
+
+    <!-- Table Cards -->
+    <rect x="15" y="36" width="205" height="85" rx="5" fill="#FFFFFF" stroke="#99F6E4" stroke-width="1.2"/>
+    <text x="25" y="54" font-size="12" font-weight="800" fill="#0F172A">financial_goals</text>
+    <text x="25" y="72" font-size="11" font-weight="700" fill="#2563EB">• goal_id: UUID (PK)</text>
+    <text x="25" y="88" font-size="10.5" font-weight="700" fill="#D97706">• user_id: UUID (FK)</text>
+    <text x="25" y="104" font-size="10.5" font-weight="500" fill="#64748B">• target_amount, horizon_mo</text>
+
+    <rect x="235" y="36" width="205" height="85" rx="5" fill="#FFFFFF" stroke="#99F6E4" stroke-width="1.2"/>
+    <text x="245" y="54" font-size="12" font-weight="800" fill="#0F172A">risk_assessments</text>
+    <text x="245" y="72" font-size="11" font-weight="700" fill="#2563EB">• assessment_id: UUID (PK)</text>
+    <text x="245" y="88" font-size="10.5" font-weight="700" fill="#D97706">• user_id: UUID (FK)</text>
+    <text x="245" y="104" font-size="10.5" font-weight="500" fill="#64748B">• 5-Q Score (5-20), user_profiles</text>
+  </g>
+
+  <!-- Link D1 -> D2 (user_id FK) -->
+  <line x1="495" y1="145" x2="555" y2="145" stroke="#2563EB" stroke-width="2" marker-end="url(#arrBlue)"/>
+  <rect x="502" y="134" width="46" height="15" rx="3" fill="#DBEAFE"/>
+  <text x="525" y="145" text-anchor="middle" font-size="9" font-weight="700" fill="#1E40AF">user_id</text>
+
+  <!-- ==================== ROW 2 (y = 245 to 385) ==================== -->
+  <!-- DOMAIN 3: Security Master -->
+  <g transform="translate(40, 245)">
+    <rect width="455" height="135" rx="8" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.8" filter="url(#mShadow)"/>
+    <rect width="455" height="26" rx="8" fill="#DBEAFE"/>
+    <rect y="16" width="455" height="10" fill="#DBEAFE"/>
+    <text x="16" y="18" font-size="12" font-weight="800" fill="#1E40AF">DOMAIN 3: SECURITY MASTER &amp; CORPORATE TAXONOMY</text>
+    <text x="439" y="18" text-anchor="end" font-size="11" font-weight="700" fill="#3B82F6">8 TABLES</text>
+
+    <!-- Table Cards -->
+    <rect x="15" y="36" width="205" height="85" rx="5" fill="#FFFFFF" stroke="#BFDBFE" stroke-width="1.2"/>
+    <text x="25" y="54" font-size="12" font-weight="800" fill="#0F172A">securities</text>
+    <text x="25" y="72" font-size="11" font-weight="700" fill="#2563EB">• security_id: UUID (PK)</text>
+    <text x="25" y="88" font-size="10.5" font-weight="500" fill="#475569">• symbol, isin (12-char)</text>
+    <text x="25" y="104" font-size="10.5" font-weight="500" fill="#64748B">• 2,639 listed master equities</text>
+
+    <rect x="235" y="36" width="205" height="85" rx="5" fill="#FFFFFF" stroke="#BFDBFE" stroke-width="1.2"/>
+    <text x="245" y="54" font-size="12" font-weight="800" fill="#0F172A">companies / listings</text>
+    <text x="245" y="72" font-size="11" font-weight="700" fill="#2563EB">• company_id: UUID (PK)</text>
+    <text x="245" y="88" font-size="10.5" font-weight="700" fill="#D97706">• security_id: UUID (FK)</text>
+    <text x="245" y="104" font-size="10.5" font-weight="500" fill="#64748B">• NSE/BSE dual listings, sector</text>
+  </g>
+
+  <!-- DOMAIN 4: Market Data & Fundamentals -->
+  <g transform="translate(555, 245)">
+    <rect width="455" height="135" rx="8" fill="#F8FAFC" stroke="#6366F1" stroke-width="1.8" filter="url(#mShadow)"/>
+    <rect width="455" height="26" rx="8" fill="#E0E7FF"/>
+    <rect y="16" width="455" height="10" fill="#E0E7FF"/>
+    <text x="16" y="18" font-size="12" font-weight="800" fill="#4338CA">DOMAIN 4: MARKET DATA &amp; FUNDAMENTALS</text>
+    <text x="439" y="18" text-anchor="end" font-size="11" font-weight="700" fill="#6366F1">8 TABLES</text>
+
+    <!-- Table Cards -->
+    <rect x="15" y="36" width="205" height="85" rx="5" fill="#FFFFFF" stroke="#C7D2FE" stroke-width="1.2"/>
+    <text x="25" y="54" font-size="12" font-weight="800" fill="#0F172A">market_prices</text>
+    <text x="25" y="72" font-size="11" font-weight="700" fill="#2563EB">• price_id: UUID (PK)</text>
+    <text x="25" y="88" font-size="10.5" font-weight="700" fill="#D97706">• security_id: UUID (FK)</text>
+    <text x="25" y="104" font-size="10.5" font-weight="500" fill="#64748B">• 1Y Daily OHLCV, 504 Pool</text>
+
+    <rect x="235" y="36" width="205" height="85" rx="5" fill="#FFFFFF" stroke="#C7D2FE" stroke-width="1.2"/>
+    <text x="245" y="54" font-size="12" font-weight="800" fill="#0F172A">fundamentals / macro</text>
+    <text x="245" y="72" font-size="11" font-weight="700" fill="#2563EB">• metric_id: UUID (PK)</text>
+    <text x="245" y="88" font-size="10.5" font-weight="700" fill="#D97706">• security_id: UUID (FK)</text>
+    <text x="245" y="104" font-size="10.5" font-weight="500" fill="#64748B">• ROE, P/E, RBI Repo, India VIX</text>
+  </g>
+
+  <!-- Link D3 -> D4 (security_id FK) -->
+  <line x1="495" y1="310" x2="555" y2="310" stroke="#3B82F6" stroke-width="2" marker-end="url(#arrBlue)"/>
+  <rect x="498" y="299" width="54" height="15" rx="3" fill="#DBEAFE"/>
+  <text x="525" y="310" text-anchor="middle" font-size="9" font-weight="700" fill="#1E40AF">security_id</text>
+
+  <!-- ==================== ROW 3 (y = 410 to 550) ==================== -->
+  <!-- DOMAIN 5: Portfolio Engine -->
+  <g transform="translate(40, 410)">
+    <rect width="455" height="140" rx="8" fill="#F0FDF4" stroke="#16A34A" stroke-width="2" filter="url(#mShadow)"/>
+    <rect width="455" height="26" rx="8" fill="#DCFCE7"/>
+    <rect y="16" width="455" height="10" fill="#DCFCE7"/>
+    <text x="16" y="18" font-size="12" font-weight="800" fill="#15803D">DOMAIN 5: PORTFOLIO ENGINE &amp; OPTIMIZATION</text>
+    <text x="439" y="18" text-anchor="end" font-size="11" font-weight="700" fill="#16A34A">10 TABLES</text>
+
+    <!-- Table Cards -->
+    <rect x="15" y="36" width="205" height="92" rx="5" fill="#FFFFFF" stroke="#86EFAC" stroke-width="1.2"/>
+    <text x="25" y="54" font-size="12" font-weight="800" fill="#0F172A">investor_portfolios</text>
+    <text x="25" y="72" font-size="11" font-weight="700" fill="#2563EB">• portfolio_id: UUID (PK)</text>
+    <text x="25" y="88" font-size="10.5" font-weight="700" fill="#D97706">• user_id: UUID (FK)</text>
+    <text x="25" y="104" font-size="10.5" font-weight="500" fill="#64748B">• Multi-tenant portfolio root</text>
+
+    <rect x="235" y="36" width="205" height="92" rx="5" fill="#FFFFFF" stroke="#86EFAC" stroke-width="1.2"/>
+    <text x="245" y="54" font-size="12" font-weight="800" fill="#0F172A">versions &amp; decisions</text>
+    <text x="245" y="70" font-size="11" font-weight="700" fill="#2563EB">• version_id: UUID (PK)</text>
+    <text x="245" y="86" font-size="10.5" font-weight="700" fill="#D97706">• portfolio_id, security_id (FK)</text>
+    <text x="245" y="100" font-size="10.5" font-weight="500" fill="#16A34A">• Whole Shares Qi, weight wi*</text>
+    <text x="245" y="114" font-size="10" font-weight="500" fill="#64748B">• C_res ≥ ₹0, immutable tree</text>
+  </g>
+
+  <!-- DOMAIN 7: Demat CAS Diagnosis -->
+  <g transform="translate(555, 410)">
+    <rect width="455" height="140" rx="8" fill="#FFFBEB" stroke="#D97706" stroke-width="1.8" filter="url(#mShadow)"/>
+    <rect width="455" height="26" rx="8" fill="#FEF3C7"/>
+    <rect y="16" width="455" height="10" fill="#FEF3C7"/>
+    <text x="16" y="18" font-size="12" font-weight="800" fill="#B45309">DOMAIN 7: DEMAT CAS DIAGNOSIS &amp; REBALANCING</text>
+    <text x="439" y="18" text-anchor="end" font-size="11" font-weight="700" fill="#D97706">4 TABLES</text>
+
+    <!-- Table Cards -->
+    <rect x="15" y="36" width="205" height="92" rx="5" fill="#FFFFFF" stroke="#FDE68A" stroke-width="1.2"/>
+    <text x="25" y="54" font-size="12" font-weight="800" fill="#0F172A">existing_portfolios</text>
+    <text x="25" y="72" font-size="11" font-weight="700" fill="#2563EB">• existing_portfolio_id (PK)</text>
+    <text x="25" y="88" font-size="10.5" font-weight="700" fill="#D97706">• user_id: UUID (FK)</text>
+    <text x="25" y="104" font-size="10.5" font-weight="500" fill="#64748B">• CSDL / NSDL CAS PDF Import</text>
+
+    <rect x="235" y="36" width="205" height="92" rx="5" fill="#FFFFFF" stroke="#FDE68A" stroke-width="1.2"/>
+    <text x="245" y="54" font-size="12" font-weight="800" fill="#0F172A">diagnoses &amp; swaps</text>
+    <text x="245" y="70" font-size="11" font-weight="700" fill="#2563EB">• diagnosis_id: UUID (PK)</text>
+    <text x="245" y="86" font-size="10.5" font-weight="700" fill="#D97706">• existing_portfolio_id (FK)</text>
+    <text x="245" y="100" font-size="10.5" font-weight="600" fill="#B45309">• HHI Audit (&gt;2500 Red Flag)</text>
+    <text x="245" y="114" font-size="10" font-weight="500" fill="#64748B">• rebalance_suggestions bridge</text>
+  </g>
+
+  <!-- Link D7 -> D5 (Rebalance Suggestions -> Versions) -->
+  <line x1="555" y1="480" x2="495" y2="480" stroke="#D97706" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#arrAmber)"/>
+  <rect x="502" y="469" width="48" height="15" rx="3" fill="#FEF3C7"/>
+  <text x="526" y="480" text-anchor="middle" font-size="9" font-weight="700" fill="#B45309">rebalance</text>
+
+  <!-- ==================== ROW 4 (y = 575 to 705) ==================== -->
+  <!-- DOMAIN 6: Broker Integrations -->
+  <g transform="translate(40, 575)">
+    <rect width="455" height="125" rx="8" fill="#FFF1F2" stroke="#E11D48" stroke-width="1.8" filter="url(#mShadow)"/>
+    <rect width="455" height="26" rx="8" fill="#FFE4E6"/>
+    <rect y="16" width="455" height="10" fill="#FFE4E6"/>
+    <text x="16" y="18" font-size="12" font-weight="800" fill="#BE123C">DOMAIN 6: BROKER INTEGRATION &amp; ORDERS</text>
+    <text x="439" y="18" text-anchor="end" font-size="11" font-weight="700" fill="#E11D48">6 TABLES</text>
+
+    <!-- Table Cards -->
+    <rect x="15" y="36" width="205" height="75" rx="5" fill="#FFFFFF" stroke="#FECDD3" stroke-width="1.2"/>
+    <text x="25" y="54" font-size="12" font-weight="800" fill="#0F172A">user_broker_accounts</text>
+    <text x="25" y="70" font-size="11" font-weight="700" fill="#2563EB">• account_id: UUID (PK)</text>
+    <text x="25" y="86" font-size="10.5" font-weight="700" fill="#D97706">• user_id: UUID (FK)</text>
+    <text x="25" y="100" font-size="10" font-weight="500" fill="#64748B">• Encrypted credentials / demo</text>
+
+    <rect x="235" y="36" width="205" height="75" rx="5" fill="#FFFFFF" stroke="#FECDD3" stroke-width="1.2"/>
+    <text x="245" y="54" font-size="12" font-weight="800" fill="#0F172A">broker_orders / fills</text>
+    <text x="245" y="70" font-size="11" font-weight="700" fill="#2563EB">• order_id: UUID (PK)</text>
+    <text x="245" y="86" font-size="10.5" font-weight="700" fill="#D97706">• portfolio_id, security_id</text>
+    <text x="245" y="100" font-size="10" font-weight="500" fill="#64748B">• broker_executions (Oct 2024 Fees)</text>
+  </g>
+
+  <!-- DOMAIN 8: Multi-Agent Telemetry -->
+  <g transform="translate(555, 575)">
+    <rect width="455" height="125" rx="8" fill="#FAF5FF" stroke="#7C3AED" stroke-width="1.8" filter="url(#mShadow)"/>
+    <rect width="455" height="26" rx="8" fill="#EDE9FE"/>
+    <rect y="16" width="455" height="10" fill="#EDE9FE"/>
+    <text x="16" y="18" font-size="12" font-weight="800" fill="#6D28D9">DOMAIN 8: MULTI-AGENT TELEMETRY &amp; AUDITING</text>
+    <text x="439" y="18" text-anchor="end" font-size="11" font-weight="700" fill="#7C3AED">11 TABLES</text>
+
+    <!-- Table Cards -->
+    <rect x="15" y="36" width="205" height="75" rx="5" fill="#FFFFFF" stroke="#DDD6FE" stroke-width="1.2"/>
+    <text x="25" y="54" font-size="12" font-weight="800" fill="#0F172A">agent_execution_logs</text>
+    <text x="25" y="70" font-size="11" font-weight="700" fill="#2563EB">• log_id: UUID (PK)</text>
+    <text x="25" y="86" font-size="10.5" font-weight="700" fill="#D97706">• version_id: UUID (FK)</text>
+    <text x="25" y="100" font-size="10" font-weight="500" fill="#64748B">• LangGraph 35-field state audit</text>
+
+    <rect x="235" y="36" width="205" height="75" rx="5" fill="#FFFFFF" stroke="#DDD6FE" stroke-width="1.2"/>
+    <text x="245" y="54" font-size="12" font-weight="800" fill="#0F172A">evidence &amp; alerts</text>
+    <text x="245" y="70" font-size="11" font-weight="700" fill="#2563EB">• evidence_id: UUID (PK)</text>
+    <text x="245" y="86" font-size="10.5" font-weight="700" fill="#D97706">• security_id: UUID (FK)</text>
+    <text x="245" y="100" font-size="10" font-weight="500" fill="#64748B">• notifications, drift radar events</text>
+  </g>
+
+  <!-- Cross-link Vertical Arrows -->
+  <!-- D1 -> D5 (Multi-Tenant boundary routed on left margin) -->
+  <path d="M 40,145 L 8,145 L 8,475 L 40,475" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arrBlue)"/>
+  <rect x="-24" y="302" width="64" height="16" rx="4" fill="#DBEAFE" stroke="#2563EB" stroke-width="0.8"/>
+  <text x="8" y="314" text-anchor="middle" font-size="9" font-weight="700" fill="#1E40AF">user_id (1:N)</text>
+
+  <!-- D3 -> D5 (security_id in decisions) -->
+  <path d="M 260,380 L 260,410" fill="none" stroke="#3B82F6" stroke-width="2" marker-end="url(#arrBlue)"/>
+  <rect x="268" y="388" width="60" height="15" rx="3" fill="#DBEAFE" stroke="#3B82F6" stroke-width="0.8"/>
+  <text x="298" y="399" text-anchor="middle" font-size="9" font-weight="700" fill="#1E40AF">security_id</text>
+
+  <!-- D5 -> D6 (portfolio_id in orders) -->
+  <path d="M 240,550 L 240,575" fill="none" stroke="#E11D48" stroke-width="2" marker-end="url(#arr)"/>
+  <rect x="248" y="555" width="62" height="15" rx="3" fill="#FFE4E6" stroke="#E11D48" stroke-width="0.8"/>
+  <text x="279" y="566" text-anchor="middle" font-size="8.5" font-weight="700" fill="#BE123C">portfolio_id</text>
+
+  <!-- D5 -> D8 (version_id in telemetry) -->
+  <path d="M 495,510 L 525,510 L 525,635 L 555,635" fill="none" stroke="#7C3AED" stroke-width="2" marker-end="url(#arrPurple)"/>
+  <rect x="502" y="565" width="46" height="15" rx="3" fill="#EDE9FE"/>
+  <text x="525" y="576" text-anchor="middle" font-size="9" font-weight="700" fill="#6D28D9">telemetry</text>
+
+  <!-- Bottom Relational Guarantee Strip -->
+  <g transform="translate(40, 720)">
+    <rect width="970" height="36" rx="6" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.2"/>
+    <text x="485" y="22" text-anchor="middle" font-size="11.5" font-weight="700" fill="#334155">PostgreSQL 16.4 Core Guarantees: Multi-Tenant Schema Isolation • UUID v4 Keys • Immutable Portfolio Tree • ACID Transaction Locks</text>
+  </g>
+</svg>

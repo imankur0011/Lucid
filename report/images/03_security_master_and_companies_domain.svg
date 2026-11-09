@@ -1,0 +1,332 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 1233" width="100%" height="100%" style="background:#FFFFFF; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <filter id="cardShadow" x="-2%" y="-1%" width="104%" height="104%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrBlue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563EB"/>
+    </marker>
+  </defs>
+
+  <!-- Domain Header Banner -->
+  <g transform="translate(30, 20)">
+    <rect width="900" height="52" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" filter="url(#cardShadow)"/>
+    <rect width="8" height="52" rx="4" fill="#2563EB"/>
+    <text x="24" y="24" font-size="16" font-weight="800" fill="#0F172A">DOMAIN 3: SECURITY MASTER &amp; CORPORATE REGISTRY</text>
+    <text x="24" y="42" font-size="12" font-weight="500" fill="#64748B">9 Core Tables • 2,639 Listed Equities, Dual NSE/BSE Listings, Sector/Industry Hierarchy &amp; User Exclusions</text>
+    <rect x="790" y="14" width="95" height="24" rx="4" fill="#E2E8F0"/>
+    <text x="838" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="#2563EB">9 TABLES</text>
+  </g>
+  <g transform="translate(30, 90)">
+    <!-- Card: securities -->
+  <g id="table_securities">
+    <rect width="435" height="297" rx="8" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.6" filter="url(#cardShadow)"/>
+    <rect width="435" height="32" rx="8" fill="#2563EB"/>
+    <rect y="20" width="435" height="12" fill="#2563EB"/>
+    <text x="14" y="21" font-size="13.5" font-weight="800" fill="#FFFFFF">securities</text>
+    <text x="421" y="21" text-anchor="end" font-size="11" font-weight="600" fill="#E2E8F0">Exchange Equities Master</text>
+
+    <g transform="translate(14, 44)">
+      <rect x="0" y="2" width="26" height="16" rx="3" fill="#DBEAFE"/>
+      <text x="13" y="14" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1E40AF">PK</text>
+      <text x="34" y="15" font-size="12.5" font-weight="700" fill="#0F172A">security_id</text>
+      <text x="407" y="15" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="29" width="26" height="16" rx="3" fill="#FEF3C7"/>
+      <text x="13" y="41" text-anchor="middle" font-size="9.5" font-weight="800" fill="#B45309">FK</text>
+      <text x="34" y="42" font-size="12.5" font-weight="700" fill="#0F172A">company_id</text>
+      <text x="407" y="42" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <circle cx="10" cy="64" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="69" font-size="12.5" font-weight="500" fill="#334155">security_name</text>
+      <text x="407" y="69" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="91" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="96" font-size="12.5" font-weight="500" fill="#334155">isin</text>
+      <text x="407" y="96" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="118" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="123" font-size="12.5" font-weight="500" fill="#334155">security_type</text>
+      <text x="407" y="123" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="145" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="150" font-size="12.5" font-weight="500" fill="#334155">currency_code</text>
+      <text x="407" y="150" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="172" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="177" font-size="12.5" font-weight="500" fill="#334155">security_status</text>
+      <text x="407" y="177" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="199" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="204" font-size="12.5" font-weight="500" fill="#334155">created_at</text>
+      <text x="407" y="204" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+      <circle cx="10" cy="226" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="231" font-size="12.5" font-weight="500" fill="#334155">updated_at</text>
+      <text x="407" y="231" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+    </g>
+  </g>
+  </g>
+  <g transform="translate(30, 407)">
+    <!-- Card: companies -->
+  <g id="table_companies">
+    <rect width="435" height="243" rx="8" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.6" filter="url(#cardShadow)"/>
+    <rect width="435" height="32" rx="8" fill="#2563EB"/>
+    <rect y="20" width="435" height="12" fill="#2563EB"/>
+    <text x="14" y="21" font-size="13.5" font-weight="800" fill="#FFFFFF">companies</text>
+    <text x="421" y="21" text-anchor="end" font-size="11" font-weight="600" fill="#E2E8F0">Corporate Legal Entity</text>
+
+    <g transform="translate(14, 44)">
+      <rect x="0" y="2" width="26" height="16" rx="3" fill="#DBEAFE"/>
+      <text x="13" y="14" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1E40AF">PK</text>
+      <text x="34" y="15" font-size="12.5" font-weight="700" fill="#0F172A">company_id</text>
+      <text x="407" y="15" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <circle cx="10" cy="37" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="42" font-size="12.5" font-weight="500" fill="#334155">legal_name</text>
+      <text x="407" y="42" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="64" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="69" font-size="12.5" font-weight="500" fill="#334155">common_name</text>
+      <text x="407" y="69" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="91" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="96" font-size="12.5" font-weight="500" fill="#334155">country_code</text>
+      <text x="407" y="96" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="118" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="123" font-size="12.5" font-weight="500" fill="#334155">website_url</text>
+      <text x="407" y="123" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="145" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="150" font-size="12.5" font-weight="500" fill="#334155">created_at</text>
+      <text x="407" y="150" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+      <circle cx="10" cy="172" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="177" font-size="12.5" font-weight="500" fill="#334155">updated_at</text>
+      <text x="407" y="177" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+    </g>
+  </g>
+  </g>
+  <g transform="translate(30, 670)">
+    <!-- Card: instrument_listings -->
+  <g id="table_instrument_listings">
+    <rect width="435" height="297" rx="8" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.6" filter="url(#cardShadow)"/>
+    <rect width="435" height="32" rx="8" fill="#2563EB"/>
+    <rect y="20" width="435" height="12" fill="#2563EB"/>
+    <text x="14" y="21" font-size="13.5" font-weight="800" fill="#FFFFFF">instrument_listings</text>
+    <text x="421" y="21" text-anchor="end" font-size="11" font-weight="600" fill="#E2E8F0">NSE / BSE Tickers</text>
+
+    <g transform="translate(14, 44)">
+      <rect x="0" y="2" width="26" height="16" rx="3" fill="#DBEAFE"/>
+      <text x="13" y="14" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1E40AF">PK</text>
+      <text x="34" y="15" font-size="12.5" font-weight="700" fill="#0F172A">listing_id</text>
+      <text x="407" y="15" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="29" width="26" height="16" rx="3" fill="#FEF3C7"/>
+      <text x="13" y="41" text-anchor="middle" font-size="9.5" font-weight="800" fill="#B45309">FK</text>
+      <text x="34" y="42" font-size="12.5" font-weight="700" fill="#0F172A">security_id</text>
+      <text x="407" y="42" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="56" width="26" height="16" rx="3" fill="#FEF3C7"/>
+      <text x="13" y="68" text-anchor="middle" font-size="9.5" font-weight="800" fill="#B45309">FK</text>
+      <text x="34" y="69" font-size="12.5" font-weight="700" fill="#0F172A">exchange_id</text>
+      <text x="407" y="69" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <circle cx="10" cy="91" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="96" font-size="12.5" font-weight="500" fill="#334155">symbol</text>
+      <text x="407" y="96" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="118" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="123" font-size="12.5" font-weight="500" fill="#334155">trading_status</text>
+      <text x="407" y="123" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="145" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="150" font-size="12.5" font-weight="500" fill="#334155">listed_on</text>
+      <text x="407" y="150" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+      <circle cx="10" cy="172" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="177" font-size="12.5" font-weight="500" fill="#334155">delisted_on</text>
+      <text x="407" y="177" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+      <circle cx="10" cy="199" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="204" font-size="12.5" font-weight="500" fill="#334155">created_at</text>
+      <text x="407" y="204" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+      <circle cx="10" cy="226" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="231" font-size="12.5" font-weight="500" fill="#334155">updated_at</text>
+      <text x="407" y="231" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+    </g>
+  </g>
+  </g>
+  <g transform="translate(30, 987)">
+    <!-- Card: exchanges -->
+  <g id="table_exchanges">
+    <rect width="435" height="216" rx="8" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.6" filter="url(#cardShadow)"/>
+    <rect width="435" height="32" rx="8" fill="#2563EB"/>
+    <rect y="20" width="435" height="12" fill="#2563EB"/>
+    <text x="14" y="21" font-size="13.5" font-weight="800" fill="#FFFFFF">exchanges</text>
+    <text x="421" y="21" text-anchor="end" font-size="11" font-weight="600" fill="#E2E8F0">Trading Venues</text>
+
+    <g transform="translate(14, 44)">
+      <rect x="0" y="2" width="26" height="16" rx="3" fill="#DBEAFE"/>
+      <text x="13" y="14" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1E40AF">PK</text>
+      <text x="34" y="15" font-size="12.5" font-weight="700" fill="#0F172A">exchange_id</text>
+      <text x="407" y="15" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <circle cx="10" cy="37" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="42" font-size="12.5" font-weight="500" fill="#334155">exchange_code</text>
+      <text x="407" y="42" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="64" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="69" font-size="12.5" font-weight="500" fill="#334155">exchange_name</text>
+      <text x="407" y="69" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="91" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="96" font-size="12.5" font-weight="500" fill="#334155">country_code</text>
+      <text x="407" y="96" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="118" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="123" font-size="12.5" font-weight="500" fill="#334155">currency_code</text>
+      <text x="407" y="123" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="145" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="150" font-size="12.5" font-weight="500" fill="#334155">is_active</text>
+      <text x="407" y="150" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">BOOLEAN</text>
+    </g>
+  </g>
+  </g>
+  <g transform="translate(495, 90)">
+    <!-- Card: sectors -->
+  <g id="table_sectors">
+    <rect width="435" height="189" rx="8" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.6" filter="url(#cardShadow)"/>
+    <rect width="435" height="32" rx="8" fill="#2563EB"/>
+    <rect y="20" width="435" height="12" fill="#2563EB"/>
+    <text x="14" y="21" font-size="13.5" font-weight="800" fill="#FFFFFF">sectors</text>
+    <text x="421" y="21" text-anchor="end" font-size="11" font-weight="600" fill="#E2E8F0">Broad Macro Taxonomy</text>
+
+    <g transform="translate(14, 44)">
+      <rect x="0" y="2" width="26" height="16" rx="3" fill="#DBEAFE"/>
+      <text x="13" y="14" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1E40AF">PK</text>
+      <text x="34" y="15" font-size="12.5" font-weight="700" fill="#0F172A">sector_id</text>
+      <text x="407" y="15" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <circle cx="10" cy="37" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="42" font-size="12.5" font-weight="500" fill="#334155">sector_code</text>
+      <text x="407" y="42" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="64" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="69" font-size="12.5" font-weight="500" fill="#334155">sector_name</text>
+      <text x="407" y="69" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="91" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="96" font-size="12.5" font-weight="500" fill="#334155">taxonomy_source</text>
+      <text x="407" y="96" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="118" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="123" font-size="12.5" font-weight="500" fill="#334155">is_active</text>
+      <text x="407" y="123" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">BOOLEAN</text>
+    </g>
+  </g>
+  </g>
+  <g transform="translate(495, 299)">
+    <!-- Card: industries -->
+  <g id="table_industries">
+    <rect width="435" height="216" rx="8" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.6" filter="url(#cardShadow)"/>
+    <rect width="435" height="32" rx="8" fill="#2563EB"/>
+    <rect y="20" width="435" height="12" fill="#2563EB"/>
+    <text x="14" y="21" font-size="13.5" font-weight="800" fill="#FFFFFF">industries</text>
+    <text x="421" y="21" text-anchor="end" font-size="11" font-weight="600" fill="#E2E8F0">Granular Classification</text>
+
+    <g transform="translate(14, 44)">
+      <rect x="0" y="2" width="26" height="16" rx="3" fill="#DBEAFE"/>
+      <text x="13" y="14" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1E40AF">PK</text>
+      <text x="34" y="15" font-size="12.5" font-weight="700" fill="#0F172A">industry_id</text>
+      <text x="407" y="15" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="29" width="26" height="16" rx="3" fill="#FEF3C7"/>
+      <text x="13" y="41" text-anchor="middle" font-size="9.5" font-weight="800" fill="#B45309">FK</text>
+      <text x="34" y="42" font-size="12.5" font-weight="700" fill="#0F172A">sector_id</text>
+      <text x="407" y="42" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <circle cx="10" cy="64" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="69" font-size="12.5" font-weight="500" fill="#334155">industry_code</text>
+      <text x="407" y="69" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="91" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="96" font-size="12.5" font-weight="500" fill="#334155">industry_name</text>
+      <text x="407" y="96" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="118" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="123" font-size="12.5" font-weight="500" fill="#334155">taxonomy_source</text>
+      <text x="407" y="123" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="145" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="150" font-size="12.5" font-weight="500" fill="#334155">is_active</text>
+      <text x="407" y="150" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">BOOLEAN</text>
+    </g>
+  </g>
+  </g>
+  <g transform="translate(495, 535)">
+    <!-- Card: company_industries -->
+  <g id="table_company_industries">
+    <rect width="435" height="189" rx="8" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.6" filter="url(#cardShadow)"/>
+    <rect width="435" height="32" rx="8" fill="#2563EB"/>
+    <rect y="20" width="435" height="12" fill="#2563EB"/>
+    <text x="14" y="21" font-size="13.5" font-weight="800" fill="#FFFFFF">company_industries</text>
+    <text x="421" y="21" text-anchor="end" font-size="11" font-weight="600" fill="#E2E8F0">Temporal Classification</text>
+
+    <g transform="translate(14, 44)">
+      <rect x="0" y="2" width="48" height="16" rx="3" fill="#EDE9FE"/>
+      <text x="24" y="14" text-anchor="middle" font-size="9" font-weight="800" fill="#6D28D9">PK, FK</text>
+      <text x="56" y="15" font-size="12.5" font-weight="700" fill="#0F172A">company_id</text>
+      <text x="407" y="15" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="29" width="48" height="16" rx="3" fill="#EDE9FE"/>
+      <text x="24" y="41" text-anchor="middle" font-size="9" font-weight="800" fill="#6D28D9">PK, FK</text>
+      <text x="56" y="42" font-size="12.5" font-weight="700" fill="#0F172A">industry_id</text>
+      <text x="407" y="42" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="56" width="26" height="16" rx="3" fill="#DBEAFE"/>
+      <text x="13" y="68" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1E40AF">PK</text>
+      <text x="34" y="69" font-size="12.5" font-weight="700" fill="#0F172A">effective_from</text>
+      <text x="407" y="69" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+      <circle cx="10" cy="91" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="96" font-size="12.5" font-weight="500" fill="#334155">effective_to</text>
+      <text x="407" y="96" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+      <circle cx="10" cy="118" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="123" font-size="12.5" font-weight="500" fill="#334155">classification_source</text>
+      <text x="407" y="123" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+    </g>
+  </g>
+  </g>
+  <g transform="translate(495, 744)">
+    <!-- Card: user_security_preferences -->
+  <g id="table_user_security_preferences">
+    <rect width="435" height="189" rx="8" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.6" filter="url(#cardShadow)"/>
+    <rect width="435" height="32" rx="8" fill="#2563EB"/>
+    <rect y="20" width="435" height="12" fill="#2563EB"/>
+    <text x="14" y="21" font-size="13.5" font-weight="800" fill="#FFFFFF">user_security_preferences</text>
+    <text x="421" y="21" text-anchor="end" font-size="11" font-weight="600" fill="#E2E8F0">Investor Ticker Bans</text>
+
+    <g transform="translate(14, 44)">
+      <rect x="0" y="2" width="48" height="16" rx="3" fill="#EDE9FE"/>
+      <text x="24" y="14" text-anchor="middle" font-size="9" font-weight="800" fill="#6D28D9">PK, FK</text>
+      <text x="56" y="15" font-size="12.5" font-weight="700" fill="#0F172A">user_id</text>
+      <text x="407" y="15" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="29" width="48" height="16" rx="3" fill="#EDE9FE"/>
+      <text x="24" y="41" text-anchor="middle" font-size="9" font-weight="800" fill="#6D28D9">PK, FK</text>
+      <text x="56" y="42" font-size="12.5" font-weight="700" fill="#0F172A">security_id</text>
+      <text x="407" y="42" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <circle cx="10" cy="64" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="69" font-size="12.5" font-weight="500" fill="#334155">preference_type</text>
+      <text x="407" y="69" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="91" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="96" font-size="12.5" font-weight="500" fill="#334155">reason</text>
+      <text x="407" y="96" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="118" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="123" font-size="12.5" font-weight="500" fill="#334155">created_at</text>
+      <text x="407" y="123" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+    </g>
+  </g>
+  </g>
+  <g transform="translate(495, 953)">
+    <!-- Card: user_sector_preferences -->
+  <g id="table_user_sector_preferences">
+    <rect width="435" height="162" rx="8" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.6" filter="url(#cardShadow)"/>
+    <rect width="435" height="32" rx="8" fill="#2563EB"/>
+    <rect y="20" width="435" height="12" fill="#2563EB"/>
+    <text x="14" y="21" font-size="13.5" font-weight="800" fill="#FFFFFF">user_sector_preferences</text>
+    <text x="421" y="21" text-anchor="end" font-size="11" font-weight="600" fill="#E2E8F0">Investor Sector Bans</text>
+
+    <g transform="translate(14, 44)">
+      <rect x="0" y="2" width="48" height="16" rx="3" fill="#EDE9FE"/>
+      <text x="24" y="14" text-anchor="middle" font-size="9" font-weight="800" fill="#6D28D9">PK, FK</text>
+      <text x="56" y="15" font-size="12.5" font-weight="700" fill="#0F172A">user_id</text>
+      <text x="407" y="15" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="29" width="48" height="16" rx="3" fill="#EDE9FE"/>
+      <text x="24" y="41" text-anchor="middle" font-size="9" font-weight="800" fill="#6D28D9">PK, FK</text>
+      <text x="56" y="42" font-size="12.5" font-weight="700" fill="#0F172A">sector_id</text>
+      <text x="407" y="42" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <circle cx="10" cy="64" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="69" font-size="12.5" font-weight="500" fill="#334155">preference_type</text>
+      <text x="407" y="69" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="91" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="96" font-size="12.5" font-weight="500" fill="#334155">created_at</text>
+      <text x="407" y="96" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+    </g>
+  </g>
+  </g>
+
+  <!-- Relational Links -->
+  <path d="M 247,387 L 247,407" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arr)"/>
+  <path d="M 247,650 L 247,670" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arr)"/>
+  <path d="M 247,967 L 247,987" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arr)"/>
+  <path d="M 712,279 L 712,299" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arr)"/>
+  <path d="M 712,515 L 712,535" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arr)"/>
+</svg>

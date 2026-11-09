@@ -1,0 +1,245 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 970" width="100%" height="100%" style="background:#FFFFFF; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <filter id="cardShadow" x="-2%" y="-1%" width="104%" height="104%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0D9488"/>
+    </marker>
+    <marker id="arrBlue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563EB"/>
+    </marker>
+  </defs>
+
+  <!-- Domain Header Banner -->
+  <g transform="translate(30, 20)">
+    <rect width="900" height="52" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" filter="url(#cardShadow)"/>
+    <rect width="8" height="52" rx="4" fill="#0D9488"/>
+    <text x="24" y="24" font-size="16" font-weight="800" fill="#0F172A">DOMAIN 2: INVESTOR SUITABILITY, PROFILING &amp; FINANCIAL GOALS</text>
+    <text x="24" y="42" font-size="12" font-weight="500" fill="#64748B">5 Core Tables • Goal Horizon Mandate, 5-Question Psychometric Risk Assessment &amp; Weights</text>
+    <rect x="790" y="14" width="95" height="24" rx="4" fill="#E2E8F0"/>
+    <text x="838" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="#0D9488">5 TABLES</text>
+  </g>
+  <g transform="translate(30, 90)">
+    <!-- Card: financial_goals -->
+  <g id="table_financial_goals">
+    <rect width="435" height="405" rx="8" fill="#FFFFFF" stroke="#0D9488" stroke-width="1.6" filter="url(#cardShadow)"/>
+    <rect width="435" height="32" rx="8" fill="#0D9488"/>
+    <rect y="20" width="435" height="12" fill="#0D9488"/>
+    <text x="14" y="21" font-size="13.5" font-weight="800" fill="#FFFFFF">financial_goals</text>
+    <text x="421" y="21" text-anchor="end" font-size="11" font-weight="600" fill="#E2E8F0">Target &amp; Horizon Mandate</text>
+
+    <g transform="translate(14, 44)">
+      <rect x="0" y="2" width="26" height="16" rx="3" fill="#DBEAFE"/>
+      <text x="13" y="14" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1E40AF">PK</text>
+      <text x="34" y="15" font-size="12.5" font-weight="700" fill="#0F172A">goal_id</text>
+      <text x="407" y="15" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="29" width="26" height="16" rx="3" fill="#FEF3C7"/>
+      <text x="13" y="41" text-anchor="middle" font-size="9.5" font-weight="800" fill="#B45309">FK</text>
+      <text x="34" y="42" font-size="12.5" font-weight="700" fill="#0F172A">user_id</text>
+      <text x="407" y="42" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <circle cx="10" cy="64" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="69" font-size="12.5" font-weight="500" fill="#334155">goal_name</text>
+      <text x="407" y="69" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="91" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="96" font-size="12.5" font-weight="500" fill="#334155">goal_type</text>
+      <text x="407" y="96" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="118" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="123" font-size="12.5" font-weight="500" fill="#334155">target_amount</text>
+      <text x="407" y="123" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">NUMERIC</text>
+      <circle cx="10" cy="145" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="150" font-size="12.5" font-weight="500" fill="#334155">amount_already_saved</text>
+      <text x="407" y="150" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">NUMERIC</text>
+      <circle cx="10" cy="172" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="177" font-size="12.5" font-weight="500" fill="#334155">currency_code</text>
+      <text x="407" y="177" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="199" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="204" font-size="12.5" font-weight="500" fill="#334155">target_date</text>
+      <text x="407" y="204" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+      <circle cx="10" cy="226" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="231" font-size="12.5" font-weight="500" fill="#334155">priority</text>
+      <text x="407" y="231" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">INTEGER</text>
+      <circle cx="10" cy="253" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="258" font-size="12.5" font-weight="500" fill="#334155">goal_status</text>
+      <text x="407" y="258" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="280" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="285" font-size="12.5" font-weight="500" fill="#334155">notes</text>
+      <text x="407" y="285" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="307" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="312" font-size="12.5" font-weight="500" fill="#334155">created_at</text>
+      <text x="407" y="312" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+      <circle cx="10" cy="334" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="339" font-size="12.5" font-weight="500" fill="#334155">updated_at</text>
+      <text x="407" y="339" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+    </g>
+  </g>
+  </g>
+  <g transform="translate(30, 515)">
+    <!-- Card: risk_assessments -->
+  <g id="table_risk_assessments">
+    <rect width="435" height="324" rx="8" fill="#FFFFFF" stroke="#0D9488" stroke-width="1.6" filter="url(#cardShadow)"/>
+    <rect width="435" height="32" rx="8" fill="#0D9488"/>
+    <rect y="20" width="435" height="12" fill="#0D9488"/>
+    <text x="14" y="21" font-size="13.5" font-weight="800" fill="#FFFFFF">risk_assessments</text>
+    <text x="421" y="21" text-anchor="end" font-size="11" font-weight="600" fill="#E2E8F0">5-Question Evaluation</text>
+
+    <g transform="translate(14, 44)">
+      <rect x="0" y="2" width="26" height="16" rx="3" fill="#DBEAFE"/>
+      <text x="13" y="14" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1E40AF">PK</text>
+      <text x="34" y="15" font-size="12.5" font-weight="700" fill="#0F172A">risk_assessment_id</text>
+      <text x="407" y="15" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="29" width="26" height="16" rx="3" fill="#FEF3C7"/>
+      <text x="13" y="41" text-anchor="middle" font-size="9.5" font-weight="800" fill="#B45309">FK</text>
+      <text x="34" y="42" font-size="12.5" font-weight="700" fill="#0F172A">user_id</text>
+      <text x="407" y="42" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <circle cx="10" cy="64" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="69" font-size="12.5" font-weight="500" fill="#334155">questionnaire_version</text>
+      <text x="407" y="69" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="91" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="96" font-size="12.5" font-weight="500" fill="#334155">assessment_status</text>
+      <text x="407" y="96" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="118" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="123" font-size="12.5" font-weight="500" fill="#334155">risk_tolerance_score</text>
+      <text x="407" y="123" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">NUMERIC</text>
+      <circle cx="10" cy="145" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="150" font-size="12.5" font-weight="500" fill="#334155">risk_capacity_score</text>
+      <text x="407" y="150" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">NUMERIC</text>
+      <circle cx="10" cy="172" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="177" font-size="12.5" font-weight="500" fill="#334155">risk_category</text>
+      <text x="407" y="177" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="199" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="204" font-size="12.5" font-weight="500" fill="#334155">started_at</text>
+      <text x="407" y="204" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+      <circle cx="10" cy="226" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="231" font-size="12.5" font-weight="500" fill="#334155">completed_at</text>
+      <text x="407" y="231" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+      <circle cx="10" cy="253" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="258" font-size="12.5" font-weight="500" fill="#334155">created_at</text>
+      <text x="407" y="258" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+    </g>
+  </g>
+  </g>
+  <g transform="translate(495, 90)">
+    <!-- Card: risk_questions -->
+  <g id="table_risk_questions">
+    <rect width="435" height="324" rx="8" fill="#FFFFFF" stroke="#0D9488" stroke-width="1.6" filter="url(#cardShadow)"/>
+    <rect width="435" height="32" rx="8" fill="#0D9488"/>
+    <rect y="20" width="435" height="12" fill="#0D9488"/>
+    <text x="14" y="21" font-size="13.5" font-weight="800" fill="#FFFFFF">risk_questions</text>
+    <text x="421" y="21" text-anchor="end" font-size="11" font-weight="600" fill="#E2E8F0">Psychometric Survey</text>
+
+    <g transform="translate(14, 44)">
+      <rect x="0" y="2" width="26" height="16" rx="3" fill="#DBEAFE"/>
+      <text x="13" y="14" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1E40AF">PK</text>
+      <text x="34" y="15" font-size="12.5" font-weight="700" fill="#0F172A">question_id</text>
+      <text x="407" y="15" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <circle cx="10" cy="37" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="42" font-size="12.5" font-weight="500" fill="#334155">question_code</text>
+      <text x="407" y="42" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="64" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="69" font-size="12.5" font-weight="500" fill="#334155">question_version</text>
+      <text x="407" y="69" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">INTEGER</text>
+      <circle cx="10" cy="91" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="96" font-size="12.5" font-weight="500" fill="#334155">question_text</text>
+      <text x="407" y="96" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="118" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="123" font-size="12.5" font-weight="500" fill="#334155">answer_type</text>
+      <text x="407" y="123" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="145" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="150" font-size="12.5" font-weight="500" fill="#334155">is_required</text>
+      <text x="407" y="150" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">BOOLEAN</text>
+      <circle cx="10" cy="172" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="177" font-size="12.5" font-weight="500" fill="#334155">is_active</text>
+      <text x="407" y="177" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">BOOLEAN</text>
+      <circle cx="10" cy="199" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="204" font-size="12.5" font-weight="500" fill="#334155">display_order</text>
+      <text x="407" y="204" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">INTEGER</text>
+      <circle cx="10" cy="226" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="231" font-size="12.5" font-weight="500" fill="#334155">scoring_config</text>
+      <text x="407" y="231" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">JSONB</text>
+      <circle cx="10" cy="253" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="258" font-size="12.5" font-weight="500" fill="#334155">created_at</text>
+      <text x="407" y="258" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+    </g>
+  </g>
+  </g>
+  <g transform="translate(495, 434)">
+    <!-- Card: risk_question_options -->
+  <g id="table_risk_question_options">
+    <rect width="435" height="216" rx="8" fill="#FFFFFF" stroke="#0D9488" stroke-width="1.6" filter="url(#cardShadow)"/>
+    <rect width="435" height="32" rx="8" fill="#0D9488"/>
+    <rect y="20" width="435" height="12" fill="#0D9488"/>
+    <text x="14" y="21" font-size="13.5" font-weight="800" fill="#FFFFFF">risk_question_options</text>
+    <text x="421" y="21" text-anchor="end" font-size="11" font-weight="600" fill="#E2E8F0">Scored Alternatives</text>
+
+    <g transform="translate(14, 44)">
+      <rect x="0" y="2" width="26" height="16" rx="3" fill="#DBEAFE"/>
+      <text x="13" y="14" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1E40AF">PK</text>
+      <text x="34" y="15" font-size="12.5" font-weight="700" fill="#0F172A">option_id</text>
+      <text x="407" y="15" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="29" width="26" height="16" rx="3" fill="#FEF3C7"/>
+      <text x="13" y="41" text-anchor="middle" font-size="9.5" font-weight="800" fill="#B45309">FK</text>
+      <text x="34" y="42" font-size="12.5" font-weight="700" fill="#0F172A">question_id</text>
+      <text x="407" y="42" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <circle cx="10" cy="64" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="69" font-size="12.5" font-weight="500" fill="#334155">option_code</text>
+      <text x="407" y="69" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="91" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="96" font-size="12.5" font-weight="500" fill="#334155">option_label</text>
+      <text x="407" y="96" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="118" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="123" font-size="12.5" font-weight="500" fill="#334155">score</text>
+      <text x="407" y="123" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">NUMERIC</text>
+      <circle cx="10" cy="145" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="150" font-size="12.5" font-weight="500" fill="#334155">display_order</text>
+      <text x="407" y="150" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">INTEGER</text>
+    </g>
+  </g>
+  </g>
+  <g transform="translate(495, 670)">
+    <!-- Card: risk_assessment_answers -->
+  <g id="table_risk_assessment_answers">
+    <rect width="435" height="270" rx="8" fill="#FFFFFF" stroke="#0D9488" stroke-width="1.6" filter="url(#cardShadow)"/>
+    <rect width="435" height="32" rx="8" fill="#0D9488"/>
+    <rect y="20" width="435" height="12" fill="#0D9488"/>
+    <text x="14" y="21" font-size="13.5" font-weight="800" fill="#FFFFFF">risk_assessment_answers</text>
+    <text x="421" y="21" text-anchor="end" font-size="11" font-weight="600" fill="#E2E8F0">Audit of User Responses</text>
+
+    <g transform="translate(14, 44)">
+      <rect x="0" y="2" width="26" height="16" rx="3" fill="#DBEAFE"/>
+      <text x="13" y="14" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1E40AF">PK</text>
+      <text x="34" y="15" font-size="12.5" font-weight="700" fill="#0F172A">answer_id</text>
+      <text x="407" y="15" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="29" width="26" height="16" rx="3" fill="#FEF3C7"/>
+      <text x="13" y="41" text-anchor="middle" font-size="9.5" font-weight="800" fill="#B45309">FK</text>
+      <text x="34" y="42" font-size="12.5" font-weight="700" fill="#0F172A">risk_assessment_id</text>
+      <text x="407" y="42" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="56" width="26" height="16" rx="3" fill="#FEF3C7"/>
+      <text x="13" y="68" text-anchor="middle" font-size="9.5" font-weight="800" fill="#B45309">FK</text>
+      <text x="34" y="69" font-size="12.5" font-weight="700" fill="#0F172A">question_id</text>
+      <text x="407" y="69" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="83" width="26" height="16" rx="3" fill="#FEF3C7"/>
+      <text x="13" y="95" text-anchor="middle" font-size="9.5" font-weight="800" fill="#B45309">FK</text>
+      <text x="34" y="96" font-size="12.5" font-weight="700" fill="#0F172A">selected_option_id</text>
+      <text x="407" y="96" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <circle cx="10" cy="118" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="123" font-size="12.5" font-weight="500" fill="#334155">answer_text</text>
+      <text x="407" y="123" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="145" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="150" font-size="12.5" font-weight="500" fill="#334155">answer_numeric</text>
+      <text x="407" y="150" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">NUMERIC</text>
+      <circle cx="10" cy="172" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="177" font-size="12.5" font-weight="500" fill="#334155">answer_boolean</text>
+      <text x="407" y="177" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">BOOLEAN</text>
+      <circle cx="10" cy="199" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="204" font-size="12.5" font-weight="500" fill="#334155">created_at</text>
+      <text x="407" y="204" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+    </g>
+  </g>
+  </g>
+
+  <!-- Relational Links -->
+  <path d="M 712,414 L 712,434" fill="none" stroke="#0D9488" stroke-width="2" marker-end="url(#arr)"/>
+  <path d="M 712,650 L 712,670" fill="none" stroke="#0D9488" stroke-width="2" marker-end="url(#arr)"/>
+  <path d="M 465,677 L 495,677" fill="none" stroke="#0D9488" stroke-width="2" marker-end="url(#arr)"/>
+</svg>

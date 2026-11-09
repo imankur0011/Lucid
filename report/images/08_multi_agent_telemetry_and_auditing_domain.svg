@@ -1,0 +1,364 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 1638" width="100%" height="100%" style="background:#FFFFFF; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <filter id="cardShadow" x="-2%" y="-1%" width="104%" height="104%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7C3AED"/>
+    </marker>
+    <marker id="arrBlue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563EB"/>
+    </marker>
+  </defs>
+
+  <!-- Domain Header Banner -->
+  <g transform="translate(30, 20)">
+    <rect width="900" height="52" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" filter="url(#cardShadow)"/>
+    <rect width="8" height="52" rx="4" fill="#7C3AED"/>
+    <text x="24" y="24" font-size="16" font-weight="800" fill="#0F172A">DOMAIN 8: MULTI-AGENT AI TELEMETRY, REASONING TRACES &amp; AUDITING</text>
+    <text x="24" y="42" font-size="12" font-weight="500" fill="#64748B">7 Core Tables • LangGraph 35-Field State Audit, LLM Token Telemetry, Knowledge Documents &amp; Alerts</text>
+    <rect x="790" y="14" width="95" height="24" rx="4" fill="#E2E8F0"/>
+    <text x="838" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="#7C3AED">7 TABLES</text>
+  </g>
+  <g transform="translate(30, 90)">
+    <!-- Card: agent_definitions -->
+  <g id="table_agent_definitions">
+    <rect width="435" height="216" rx="8" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.6" filter="url(#cardShadow)"/>
+    <rect width="435" height="32" rx="8" fill="#7C3AED"/>
+    <rect y="20" width="435" height="12" fill="#7C3AED"/>
+    <text x="14" y="21" font-size="13.5" font-weight="800" fill="#FFFFFF">agent_definitions</text>
+    <text x="421" y="21" text-anchor="end" font-size="11" font-weight="600" fill="#E2E8F0">Specialist Agent Directory</text>
+
+    <g transform="translate(14, 44)">
+      <rect x="0" y="2" width="26" height="16" rx="3" fill="#DBEAFE"/>
+      <text x="13" y="14" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1E40AF">PK</text>
+      <text x="34" y="15" font-size="12.5" font-weight="700" fill="#0F172A">agent_id</text>
+      <text x="407" y="15" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <circle cx="10" cy="37" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="42" font-size="12.5" font-weight="500" fill="#334155">agent_code</text>
+      <text x="407" y="42" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="64" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="69" font-size="12.5" font-weight="500" fill="#334155">agent_name</text>
+      <text x="407" y="69" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="91" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="96" font-size="12.5" font-weight="500" fill="#334155">purpose</text>
+      <text x="407" y="96" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="118" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="123" font-size="12.5" font-weight="500" fill="#334155">is_active</text>
+      <text x="407" y="123" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">BOOLEAN</text>
+      <circle cx="10" cy="145" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="150" font-size="12.5" font-weight="500" fill="#334155">created_at</text>
+      <text x="407" y="150" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+    </g>
+  </g>
+  </g>
+  <g transform="translate(30, 326)">
+    <!-- Card: agent_versions -->
+  <g id="table_agent_versions">
+    <rect width="435" height="351" rx="8" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.6" filter="url(#cardShadow)"/>
+    <rect width="435" height="32" rx="8" fill="#7C3AED"/>
+    <rect y="20" width="435" height="12" fill="#7C3AED"/>
+    <text x="14" y="21" font-size="13.5" font-weight="800" fill="#FFFFFF">agent_versions</text>
+    <text x="421" y="21" text-anchor="end" font-size="11" font-weight="600" fill="#E2E8F0">Prompt &amp; Model Checkpoints</text>
+
+    <g transform="translate(14, 44)">
+      <rect x="0" y="2" width="26" height="16" rx="3" fill="#DBEAFE"/>
+      <text x="13" y="14" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1E40AF">PK</text>
+      <text x="34" y="15" font-size="12.5" font-weight="700" fill="#0F172A">agent_version_id</text>
+      <text x="407" y="15" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="29" width="26" height="16" rx="3" fill="#FEF3C7"/>
+      <text x="13" y="41" text-anchor="middle" font-size="9.5" font-weight="800" fill="#B45309">FK</text>
+      <text x="34" y="42" font-size="12.5" font-weight="700" fill="#0F172A">agent_id</text>
+      <text x="407" y="42" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <circle cx="10" cy="64" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="69" font-size="12.5" font-weight="500" fill="#334155">version_label</text>
+      <text x="407" y="69" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="91" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="96" font-size="12.5" font-weight="500" fill="#334155">llm_provider</text>
+      <text x="407" y="96" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="118" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="123" font-size="12.5" font-weight="500" fill="#334155">model_name</text>
+      <text x="407" y="123" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="145" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="150" font-size="12.5" font-weight="500" fill="#334155">prompt_version</text>
+      <text x="407" y="150" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="172" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="177" font-size="12.5" font-weight="500" fill="#334155">prompt_hash</text>
+      <text x="407" y="177" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="199" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="204" font-size="12.5" font-weight="500" fill="#334155">structured_output_schema_version</text>
+      <text x="407" y="204" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="226" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="231" font-size="12.5" font-weight="500" fill="#334155">configuration</text>
+      <text x="407" y="231" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">JSONB</text>
+      <circle cx="10" cy="253" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="258" font-size="12.5" font-weight="500" fill="#334155">is_active</text>
+      <text x="407" y="258" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">BOOLEAN</text>
+      <circle cx="10" cy="280" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="285" font-size="12.5" font-weight="500" fill="#334155">created_at</text>
+      <text x="407" y="285" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+    </g>
+  </g>
+  </g>
+  <g transform="translate(30, 697)">
+    <!-- Card: agent_execution_runs -->
+  <g id="table_agent_execution_runs">
+    <rect width="435" height="432" rx="8" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.6" filter="url(#cardShadow)"/>
+    <rect width="435" height="32" rx="8" fill="#7C3AED"/>
+    <rect y="20" width="435" height="12" fill="#7C3AED"/>
+    <text x="14" y="21" font-size="13.5" font-weight="800" fill="#FFFFFF">agent_execution_runs</text>
+    <text x="421" y="21" text-anchor="end" font-size="11" font-weight="600" fill="#E2E8F0">State Graph Execution Traces</text>
+
+    <g transform="translate(14, 44)">
+      <rect x="0" y="2" width="26" height="16" rx="3" fill="#DBEAFE"/>
+      <text x="13" y="14" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1E40AF">PK</text>
+      <text x="34" y="15" font-size="12.5" font-weight="700" fill="#0F172A">agent_execution_run_id</text>
+      <text x="407" y="15" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="29" width="26" height="16" rx="3" fill="#FEF3C7"/>
+      <text x="13" y="41" text-anchor="middle" font-size="9.5" font-weight="800" fill="#B45309">FK</text>
+      <text x="34" y="42" font-size="12.5" font-weight="700" fill="#0F172A">generation_request_id</text>
+      <text x="407" y="42" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="56" width="26" height="16" rx="3" fill="#FEF3C7"/>
+      <text x="13" y="68" text-anchor="middle" font-size="9.5" font-weight="800" fill="#B45309">FK</text>
+      <text x="34" y="69" font-size="12.5" font-weight="700" fill="#0F172A">portfolio_version_id</text>
+      <text x="407" y="69" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="83" width="26" height="16" rx="3" fill="#FEF3C7"/>
+      <text x="13" y="95" text-anchor="middle" font-size="9.5" font-weight="800" fill="#B45309">FK</text>
+      <text x="34" y="96" font-size="12.5" font-weight="700" fill="#0F172A">agent_version_id</text>
+      <text x="407" y="96" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <circle cx="10" cy="118" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="123" font-size="12.5" font-weight="500" fill="#334155">execution_status</text>
+      <text x="407" y="123" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="145" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="150" font-size="12.5" font-weight="500" fill="#334155">input_fingerprint</text>
+      <text x="407" y="150" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="172" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="177" font-size="12.5" font-weight="500" fill="#334155">output_summary</text>
+      <text x="407" y="177" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">JSONB</text>
+      <circle cx="10" cy="199" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="204" font-size="12.5" font-weight="500" fill="#334155">input_token_count</text>
+      <text x="407" y="204" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">INTEGER</text>
+      <circle cx="10" cy="226" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="231" font-size="12.5" font-weight="500" fill="#334155">output_token_count</text>
+      <text x="407" y="231" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">INTEGER</text>
+      <circle cx="10" cy="253" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="258" font-size="12.5" font-weight="500" fill="#334155">latency_ms</text>
+      <text x="407" y="258" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">INTEGER</text>
+      <circle cx="10" cy="280" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="285" font-size="12.5" font-weight="500" fill="#334155">error_code</text>
+      <text x="407" y="285" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="307" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="312" font-size="12.5" font-weight="500" fill="#334155">error_summary</text>
+      <text x="407" y="312" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="334" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="339" font-size="12.5" font-weight="500" fill="#334155">started_at</text>
+      <text x="407" y="339" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+      <circle cx="10" cy="361" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="366" font-size="12.5" font-weight="500" fill="#334155">completed_at</text>
+      <text x="407" y="366" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+    </g>
+  </g>
+  </g>
+  <g transform="translate(30, 1149)">
+    <!-- Card: knowledge_documents -->
+  <g id="table_knowledge_documents">
+    <rect width="435" height="459" rx="8" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.6" filter="url(#cardShadow)"/>
+    <rect width="435" height="32" rx="8" fill="#7C3AED"/>
+    <rect y="20" width="435" height="12" fill="#7C3AED"/>
+    <text x="14" y="21" font-size="13.5" font-weight="800" fill="#FFFFFF">knowledge_documents</text>
+    <text x="421" y="21" text-anchor="end" font-size="11" font-weight="600" fill="#E2E8F0">Indexed Regulatory Grounding</text>
+
+    <g transform="translate(14, 44)">
+      <rect x="0" y="2" width="26" height="16" rx="3" fill="#DBEAFE"/>
+      <text x="13" y="14" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1E40AF">PK</text>
+      <text x="34" y="15" font-size="12.5" font-weight="700" fill="#0F172A">knowledge_document_id</text>
+      <text x="407" y="15" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="29" width="26" height="16" rx="3" fill="#FEF3C7"/>
+      <text x="13" y="41" text-anchor="middle" font-size="9.5" font-weight="800" fill="#B45309">FK</text>
+      <text x="34" y="42" font-size="12.5" font-weight="700" fill="#0F172A">data_source_id</text>
+      <text x="407" y="42" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <circle cx="10" cy="64" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="69" font-size="12.5" font-weight="500" fill="#334155">external_document_id</text>
+      <text x="407" y="69" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="91" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="96" font-size="12.5" font-weight="500" fill="#334155">document_title</text>
+      <text x="407" y="96" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="118" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="123" font-size="12.5" font-weight="500" fill="#334155">document_type</text>
+      <text x="407" y="123" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="145" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="150" font-size="12.5" font-weight="500" fill="#334155">source_url</text>
+      <text x="407" y="150" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="172" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="177" font-size="12.5" font-weight="500" fill="#334155">content_hash</text>
+      <text x="407" y="177" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="199" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="204" font-size="12.5" font-weight="500" fill="#334155">object_storage_uri</text>
+      <text x="407" y="204" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="226" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="231" font-size="12.5" font-weight="500" fill="#334155">embedding_model</text>
+      <text x="407" y="231" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="253" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="258" font-size="12.5" font-weight="500" fill="#334155">vector_index_reference</text>
+      <text x="407" y="258" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="280" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="285" font-size="12.5" font-weight="500" fill="#334155">index_status</text>
+      <text x="407" y="285" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="307" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="312" font-size="12.5" font-weight="500" fill="#334155">published_at</text>
+      <text x="407" y="312" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+      <circle cx="10" cy="334" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="339" font-size="12.5" font-weight="500" fill="#334155">indexed_at</text>
+      <text x="407" y="339" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+      <circle cx="10" cy="361" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="366" font-size="12.5" font-weight="500" fill="#334155">metadata</text>
+      <text x="407" y="366" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">JSONB</text>
+      <circle cx="10" cy="388" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="393" font-size="12.5" font-weight="500" fill="#334155">created_at</text>
+      <text x="407" y="393" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+    </g>
+  </g>
+  </g>
+  <g transform="translate(495, 90)">
+    <!-- Card: audit_events -->
+  <g id="table_audit_events">
+    <rect width="435" height="351" rx="8" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.6" filter="url(#cardShadow)"/>
+    <rect width="435" height="32" rx="8" fill="#7C3AED"/>
+    <rect y="20" width="435" height="12" fill="#7C3AED"/>
+    <text x="14" y="21" font-size="13.5" font-weight="800" fill="#FFFFFF">audit_events</text>
+    <text x="421" y="21" text-anchor="end" font-size="11" font-weight="600" fill="#E2E8F0">Security Access Log</text>
+
+    <g transform="translate(14, 44)">
+      <rect x="0" y="2" width="26" height="16" rx="3" fill="#DBEAFE"/>
+      <text x="13" y="14" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1E40AF">PK</text>
+      <text x="34" y="15" font-size="12.5" font-weight="700" fill="#0F172A">audit_event_id</text>
+      <text x="407" y="15" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="29" width="26" height="16" rx="3" fill="#FEF3C7"/>
+      <text x="13" y="41" text-anchor="middle" font-size="9.5" font-weight="800" fill="#B45309">FK</text>
+      <text x="34" y="42" font-size="12.5" font-weight="700" fill="#0F172A">actor_user_id</text>
+      <text x="407" y="42" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <circle cx="10" cy="64" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="69" font-size="12.5" font-weight="500" fill="#334155">action_code</text>
+      <text x="407" y="69" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="91" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="96" font-size="12.5" font-weight="500" fill="#334155">resource_type</text>
+      <text x="407" y="96" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="118" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="123" font-size="12.5" font-weight="500" fill="#334155">resource_id</text>
+      <text x="407" y="123" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <circle cx="10" cy="145" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="150" font-size="12.5" font-weight="500" fill="#334155">outcome</text>
+      <text x="407" y="150" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="172" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="177" font-size="12.5" font-weight="500" fill="#334155">request_id</text>
+      <text x="407" y="177" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="199" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="204" font-size="12.5" font-weight="500" fill="#334155">ip_address</text>
+      <text x="407" y="204" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="226" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="231" font-size="12.5" font-weight="500" fill="#334155">user_agent</text>
+      <text x="407" y="231" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="253" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="258" font-size="12.5" font-weight="500" fill="#334155">event_metadata</text>
+      <text x="407" y="258" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">JSONB</text>
+      <circle cx="10" cy="280" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="285" font-size="12.5" font-weight="500" fill="#334155">created_at</text>
+      <text x="407" y="285" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+    </g>
+  </g>
+  </g>
+  <g transform="translate(495, 461)">
+    <!-- Card: notifications -->
+  <g id="table_notifications">
+    <rect width="435" height="378" rx="8" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.6" filter="url(#cardShadow)"/>
+    <rect width="435" height="32" rx="8" fill="#7C3AED"/>
+    <rect y="20" width="435" height="12" fill="#7C3AED"/>
+    <text x="14" y="21" font-size="13.5" font-weight="800" fill="#FFFFFF">notifications</text>
+    <text x="421" y="21" text-anchor="end" font-size="11" font-weight="600" fill="#E2E8F0">User Rebalancing Alerts</text>
+
+    <g transform="translate(14, 44)">
+      <rect x="0" y="2" width="26" height="16" rx="3" fill="#DBEAFE"/>
+      <text x="13" y="14" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1E40AF">PK</text>
+      <text x="34" y="15" font-size="12.5" font-weight="700" fill="#0F172A">notification_id</text>
+      <text x="407" y="15" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="29" width="26" height="16" rx="3" fill="#FEF3C7"/>
+      <text x="13" y="41" text-anchor="middle" font-size="9.5" font-weight="800" fill="#B45309">FK</text>
+      <text x="34" y="42" font-size="12.5" font-weight="700" fill="#0F172A">user_id</text>
+      <text x="407" y="42" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <circle cx="10" cy="64" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="69" font-size="12.5" font-weight="500" fill="#334155">notification_type</text>
+      <text x="407" y="69" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="91" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="96" font-size="12.5" font-weight="500" fill="#334155">title</text>
+      <text x="407" y="96" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="118" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="123" font-size="12.5" font-weight="500" fill="#334155">message</text>
+      <text x="407" y="123" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="145" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="150" font-size="12.5" font-weight="500" fill="#334155">delivery_channel</text>
+      <text x="407" y="150" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="172" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="177" font-size="12.5" font-weight="500" fill="#334155">delivery_status</text>
+      <text x="407" y="177" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="199" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="204" font-size="12.5" font-weight="500" fill="#334155">created_at</text>
+      <text x="407" y="204" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+      <circle cx="10" cy="226" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="231" font-size="12.5" font-weight="500" fill="#334155">sent_at</text>
+      <text x="407" y="231" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+      <circle cx="10" cy="253" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="258" font-size="12.5" font-weight="500" fill="#334155">read_at</text>
+      <text x="407" y="258" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+      <circle cx="10" cy="280" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="285" font-size="12.5" font-weight="500" fill="#334155">dismissed_at</text>
+      <text x="407" y="285" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+      <circle cx="10" cy="307" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="312" font-size="12.5" font-weight="500" fill="#334155">metadata</text>
+      <text x="407" y="312" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">JSONB</text>
+    </g>
+  </g>
+  </g>
+  <g transform="translate(495, 859)">
+    <!-- Card: user_feedback -->
+  <g id="table_user_feedback">
+    <rect width="435" height="243" rx="8" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.6" filter="url(#cardShadow)"/>
+    <rect width="435" height="32" rx="8" fill="#7C3AED"/>
+    <rect y="20" width="435" height="12" fill="#7C3AED"/>
+    <text x="14" y="21" font-size="13.5" font-weight="800" fill="#FFFFFF">user_feedback</text>
+    <text x="421" y="21" text-anchor="end" font-size="11" font-weight="600" fill="#E2E8F0">Recommendation Ratings</text>
+
+    <g transform="translate(14, 44)">
+      <rect x="0" y="2" width="26" height="16" rx="3" fill="#DBEAFE"/>
+      <text x="13" y="14" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1E40AF">PK</text>
+      <text x="34" y="15" font-size="12.5" font-weight="700" fill="#0F172A">user_feedback_id</text>
+      <text x="407" y="15" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="29" width="26" height="16" rx="3" fill="#FEF3C7"/>
+      <text x="13" y="41" text-anchor="middle" font-size="9.5" font-weight="800" fill="#B45309">FK</text>
+      <text x="34" y="42" font-size="12.5" font-weight="700" fill="#0F172A">user_id</text>
+      <text x="407" y="42" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <rect x="0" y="56" width="26" height="16" rx="3" fill="#FEF3C7"/>
+      <text x="13" y="68" text-anchor="middle" font-size="9.5" font-weight="800" fill="#B45309">FK</text>
+      <text x="34" y="69" font-size="12.5" font-weight="700" fill="#0F172A">portfolio_version_id</text>
+      <text x="407" y="69" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">UUID</text>
+      <circle cx="10" cy="91" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="96" font-size="12.5" font-weight="500" fill="#334155">feedback_type</text>
+      <text x="407" y="96" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="118" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="123" font-size="12.5" font-weight="500" fill="#334155">rating</text>
+      <text x="407" y="123" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">INTEGER</text>
+      <circle cx="10" cy="145" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="150" font-size="12.5" font-weight="500" fill="#334155">feedback_text</text>
+      <text x="407" y="150" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">VARCHAR</text>
+      <circle cx="10" cy="172" r="2.5" fill="#94A3B8"/>
+      <text x="24" y="177" font-size="12.5" font-weight="500" fill="#334155">created_at</text>
+      <text x="407" y="177" text-anchor="end" font-size="11.5" font-family="monospace" fill="#64748B">TIMESTAMP</text>
+    </g>
+  </g>
+  </g>
+
+  <!-- Relational Links -->
+  <path d="M 247,306 L 247,326" fill="none" stroke="#7C3AED" stroke-width="2" marker-end="url(#arr)"/>
+  <path d="M 247,677 L 247,697" fill="none" stroke="#7C3AED" stroke-width="2" marker-end="url(#arr)"/>
+  <path d="M 712,441 L 712,461" fill="none" stroke="#7C3AED" stroke-width="2" marker-end="url(#arr)"/>
+  <path d="M 712,839 L 712,859" fill="none" stroke="#7C3AED" stroke-width="2" marker-end="url(#arr)"/>
+</svg>
