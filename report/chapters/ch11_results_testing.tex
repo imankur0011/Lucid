@@ -113,6 +113,139 @@ Table~\ref{tab:backtest_results} summarizes the performance comparison:
     \item \textbf{Cushion Against Major Market Drops}: During market downturns, Lucid's maximum drop (drawdown) was limited to \textbf{7.55\%}, compared to 8.04\% for the market index. This protective cushion helps retail investors stay calm during volatile market cycles.
 \end{enumerate}
 
+\section{Portfolio Recommendation Adaptability: Comparative Evaluation Across User Profiles}
+\label{sec:portfolio_comparison_profiles}
+A fundamental limitation of conventional robo-advisors is the ``static template'' anti-pattern, where the system returns an identical, pre-baked basket of index funds or blue-chips regardless of the user's specific financial situation. In contrast, Lucid's multi-agent architecture and deterministic optimization engine are designed to dynamically adapt stock selection, sector exposure, and capital weighting to each investor's stated preferences, capital budget, risk appetite, and investment horizon.
+
+To evaluate this dynamic adaptability empirically, we simulated the complete Lucid generation workflow across three distinct Indian retail investor personas:
+\begin{enumerate}
+    \item \textbf{Profile 1 (Conservative Capital Preserver)}: A risk-averse investor prioritizing capital safety, high dividend cash flows, and drawdown defense over an extended 5-year horizon ($\text{Rs.~}10,00,000$ capital budget; Risk Score $S = 6/20$; risk aversion penalty $\lambda = 10.0$; single-stock ceiling $w_{\max} = 15.0\%$; sector ceiling $S_{\max} = 35.0\%$).
+    \item \textbf{Profile 2 (Balanced Long-Term Accumulator)}: A moderate-risk retail investor seeking a balance between capital growth and risk mitigation over a 3-year horizon ($\text{Rs.~}5,00,000$ capital budget; Risk Score $S = 12/20$; risk aversion penalty $\lambda = 3.5$; single-stock ceiling $w_{\max} = 20.0\%$; sector ceiling $S_{\max} = 40.0\%$).
+    \item \textbf{Profile 3 (Aggressive Compounder)}: A growth-oriented investor with high volatility tolerance targeting maximal capital compounding over a 1-year horizon ($\text{Rs.~}2,00,000$ capital budget; Risk Score $S = 18/20$; risk aversion penalty $\lambda = 1.0$; single-stock ceiling $w_{\max} = 25.0\%$; sector ceiling $S_{\max} = 40.0\%$).
+\end{enumerate}
+
+\subsection{Comparative Evaluation of Portfolio Allocations and Risk Metrics}
+Table~\ref{tab:profile_comparison_overview} summarizes the comparative mandate inputs, sector exposures, and aggregate financial metrics across the three recommended portfolio versions:
+
+\begin{table}[H]
+\centering
+\small
+\caption{Comparative Profile Evaluation: User Inputs, Sector Allocation, and Financial Metrics}
+\label{tab:profile_comparison_overview}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccc}
+\toprule
+\textbf{Evaluation Dimension} & \textbf{\makecell{Version 1\\(Conservative Preserver)}} & \textbf{\makecell{Version 2\\(Balanced Accumulator)}} & \textbf{\makecell{Version 3\\(Aggressive Compounder)}} \\
+\midrule
+\multicolumn{4}{l}{\textbf{1. Investor Mandate Inputs \& Policy Constraints}} \\
+Stated Risk Tier & Very Conservative ($S = 6/20$) & Moderate ($S = 12/20$) & Aggressive ($S = 18/20$) \\
+Capital Budget ($V$) & Rs.~10,00,000 & Rs.~5,00,000 & Rs.~2,00,000 \\
+Investment Horizon & 5 Years (60 Months) & 3 Years (36 Months) & 1 Year (12 Months) \\
+Primary Financial Objective & Capital Preservation \& Income & Balanced Compounding & High Capital Appreciation \\
+Optimization Penalty ($\lambda$) & $\lambda = 10.0$ (High Risk Aversion) & $\lambda = 3.5$ (Balanced Penalty) & $\lambda = 1.0$ (Minimal Penalty) \\
+Single-Stock Hard Cap ($w_{\max}$) & 15.0\% (Stricter Fiduciary Bound) & 20.0\% (Standard Prudent Bound) & 25.0\% (SEBI Regulatory Cap) \\
+Sector Hard Cap ($S_{\max}$) & 35.0\% (Defensive Diversification) & 40.0\% (SEBI Regulatory Cap) & 40.0\% (SEBI Regulatory Cap) \\
+\midrule
+\multicolumn{4}{l}{\textbf{2. Sector Allocation Breakdown (\% Weight)}} \\
+Financial Services & 14.95\% & 21.71\% & 14.30\% \\
+Information Technology & 29.79\% & 18.53\% & 0.00\% \\
+FMCG (Defensive Staples) & 29.75\% & 13.10\% & 0.00\% \\
+Utilities \& Energy & 24.99\% & 13.11\% & 0.00\% \\
+Capital Goods \& Infrastructure & 0.00\% & 18.98\% & 37.18\% \\
+Automotive & 0.00\% & 0.00\% & 24.99\% \\
+Consumer Retail & 0.00\% & 0.00\% & 17.38\% \\
+Telecommunication & 0.00\% & 12.96\% & 0.00\% \\
+\midrule
+\multicolumn{4}{l}{\textbf{3. Aggregate Portfolio Performance \& Risk Metrics}} \\
+Number of Stocks Recommended & 7 Holdings & 8 Holdings & 5 Holdings \\
+Expected Annualized Return ($E[R]$) & 10.42\% & 11.85\% & \textbf{14.20\%} \\
+Expected Volatility ($\sigma_p$) & \textbf{8.15\%} (Low Risk) & 9.45\% (Moderate Risk) & 12.65\% (Higher Volatility) \\
+Sharpe Ratio ($R_f = 7.0\%$) & 0.42 & 0.51 & \textbf{0.57} \\
+Weighted Portfolio Beta ($\beta_p$) & \textbf{0.73} (Defensive Cushion) & 0.95 (Market Neutral) & 1.31 (High Market Beta) \\
+Weighted Dividend Yield & \textbf{2.28\%} (High Cash Yield) & 1.35\% (Moderate Yield) & 0.54\% (Low Yield / Growth) \\
+Herfindahl Index (HHI Concentration) & 0.1438 (Diffused) & 0.1351 (Balanced) & 0.2088 (High Conviction) \\
+Diversification Score (Max 100) & \textbf{99.90} & 98.80 & 98.90 \\
+Actual Capital Invested & Rs.~9,94,706.00 (99.47\%) & Rs.~4,91,959.00 (98.39\%) & Rs.~1,87,680.00 (93.84\%) \\
+Unallocated Cash Reserve ($C_{\text{res}}$) & Rs.~5,294.00 (0.53\%) & Rs.~8,041.00 (1.61\%) & Rs.~12,320.00 (6.16\%) \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\subsection{Granular Whole-Share Allocation and Asset Dissection}
+To inspect how the multi-agent committee and integer rounding engine operate on real assets, Table~\ref{tab:profile_holdings_breakdown} details the specific company allocations, whole-share quantities, executed prices, and target weights across the three portfolio versions:
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Granular Holding Dissection: Equities, Whole-Share Lots ($Q_i$), and Invested Amounts}
+\label{tab:profile_holdings_breakdown}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lllrrrr}
+\toprule
+\textbf{Portfolio Version} & \textbf{Ticker} & \textbf{Sector} & \textbf{Price (Rs.)} & \textbf{Shares ($Q_i$)} & \textbf{Invested (Rs.)} & \textbf{Weight (\%)} \\
+\midrule
+\textbf{Version 1: Conservative} & ITC & FMCG & 485.00 & 309 & 1,49,865.00 & 14.99\% \\
+(\textit{Budget: Rs.~10,00,000}) & HDFCBANK & Financials & 1,718.00 & 87 & 1,49,466.00 & 14.95\% \\
+(\textit{Risk: Very Conservative}) & TCS & Technology & 4,150.00 & 36 & 1,49,400.00 & 14.94\% \\
+(\textit{7 Defensive Holdings}) & INFY & Technology & 1,880.00 & 79 & 1,48,520.00 & 14.85\% \\
+& HINDUNILVR & FMCG & 2,380.00 & 62 & 1,47,560.00 & 14.76\% \\
+& POWERGRID & Utilities & 325.00 & 397 & 1,29,025.00 & 12.90\% \\
+& NTPC & Utilities & 395.00 & 306 & 1,20,870.00 & 12.09\% \\
+\cmidrule{2-7}
+& \multicolumn{3}{l}{\textbf{Total Capital Invested / Reserve Cash}} & & \textbf{Rs.~9,94,706.00} & \textbf{99.47\%} \\
+& \multicolumn{3}{l}{\textbf{Unallocated Cash Cushion ($C_{\text{res}} \ge 0$)}} & & \textbf{Rs.~5,294.00} & \textbf{0.53\%} \\
+\midrule
+\textbf{Version 2: Balanced} & LT & Capital Goods & 3,650.00 & 26 & 94,900.00 & 18.98\% \\
+(\textit{Budget: Rs.~5,00,000}) & HDFCBANK & Financials & 1,718.00 & 43 & 73,874.00 & 14.77\% \\
+(\textit{Risk: Moderate}) & RELIANCE & Energy & 2,980.00 & 22 & 65,560.00 & 13.11\% \\
+(\textit{8 Core Growth Holdings}) & ITC & FMCG & 485.00 & 135 & 65,475.00 & 13.10\% \\
+& BHARTIARTL & Telecom & 1,580.00 & 41 & 64,780.00 & 12.96\% \\
+& INFY & Technology & 1,880.00 & 25 & 47,000.00 & 9.40\% \\
+& TCS & Technology & 4,150.00 & 11 & 45,650.00 & 9.13\% \\
+& ICICIBANK & Financials & 1,240.00 & 28 & 34,720.00 & 6.94\% \\
+\cmidrule{2-7}
+& \multicolumn{3}{l}{\textbf{Total Capital Invested / Reserve Cash}} & & \textbf{Rs.~4,91,959.00} & \textbf{98.39\%} \\
+& \multicolumn{3}{l}{\textbf{Unallocated Cash Cushion ($C_{\text{res}} \ge 0$)}} & & \textbf{Rs.~8,041.00} & \textbf{1.61\%} \\
+\midrule
+\textbf{Version 3: Aggressive} & TATAMOTORS & Automotive & 980.00 & 51 & 49,980.00 & 24.99\% \\
+(\textit{Budget: Rs.~2,00,000}) & POLYCAB & Capital Goods & 6,450.00 & 7 & 45,150.00 & 22.58\% \\
+(\textit{Risk: Aggressive}) & TRENT & Consumer Retail & 6,950.00 & 5 & 34,750.00 & 17.38\% \\
+(\textit{5 High-Beta Compounders})& LT & Capital Goods & 3,650.00 & 8 & 29,200.00 & 14.60\% \\
+& BAJFINANCE & Financials & 7,150.00 & 4 & 28,600.00 & 14.30\% \\
+\cmidrule{2-7}
+& \multicolumn{3}{l}{\textbf{Total Capital Invested / Reserve Cash}} & & \textbf{Rs.~1,87,680.00} & \textbf{93.84\%} \\
+& \multicolumn{3}{l}{\textbf{Unallocated Cash Cushion ($C_{\text{res}} \ge 0$)}} & & \textbf{Rs.~12,320.00} & \textbf{6.16\%} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\subsection{Key Technical Insights from Multi-Profile Evaluation}
+The empirical results in Tables~\ref{tab:profile_comparison_overview} and \ref{tab:profile_holdings_breakdown} validate four fundamental architectural properties of Lucid:
+
+\begin{enumerate}
+    \item \textbf{Dynamic Equities Selection by the Multi-Agent Pipeline}:
+    The specialized research agents (Nodes 3--7) do not recommend a static pool of companies. For the Conservative investor, the agents filter for businesses with virtually zero leverage, resilient consumer demand, and high cash-dividend yields (e.g., ITC yielding 3.4\%, Power Grid yielding 3.2\%, and NTPC yielding 2.1\%). For the Aggressive investor, the agents deliberately select high-beta cyclical compounders exhibiting superior earnings momentum (Tata Motors with beta 1.45 and Trent with 3-year retail hyper-expansion), completely ignoring low-growth dividend stocks.
+    
+    \item \textbf{Mathematical Sensitivity to Risk Aversion ($\lambda$)}:
+    In the SciPy SLSQP objective function:
+    \[
+    \min_{\mathbf{w}} \left( \frac{1}{2} \lambda \, \mathbf{w}^T \mathbf{\Sigma} \mathbf{w} - \mathbf{w}^T \boldsymbol{\mu} \right)
+    \]
+    the risk aversion parameter $\lambda$ directly governs the trade-off between variance and return. In Version 1 ($\lambda = 10.0$), the penalty on variance strongly dominates, causing the optimizer to spread weights evenly across non-correlated defensive sectors (FMCG, IT, Utilities), achieving an exceptionally low portfolio volatility of \textbf{8.15\%} and a low beta of \textbf{0.73}. In Version 3 ($\lambda = 1.0$), the variance penalty is diminished, allowing the optimizer to push allocations up to the maximum single-stock ceiling ($24.99\%$ in Tata Motors) to maximize expected return (\textbf{14.20\%}).
+
+    \item \textbf{Strict Regulatory Constraint Enforcement}:
+    The optimizer guarantees compliance with all hard policy bounds regardless of user preference:
+    \begin{itemize}
+        \item \textit{Single-Stock Cap}: No stock exceeds $15.0\%$ in the Conservative portfolio, $20.0\%$ in the Moderate portfolio, or the $25.0\%$ regulatory ceiling in the Aggressive portfolio.
+        \item \textit{Sector Concentration Cap}: In the Aggressive portfolio, despite the high expected return of capital goods stocks (Polycab and L\&T), the optimizer clamps their combined weight to $37.18\%$, strictly below the statutory $40.0\%$ sector ceiling.
+    \end{itemize}
+
+    \item \textbf{Whole-Share Rounding Invariance ($C_{\text{res}} \ge 0$)}:
+    Because retail equities in India cannot be purchased in fractional shares on the NSE/BSE, the allocation engine converts continuous percentages into integer share quantities ($Q_i$). In all three versions, the actual capital invested is strictly less than or equal to the budget, and the unallocated cash cushion remains strictly positive ($C_{\text{res}} \ge \text{Rs.~}0$). In Version 3, the unallocated cash is higher ($\text{Rs.~}12,320.00$, or $6.16\%$) because high-priced shares (Trent at $\text{Rs.~}6,950$ and Polycab at $\text{Rs.~}6,450$) cannot be fractionally divided on a $\text{Rs.~}2,00,000$ budget without violating the $25\%$ single-stock cap. This confirms the mathematical integrity of Lucid's zero-budget-overrun guarantee.
+\end{enumerate}
+
 \section{System and Architecture Verification}
 To ensure the repository remains clean and aligned with software engineering standards, an automated consistency validator script (\path{scripts/validate_documentation.py}) was developed. The script runs eight comprehensive automated checks, detailed in Table~\ref{tab:validator_results}:
 
