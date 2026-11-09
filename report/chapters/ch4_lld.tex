@@ -34,14 +34,14 @@ The user interface is broken down into modular building blocks located in \textt
 When a user clicks a button, the web screen does not talk directly to the database. Instead, all network requests go through a helper module (\path{frontend/src/lib/api.ts}). This helper:
 \begin{itemize}
     \item Attaches the user's secret digital session badge (\texttt{Bearer} token) to prove their identity safely.
-    \item Converts technical server responses into clear, helpful error messages (such as reminding the user if an entered investment amount is below Rs.~5,000).
+    \item Converts technical server responses into clear, helpful error messages (such as reminding the user if an entered investment amount is below Rs.~10,000).
 \end{itemize}
 
 
-\section{Agent-Level Design: The 13-Node AI Research Team}
-Rather than relying on a single AI prompt, Lucid coordinates thirteen specialized digital agents organized in a structured sequence using \textbf{LangGraph 0.4}. 
+\section{Agent-Level Design: The 13-Node LangGraph Research Workflow}
+Rather than relying on a single AI prompt, Lucid coordinates thirteen specialized digital execution nodes organized in a structured sequence using \textbf{LangGraph 0.4}. 
 
-Figure~\ref{fig:agentic_ai_arch} illustrates the complete 13-node multi-agent workflow, shared state architecture, and deterministic fallback circuit-breaker:
+Figure~\ref{fig:agentic_ai_arch} illustrates the complete 13-node multi-agent workflow, the five-stage pipeline, the 35-field shared state, and the deterministic fallback circuit-breaker:
 
 \begin{figure}[!htbp]
     \centering
@@ -50,44 +50,65 @@ Figure~\ref{fig:agentic_ai_arch} illustrates the complete 13-node multi-agent wo
     \label{fig:agentic_ai_arch}
 \end{figure}
 
-All thirteen agents share a digital workspace (called the \textbf{AgentState}), storing user inputs, market observations, and research findings:
-
-\begin{footnotesize}
-\begin{verbatim}
-class AgentState(TypedDict):
-    request_id: str             # Portfolio request tracking ID
-    user_id: str                # Identification of investor
-    risk_category: str          # conservative / moderate / aggressive
-    investment_amount: float    # Capital in rupees (e.g., 100000.0)
-    time_horizon_years: int     # Investment timeframe in years
-    macro_regime: dict          # Inflation, repo rates, GDP trends
-    market_volatility: dict     # India VIX level (calm / volatile)
-    candidate_universe: list    # Shortlisted healthy Indian stocks
-    fundamental_scores: dict    # Financial health ratings
-    sentiment_scores: dict      # News sentiment ratings
-    critic_feedback: list       # Risk warnings from skeptic agent
-    optimized_allocations: list # Final weights & whole share counts
-    fiduciary_explanations: dict# Plain-English Stock-Why reasons
-\end{verbatim}
-\end{footnotesize}
-
-\subsection{The 13 Agents and What Each One Does}
-Think of the 13 nodes as specialized professionals working in an investment firm:
+\subsection{The Shared Graph State: PortfolioAgentState}
+All thirteen nodes communicate through a shared digital blackboard called the \textbf{\texttt{PortfolioAgentState}} (defined in \path{backend/agent/state.py}). It holds \textbf{35 active fields} organized into five clear groups:
 \begin{enumerate}
-    \item \textbf{Input Validation Node (The Receptionist)}: Checks that the user's basic details, investment capital ($\ge \text{Rs.~}5,000$), and time horizon are valid before any research begins.
-    \item \textbf{Macro Analyst Node (The Chief Economist)}: Reviews broad economic indicators—such as Reserve Bank of India (RBI) interest rate policies, national inflation, and GDP growth forecasts.
-    \item \textbf{Market Regime Node (The Market Weather Forecaster)}: Checks the Indian market volatility index (India VIX) and moving averages to see whether the market is calm, choppy, or in a sharp downturn.
-    \item \textbf{Universe Ingestion Node (The Research Librarian)}: Pulls the catalog of active companies from the database and filters out thinly traded stocks that are difficult to buy or sell.
-    \item \textbf{Fundamental Analyst Node (The Chartered Accountant)}: Examines company financial statements, selecting companies with consistent profits, high Return on Equity (ROE $\ge 15\%$), and sensible debt levels (Debt/Equity $\le 1.5$).
-    \item \textbf{Sentiment \& News Node (The Financial Journalist)}: Scans recent corporate announcements and breaking news articles, looking for positive growth catalysts or negative controversies.
-    \item \textbf{Valuation Screening Node (The Bargain Hunter)}: Compares stock prices against company earnings (P/E ratio) to ensure the investor is not buying an overvalued, excessively expensive stock.
-    \item \textbf{Candidate Ranking Node (The Research Coordinator)}: Combines the fundamental, news, and valuation scores into an overall quality ranking for each company.
-    \item \textbf{Adversarial Critic Node (The Skeptical Risk Officer)}: Specifically searches for flaws in the top-ranked companies. It checks whether the portfolio is leaning too heavily into a single sector or whether a company faces regulatory risks.
-    \item \textbf{Quantitative SLSQP Solver Node (The Mathematician)}: Solves the mathematical Markowitz optimization equations to find the exact percentages that maximize return while minimizing risk.
-    \item \textbf{Integer Lot Sizing Node (The Cashier)}: Converts continuous percentages into exact full share quantities (such as 12 shares) and ensures that all leftover rupees remain safely in the investor's cash balance.
-    \item \textbf{Deterministic Constraint Validator Node (The Compliance Officer)}: Verifies that no single stock exceeds 25\% of the portfolio and no industry sector exceeds 40\%. If a rule is violated, it sends the portfolio back for re-adjustment.
-    \item \textbf{Dual-Level Explainability Node (The Financial Educator)}: Writes the plain-English ``Stock-Why'' explanations for each stock so the investor can understand the reasoning with complete transparency.
+    \item \textbf{Investor Mandate (11 fields)}: Stores the investor's identification, starting capital in rupees ($V_{\text{total}} \ge \text{Rs.~}10,000$), investment time horizon (in months), 5-question risk score ($S \in [5, 20]$), risk profile tier, savings goal, excluded industry sectors, ethical preference tags, target portfolio beta, and statutory allocation caps (maximum 20\% to 25\% per company, and 30\% to 40\% per industry sector).
+    \item \textbf{Liquid Universe (3 fields)}: Tracks whether the investor passed initial suitability checks (\texttt{suitability\_passed}), the active pool of 504 liquid Indian stocks, and the filtered candidate shortlist.
+    \item \textbf{Analyst Reports (4 fields)}: Holds the structured evaluation reports generated by the four specialist research analysts: Macroeconomic analysis, Market Regime assessment, Company Fundamental screening, and News/SEBI regulatory audit.
+    \item \textbf{Critic and Loop Control (7 fields)}: Records the Strategist's proposed stock basket ($K \in [10, 16]$ companies), the Critic's audit objections, ethical violation flags, rework iteration counter (\texttt{rework\_count} $\le 2$), Critic approval status (\texttt{critic\_approved}), replacement candidates, and the audit event history.
+    \item \textbf{Deterministic Math and Fiduciary Evidence (10 fields)}: Holds the mathematically optimal percentage weights ($w_i^*$), exact integer share counts ($Q_i$), unallocated cash reserve ($C_{\text{res}} \ge \text{Rs.~}0$), expected portfolio return ($\mu_p$), expected risk ($\sigma_p$), Sharpe ratio, 95\% Value-at-Risk, maximum drawdown, concentration score (HHI), Diversification Score (out of 100), and plain-English Stock-Why evidence cards.
 \end{enumerate}
+
+\subsection{LLM Engine and the 0.48-Second Fallback Circuit-Breaker}
+Lucid uses \textbf{Google Gemini 3.8 Flash} (\texttt{gemini-3.8-flash}) as its primary qualitative language model. To ensure factual and repeatable answers, the model is configured with very low creativity settings (temperature $0.1$ to $0.2$) and strict response bounds ($\le 1,500$ tokens per turn).
+
+\noindent \textbf{Zero-Downtime Fallback Circuit-Breaker}:
+If the Google Gemini cloud service encounters network delays, internet disruptions, or free-tier rate limits, Lucid does not fail or display an error message. Instead, an automated circuit-breaker instantly activates a local deterministic rule engine. This offline fallback engine completes candidate selection and validation in \textbf{0.48 seconds}, guaranteeing continuous availability.
+
+\subsection{Five Execution Stages and Four Decision Routers}
+The thirteen nodes are organized into five structured stages, linked by four intelligent decision routers:
+
+\noindent \textbf{Stage 1: Suitability Gate (Nodes N1--N2, Router D1)}:
+\begin{itemize}
+    \item \textbf{Node 1 (Manager Node)}: Receives the user request, extracts the financial parameters, and prepares the shared state.
+    \item \textbf{Node 2 (Suitability Node)}: Verifies that starting capital meets the minimum requirement ($V_{\text{total}} \ge \text{Rs.~}10,000$), confirms investor risk answers, and filters the 2,639 listed exchange stocks down to the 504 liquid equity pool, ensuring at least 5 viable companies across at least 3 distinct economic sectors.
+    \item \textbf{Router D1 (\texttt{route\_suitability})}: If checks pass, the workflow moves forward to Node 3. If any check fails, it aborts immediately to Node 13 to log the reason.
+\end{itemize}
+
+\noindent \textbf{Stage 2: Sequential Chained Specialist Analysts (Nodes N3 $\to$ N4 $\to$ N5 $\to$ N6)}:
+The four research nodes run in a chained sequence, each reading the findings of the previous analyst and using dedicated software tools:
+\begin{itemize}
+    \item \textbf{Node 3 (Macro Analyst)}: Using \texttt{macro\_data\_tool}, it examines national benchmarks from the Reserve Bank of India (RBI Repo Rate at 6.50\%, CPI at 5.10\%, and 10-year G-Sec yield at 7.04\%). It recommends setting aside a cash liquidity buffer between 2.5\% and 5.0\%.
+    \item \textbf{Node 4 (Market Analyst)}: Using \texttt{market\_technical\_tool}, it evaluates market volatility with India VIX ($<13$ Calm, $13\text{--}18$ Moderate, $18\text{--}24$ Volatile, $>24$ Extreme) and compares Nifty 50 against its 200-DMA, setting the regime tag and stock beta ceilings.
+    \item \textbf{Node 5 (Fundamental Analyst)}: Using \texttt{fundamental\_research\_tool}, it evaluates balance sheets, requiring Return on Equity $\text{ROE} \ge 15\%$, positive earnings ($\text{P/E} \in [1, 150]$), leverage $\text{Debt/Equity} \le 1.0$, and sector Z-scores within $[-3.0, +3.0]$.
+    \item \textbf{Node 6 (News and SEBI Analyst)}: Using \texttt{news\_filings\_audit\_tool}, it reviews 30-day headlines, verifies promoter pledges are below 5\%, and audits SEBI SCORES filings, assigning a sentiment score in $[-1.0, +1.0]$.
+\end{itemize}
+
+\noindent \textbf{Stage 3: Strategist and Critic Loop (Nodes N7--N9, Router D2)}:
+\begin{itemize}
+    \item \textbf{Node 7 (Lead Strategist)}: Synthesizes the four analyst reports and selects $K \in [10, 16]$ candidate companies divided into Core, Growth, and Defensive categories, mathematically ensuring $K \ge \lceil 100 / \text{max\_stock\%} \rceil$.
+    \item \textbf{Node 8 (Adversarial Risk Critic)}: Acting like a skeptical chief risk officer (at temperature 0.1), audits the chosen stocks for excessive industry concentration, high valuation traps, or emerging regulatory controversies.
+    \item \textbf{Node 9 (Candidate Rework Node)}: Replaces any stock flagged by the Critic with a healthy alternative from the 504 liquid stock pool.
+    \item \textbf{Router D2 (\texttt{route\_critic})}: If the Critic approves the portfolio, execution proceeds to Stage 4. If objections are raised and the rework counter is below 2, it routes back to Node 9 for candidate replacement. If two rework cycles are exhausted without resolution, it aborts safely to Node 13.
+\end{itemize}
+
+\noindent \textbf{Stage 4: Zero-LLM Deterministic Mathematical Optimization and Validation (Nodes N10--N11, Routers D3 \& D4)}:
+\begin{itemize}
+    \item \textbf{Node 10A (SciPy SLSQP Solver)}: Solves the constrained quadratic optimization problem without any AI involvement. It maximizes the Sharpe ratio for Moderate and Aggressive investors, or minimizes risk for Conservative investors, strictly enforcing the 25\% single-stock and 40\% sector limits. If the solver encounters an impossible mathematical combination, \textbf{Router D3} triggers a candidate swap back to Node 9.
+    \item \textbf{Node 10B (Whole-Share Integer Lot Allocator)}: Translates continuous weights ($w_i^*$) into whole share numbers using floor rounding ($Q_i = \lfloor (w_i^* V_{\text{total}}) / P_i \rfloor$). A greedy remainder pass uses leftover cash to buy an extra share of the highest-rated holding where permitted, strictly guaranteeing positive unallocated cash ($C_{\text{res}} \ge \text{Rs.~}0$). It calculates the portfolio's Sharpe ratio, annual volatility, 95\% VaR, max drawdown, and Diversification Score.
+    \item \textbf{Node 11 (Post-Rounding Constraint Gate)}: Programmatically verifies that whole-share rounding did not cause any holding to exceed statutory ceilings (stock $\le 20/25\%$, sector $\le 30/40\%$) and confirms $C_{\text{res}} \ge \text{Rs.~}0$.
+    \item \textbf{Router D4 (\texttt{route\_final\_critic})}: If post-rounding validation passes, execution moves to Stage 5. If a rounding rule is violated, it aborts safely to Node 13.
+\end{itemize}
+
+\noindent \textbf{Stage 5: Fiduciary Explanation and ACID Persistence (Nodes N12--N13)}:
+\begin{itemize}
+    \item \textbf{Node 12 (Fiduciary Moderator)}: Generates transparent explanations at two levels: Level 1 summarizes the portfolio thesis and macroeconomic alignment; Level 2 produces stock cards with verifiable financial ratios (ROE, P/E, Z-scores) and direct links to official NSE and BSE company pages.
+    \item \textbf{Node 13 (ACID Relational Persistence Node)}: Concludes the workflow by atomically saving the complete portfolio across six PostgreSQL database tables. All aborted execution paths from Routers D1, D2, and D4 also converge here to record a complete audit trail before ending cleanly.
+\end{itemize}
+
+\subsection{Architectural Pillar: Strict Separation of Qualitative AI from Math}
+A core design rule in Lucid is that \textbf{artificial intelligence is never permitted to perform arithmetic or determine share quantities}. AI language models are trained on language patterns and can make unexpected calculation errors. In Lucid, the AI models are restricted strictly to qualitative tasks: reading corporate news, auditing financial statements, and writing clear explanations. All numerical optimization, percentage allocations, integer share quantities, and cash calculations are executed exclusively by deterministic Python algorithms (SciPy SLSQP and integer rounding). This strict separation guarantees that every recommendation is 100\% mathematically sound, repeatable, and free from AI hallucinations. Under normal operation with cached market data, end-to-end portfolio creation completes in approximately \textbf{2.14 seconds}.
 
 \section{The Mathematical Calculation Engine}
 Located in \texttt{backend/portfolio\_engine/}, the mathematical engine handles numerical calculations without any AI involvement:
@@ -119,7 +140,7 @@ Located in \texttt{backend/portfolio\_engine/}, the mathematical engine handles 
     \item \textbf{Transaction Cost Engine (\path{transaction_costs.py})}: Calculates all statutory taxes and fees applicable to Indian stock trades:
     \begin{itemize}
         \item Securities Transaction Tax (STT): 0.10\% on delivery equity transactions.
-        \item Exchange Turnover Fee: 0.00325\% charged by NSE/BSE.
+        \item Exchange Turnover Fee: 0.00297\% on NSE and 0.00375\% on BSE (statutory schedule).
         \item SEBI Regulatory Turnover Charge: 0.0001\% (Rs.~10 per crore).
         \item Stamp Duty: 0.015\% charged on purchases under the Indian Stamp Act.
         \item Goods and Services Tax (GST): 18.0\% applied to brokerage and exchange charges.

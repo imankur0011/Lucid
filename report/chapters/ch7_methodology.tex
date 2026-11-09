@@ -1,324 +1,244 @@
 \chapter{End-to-End Application Methodology}
 
-\section{Methodology Overview: How Lucid Builds an Investment Portfolio}
-Building a sound investment portfolio requires combining human common sense with mathematical precision. In traditional wealth management, human financial advisors sit down with a client, evaluate their life goals, research companies in the stock market, and calculate how much money should be placed in each stock.
+\section{Methodology Overview: Three Production Workflows and Seven Stages}
+Building an intelligent investment portfolio requires combining human financial common sense with rigorous mathematical calculation. In traditional wealth management, human financial advisors sit down with a client, evaluate their personal life goals, research companies in the stock market, and calculate how much money should be placed in each stock.
 
-Lucid automates this entire process using an intelligent \textbf{16-step methodology}. The methodology bridges the gap between qualitative artificial intelligence and mathematical optimization. It ensures that every portfolio recommendation is personalized to the user, backed by verified exchange data, mathematically sound, and ready to be executed on real Indian stock exchanges.
-
-The 16 steps are divided into four clear operational phases:
+Lucid automates this entire lifecycle using a structured, transparent methodology. Rather than treating portfolio creation as an isolated action, Lucid organizes its financial engineering into \textbf{Three Production Workflows} comprising \textbf{Seven Stages} (numbered Stage 4.1 through Stage 4.12):
 \begin{enumerate}
-    \item \textbf{Phase I: Investor Profiling and Regulatory Suitability} (Steps 1--4): Lucid learns who the investor is, what they want to achieve, how much money they have, and how much financial risk they are comfortable taking.
-    \item \textbf{Phase II: Market Research and Multi-Agent Analysis} (Steps 5--9): Lucid examines 2,639 listed Indian companies across the National Stock Exchange (NSE) and Bombay Stock Exchange (BSE), checks overall market health, evaluates company balance sheets, and uses a team of AI specialist agents to pick the most promising candidates.
-    \item \textbf{Phase III: Mathematical Optimization and Whole-Share Calculations} (Steps 10--12): A mathematical solver calculates the safest and most profitable percentage weight for each stock. A rounding algorithm then converts these percentages into exact whole numbers of shares that can be purchased in the real world, accounting for government taxes and transaction fees.
-    \item \textbf{Phase IV: Market-Hours Monitoring and Automatic Rebalancing} (Steps 13--16): Once the portfolio is created, a background monitoring daemon tracks live stock prices during market trading hours. If stock price fluctuations cause the portfolio to drift away from its planned balance, Lucid alerts the investor and provides a transparent before-and-after preview for rebalancing.
+    \item \textbf{Workflow I: New Portfolio Creation Methodology (Stages 4.1--4.8)}: Guides a new investor from initial onboarding and natural-language goal formulation, through market regime analysis, multi-agent AI research, and deterministic mathematical optimization, to delivering a balanced whole-share portfolio with plain-English justifications.
+    \item \textbf{Workflow II: Existing Demat Portfolio Diagnosis (Stage 4.9)}: Enables investors who already hold shares across external broker accounts (such as Zerodha or Groww) to upload their monthly Demat statements, resolve company names across all 2,639 listed Indian stocks, audit portfolio concentration risk, and receive actionable swap recommendations.
+    \item \textbf{Workflow III: Continuous 300s Drift Monitoring, Statutory Rebalancing, and Alerts (Stages 4.10--4.12)}: Continuously tracks active portfolios every 5 minutes during official Indian market hours, evaluates valuation drift, prepares transparent before-and-after rebalance previews with statutory Indian taxes, and generates execution-ready broker orders.
 \end{enumerate}
 
-Figure~\ref{fig:methodology_flow} illustrates how these operational phases connect across three production workflows:
+Figure~\ref{fig:methodology_flow} illustrates how these three operational workflows and seven stages connect together in an integrated processing loop:
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=\textwidth, height=0.55\textheight, keepaspectratio]{METHODOLOGY_FLOW.pdf}
+    \includegraphics[width=\textwidth, height=0.52\textheight, keepaspectratio]{METHODOLOGY_FLOW.pdf}
     \caption{Lucid End-to-End Application Methodology and Multi-Workflow Lifecycle}
     \label{fig:methodology_flow}
 \end{figure}
 
-\section{Phase I: Learning About the Investor and Establishing Rules}
+\section{Workflow I: New Portfolio Creation}
 
-\subsection{Step 1: Regulatory Suitability Questionnaire}
-Before recommending any financial product, Indian regulations established by SEBI (the Securities and Exchange Board of India) require financial systems to understand an investor's background and risk appetite.
+\subsection{Stage 4.1: Investor Onboarding and Mandate Formulation}
+Before recommending any investment in the stock market, Indian regulations established by the Securities and Exchange Board of India (SEBI) require financial systems to understand an investor's background, investment horizon, and psychological comfort with financial risk.
 
-To achieve this, Lucid presents a 5-question suitability survey. Each question explores a crucial aspect of the investor's financial situation:
-\begin{enumerate}
-    \item \textbf{Market Knowledge and Experience}: Does the user understand how the stock market works, or are they a first-time investor?
-    \item \textbf{Investment Time Horizon}: When will the investor need this money back? (Short-term: less than 1 year, Medium-term: 1 to 5 years, Long-term: more than 5 years).
-    \item \textbf{Psychological Reaction to Losses}: If the stock market drops by 20\% in a single month, would the user panic and sell, stay calm, or see it as an opportunity to buy more shares at a discount?
-    \item \textbf{Financial Goal Objective}: Is the primary goal protecting savings from inflation, achieving steady long-term growth, or pursuing aggressive wealth creation?
-    \item \textbf{Income Stability}: Does the user have a predictable monthly salary or variable business income?
-\end{enumerate}
+\noindent \textbf{1. Capital and Horizon Mandates}:
+Lucid accepts an investment capital mandate $V_{\text{total}} \ge \text{Rs.~}10,000$ and an investment time horizon ranging from 3 to 360 months (up to 30 years).
 
-Each answer choice carries a score between 1 and 4 points. The total suitability score $S$ is calculated by summing the weighted points:
+\noindent \textbf{2. Natural Language Constraint Extractor}:
+Retail investors often express their financial desires conversationally. Lucid's natural language processor parses everyday statements (such as \textit{``I want to invest 2.5 Lakhs for my child's higher education over 10 years, but exclude tobacco and alcohol stocks''}) into structured database records:
+\begin{itemize}
+    \item \textbf{Capital Parsed}: Converted into numeric rupees ($\text{Rs.~}2,50,000$).
+    \item \textbf{Time Horizon}: 120 months (10 years).
+    \item \textbf{Sector Exclusions}: Structured policy exclusion tags (\texttt{FMCG\_TOBACCO}, \texttt{BEVERAGES\_ALCOHOL}).
+\end{itemize}
+
+\noindent \textbf{3. 5-Question Psychometric Risk Suitability Survey}:
+The investor answers five standard suitability questions covering market experience, loss tolerance, income predictability, financial goals, and emergency savings. Each answer carries a score between 1 and 4 points. The overall suitability score $S$ is calculated as:
 \begin{equation}
-S = \sum_{j=1}^{5} \omega_j \cdot x_j
+S = \sum_{j=1}^{5} \omega_j \cdot x_j \in [5, 20]
 \end{equation}
-where $x_j$ is the answer score for question $j$ and $\omega_j$ is the question importance weight (defaulting to 1.0).
+where $x_j$ is the answer score for question $j$ and $\omega_j = 1.0$ is the standard question weight.
 
-Based on the total score $S$ (ranging from 5 to 20), Lucid assigns the investor to one of three official \textbf{Risk Categories}:
+Based on the total score $S$, Lucid classifies the investor into one of three official risk categories and sets their mathematical risk-aversion penalty parameter ($\lambda$):
 \begin{equation}
-\text{Risk Category} = 
+\text{Risk Mandate} = 
 \begin{cases} 
-\textbf{Conservative} & \text{if } S \in [5, 9] \\ 
-\textbf{Moderate} & \text{if } S \in [10, 15] \\ 
-\textbf{Aggressive} & \text{if } S \in [16, 20] 
+\textbf{Conservative} \ (\lambda = 5.0) & \text{if } S \in [5, 9] \\ 
+\textbf{Moderate} \ (\lambda = 2.5) & \text{if } S \in [10, 15] \\ 
+\textbf{Aggressive} \ (\lambda = 1.0) & \text{if } S \in [16, 20] 
 \end{cases}
 \end{equation}
 
-\noindent \textbf{Practical Example}: 
-Suppose an investor scores a total of 12 points. Lucid classifies them as a \textbf{Moderate} investor. This classification tells the rest of the application to seek steady capital growth while avoiding excessively volatile or speculative stocks.
-
-\subsection{Step 2: Natural Language Understanding and Custom Investor Rules}
-Many retail investors find rigid multiple-choice forms intimidating. To make the process natural and accessible, Lucid allows investors to describe their investment goals in everyday language.
-
-An investor can simply type:
-\begin{quote}
-\textit{``I have 2.5 lakhs to invest for my daughter's college education in 10 years. I want moderate risk, but please do not buy shares in any alcohol, tobacco, or defense companies.''}
-\end{quote}
-
-Lucid's language understanding module analyzes this sentence and extracts key facts:
+\noindent \textbf{Input / Output Contract (Stage 4.1)}:
 \begin{itemize}
-    \item \textbf{Investment Capital}: Converted into a numeric value: $\text{Rs.~}2,50,000$.
-    \item \textbf{Investment Horizon}: Extracted as 10 years.
-    \item \textbf{Financial Goal}: Tagged as an ``Education Goal.''
-    \item \textbf{Risk Appetite}: Confirmed as ``Moderate.''
-    \item \textbf{Excluded Sectors}: Mapped to industry exclusion rules: \texttt{FMCG\_TOBACCO}, \texttt{BEVERAGES\_ALCOHOL}, and \texttt{DEFENSE}.
+    \item \textbf{Input}: Investor capital $V_{\text{total}}$, time horizon, 5 risk survey answers, and conversational text.
+    \item \textbf{Output}: Structured investor mandate and policy caps stored in Domain 1 (\texttt{user\_profiles}, \texttt{risk\_assessments}).
 \end{itemize}
 
-\subsection{Step 3: Checking Overall Market Conditions (Market Regime)}
-Stock markets do not behave the same way every day. Sometimes markets are calm and rising steadily; other times they are volatile, unpredictable, or falling rapidly during global crises.
+\subsection{Stages 4.2 to 4.4: Market Regime Detection, Liquidity Funnel, and Factor Scoring}
 
-To protect retail investors, Lucid checks the overall temperature of the Indian stock market before picking individual stocks:
+\noindent \textbf{Stage 4.2: Market Regime Detection}:
+Lucid analyzes broad Indian market conditions before selecting individual equities. It evaluates the India Volatility Index (India VIX) and compares the Nifty 50 index against its 200-day Simple Moving Average (200-DMA):
+\begin{equation}
+\text{VIX Regime Tier} = 
+\begin{cases}
+\textbf{Calm} & \text{if } \text{VIX} < 13.0 \\
+\textbf{Moderate (Normal)} & \text{if } 13.0 \le \text{VIX} \le 18.0 \\
+\textbf{Volatile} & \text{if } 18.0 < \text{VIX} \le 24.0 \\
+\textbf{Extreme (Crisis)} & \text{if } \text{VIX} > 24.0
+\end{cases}
+\end{equation}
+When the market is in a Volatile or Extreme regime, Lucid automatically enforces more conservative stock beta limits and increases cash preservation reserves (the current benchmark VIX level is 14.2, corresponding to the Moderate tier).
+
+\noindent \textbf{Stage 4.3: Three-Tier Liquidity and Quality Funnel}:
+To protect investors from thinly traded penny stocks that cannot be easily sold, Lucid screens the entire catalog of listed Indian companies through a three-stage funnel:
+\begin{equation}
+\begin{aligned}
+\text{2,639 Master Equities} &\xrightarrow{\text{ADTV} \ge 25,000 \text{ sh/day}} \text{504 Liquid Stocks} \\
+&\xrightarrow{\text{Quality \& Safety Filters}} \text{30--60 Candidate Shortlist}
+\end{aligned}
+\end{equation}
+
+\noindent \textbf{Stage 4.4: Factor Scoring and Expected Return Formulation}:
+For all stocks in the active liquid pool, Lucid computes sector-normalized Z-scores across three fundamental factors: Quality ($Z_q$, based on Return on Equity), Value ($Z_v$, based on P/E and P/B ratios), and Momentum ($Z_m$, based on 6-month price trends). To prevent extreme outliers from distorting calculations, all factor scores are winsorized to the 5th and 95th percentiles:
+\begin{equation}
+Z_q, Z_v, Z_m \in [-3.0, +3.0]
+\end{equation}
+Expected annual return $E[R_i]$ for each eligible stock $i$ is formulated using a disciplined multi-factor asset pricing model:
+\begin{equation}
+E[R_i] = R_{\text{base}} + 1.2 \cdot \left( w_q Z_{q,i} + w_v Z_{v,i} + w_m Z_{m,i} \right) + 1.5 \cdot (\beta_i - 1.0)
+\end{equation}
+where $R_{\text{base}} = 10.5\%$ is the baseline market return in India and $\beta_i$ is the stock's market sensitivity relative to the Nifty 50. Simultaneously, the annual sample covariance matrix $\Sigma_{\text{reg}}$ is computed across 252 trading sessions.
+
+\noindent \textbf{Input / Output Contract (Stages 4.2--4.4)}:
+\begin{itemize}
+    \item \textbf{Input}: 2,639 listed exchange equities, 252 daily OHLCV price bars, balance sheet ratios, and live India VIX.
+    \item \textbf{Output}: Active 504 liquid equity pool, expected returns vector $\boldsymbol{\mu}$, and regularized covariance matrix $\Sigma_{\text{reg}}$.
+\end{itemize}
+
+\subsection{Stages 4.5 to 4.7: Multi-Agent AI Committee and Deterministic SLSQP Math}
+
+\noindent \textbf{Stage 4.5: Qualitative Agent Vetting (Nodes 1 to 9)}:
+Lucid passes the shortlisted candidate companies to a structured committee of AI specialist agents coordinated by LangGraph 0.4:
+\begin{itemize}
+    \item \textbf{Macro Analyst (Node 3)}: Evaluates RBI repo interest rates (6.50\%), inflation (5.10\%), and sets a recommended cash reserve buffer of 2.5\% to 5.0\%.
+    \item \textbf{Market and Fundamental Analysts (Nodes 4--5)}: Enforces balance sheet health standards: Return on Equity $\text{ROE} \ge 15\%$, positive earnings ($\text{P/E} \in [1, 150]$), and sensible leverage ($\text{Debt/Equity} \le 1.0$).
+    \item \textbf{News and Regulatory Analyst (Node 6)}: Scans recent corporate announcements and SEBI filings, verifying promoter share pledges are below 5\%.
+    \item \textbf{Lead Strategist (Node 7)}: Shortlists $K \in [10, 16]$ companies distributed across Core, Growth, and Defensive categories, ensuring $K \ge \lceil 100 / \text{max\_stock\%} \rceil$.
+    \item \textbf{Adversarial Risk Critic (Nodes 8--9)}: Audits candidate selections for valuation risk or concentration traps. If flaws are found, the Critic rejects the candidate and triggers a rework cycle (capped at a maximum of 2 iterations).
+\end{itemize}
+
+\noindent \textbf{Stage 4.6: Deterministic Mathematical Optimization (Node 10A)}:
+\textbf{Artificial intelligence models are strictly prohibited from calculating portfolio percentages or share quantities}. Numerical allocation is handled exclusively by the Sequential Least Squares Programming (\textbf{SciPy SLSQP}) solver, maximizing the Sharpe ratio:
+\begin{equation}
+\max_{\mathbf{w}} \ \frac{\mathbf{w}^T \boldsymbol{\mu} - R_f}{\sqrt{\mathbf{w}^T \Sigma_{\text{reg}} \mathbf{w}}}
+\end{equation}
+subject to hard statutory safety constraints:
+\begin{equation}
+\sum_{i=1}^{K} w_i = 1.0, \quad 0 \le w_i \le 0.25, \quad \sum_{i \in \text{Sector}_m} w_i \le 0.40
+\end{equation}
+enforcing a strict 25\% single-stock ceiling and a 40\% sector exposure ceiling.
+
+\noindent \textbf{Stage 4.7: Whole-Share Integer Lot Rounding and Cash Preservation (Node 10B)}:
+Because Indian stock exchanges do not allow fractional shares, continuous weights ($w_i^*$) are translated into exact whole share counts ($Q_i$) using floor rounding:
+\begin{equation}
+Q_i = \left\lfloor \frac{w_i^* \times V_{\text{total}}}{P_i} \right\rfloor
+\end{equation}
+A greedy remainder pass then evaluates whether leftover cash can purchase one additional share of the highest-conviction stock without breaching the 25\% single-stock ceiling. All remaining funds are preserved in the unallocated cash reserve ($C_{\text{res}} \ge \text{Rs.~}0$).
+
+\noindent \textbf{Input / Output Contract (Stages 4.5--4.7)}:
+\begin{itemize}
+    \item \textbf{Input}: 30--60 screened candidates, expected returns $\boldsymbol{\mu}$, covariance matrix $\Sigma_{\text{reg}}$, and capital $V_{\text{total}}$.
+    \item \textbf{Output}: Validated integer share lots $Q_i$, target weights $w_i^*$, and non-negative residual cash $C_{\text{res}} \ge \text{Rs.~}0$.
+\end{itemize}
+
+\subsection{Stage 4.8: Portfolio Delivery and Dual-Level Explainability}
+In Stage 4.8, Lucid packages the completed investment recommendation for the investor's web dashboard:
+\begin{itemize}
+    \item \textbf{Diversification Scorecard}: Renders a visual diversification donut ring scoring \textbf{95.5 / 100}, an annualized backtest return of \textbf{10.7\%}, portfolio volatility of \textbf{9.0\%}, a Sharpe ratio of \textbf{0.41}, and a balanced concentration score ($\text{HHI} = 898$).
+    \item \textbf{Discrete Holding Cards}: Shows exact whole-share holdings with real market prices, such as:
+    \begin{itemize}
+        \item \textbf{HDFC Bank Ltd.}: 32 shares / Rs.~54,976 (22.0\% weight) --- Role: CORE
+        \item \textbf{Reliance Industries Ltd.}: 16 shares / Rs.~45,440 (18.2\% weight) --- Role: CORE
+        \item \textbf{Tata Consultancy Services Ltd.}: 11 shares / Rs.~39,896 (16.0\% weight) --- Role: GROWTH
+    \end{itemize}
+    \item \textbf{Dual-Level Stock-Why Modal}:
+    \begin{itemize}
+        \item \textit{Level 1 (Retail Narrative)}: Clear, everyday explanations detailing why each company was selected and how it supports the user's life goal.
+        \item \textit{Level 2 (Factor Proofs \& Exchange Links)}: Verifiable quantitative metrics (ROE, P/E, Debt/Equity, sector Z-scores) with verified hyperlinks to official NSE and BSE corporate filing portals.
+    \end{itemize}
+    \item \textbf{Database Commit and CSV Export}: Commits the validated recommendation atomically to PostgreSQL as a new \texttt{PortfolioVersion} and generates a downloadable broker-ready CSV file.
+\end{itemize}
+Once committed, the active portfolio immediately enters Workflow III for continuous monitoring (\textit{Active Portfolio Tracked Every 300s}).
+
+\section{Workflow II: Existing Demat Portfolio Diagnosis (Stage 4.9)}
+Many Indian investors already hold shares purchased through various retail broker platforms (such as Zerodha, Groww, Angel One, or Upstox). Often, these holdings were accumulated haphazardly over several years, leaving the investor exposed to extreme single-stock concentration or hidden financial risks.
+
+Stage 4.9 provides an automated, objective health diagnostic audit for existing holdings:
 \begin{enumerate}
-    \item \textbf{Market Trend via Nifty 50 Moving Averages}:
-    Lucid compares the current price of the Nifty 50 index ($P_{\text{Nifty}}$) against its 50-day Simple Moving Average ($\text{SMA}_{50}$) and 200-day Simple Moving Average ($\text{SMA}_{200}$):
+    \item \textbf{Consolidated Account Statement (CAS) Ingestion}: The user uploads their official monthly Demat CAS statement PDF (issued by CDSL or NSDL) or a broker holdings CSV. The document is processed securely using \texttt{pdfplumber 0.11.5}.
+    \item \textbf{Three-Step Exchange Entity Resolver}: To match company names in messy PDF statements against official exchange databases across all \textbf{2,639 listed NSE and BSE equities}, Lucid applies a hierarchical three-step resolution pipeline:
+    \begin{enumerate}
+        \item \textit{Step 1 (Exact Match)}: Matches by standard exchange symbol or 12-character ISIN code.
+        \item \textit{Step 2 (Trigram Fuzzy Matching)}: Uses PostgreSQL's \texttt{pg\_trgm} extension with a similarity threshold $> 0.4$ to resolve variations like \textit{``Reliance Inds''} to \textit{``Reliance Industries Ltd.''}.
+        \item \textit{Step 3 (Levenshtein Distance Fallback)}: Resolves remaining minor typographical discrepancies or legal suffix differences.
+    \end{enumerate}
+    \item \textbf{Herfindahl-Hirschman Index (HHI) Concentration Audit}:
+    Lucid computes the portfolio's concentration score to evaluate whether wealth is dangerously concentrated:
     \begin{equation}
-    \text{Market Trend} = 
-    \begin{cases}
-    \textbf{Bullish (Upward)} & \text{if } P_{\text{Nifty}} > \text{SMA}_{50} > \text{SMA}_{200} \\
-    \textbf{Neutral (Sideways)} & \text{if } \text{SMA}_{50} \ge P_{\text{Nifty}} \ge \text{SMA}_{200} \\
-    \textbf{Bearish (Downward)} & \text{if } P_{\text{Nifty}} < \text{SMA}_{200}
-    \end{cases}
+    \text{HHI} = \sum_{i=1}^{N} (w_i \times 100)^2
     \end{equation}
-    \item \textbf{Market Volatility via India VIX}:
-    The India Volatility Index (India VIX), often called the ``fear gauge,'' measures how much market fluctuation traders expect over the next 30 days:
-    \begin{equation}
-    \text{Volatility Tier} = 
-    \begin{cases}
-    \text{Low (Calm)} & \text{if } \text{VIX} < 13.0 \\
-    \text{Normal (Stable)} & \text{if } 13.0 \le \text{VIX} \le 18.0 \\
-    \text{Elevated (Nervous)} & \text{if } 18.0 < \text{VIX} \le 24.0 \\
-    \text{Extreme (Panic)} & \text{if } \text{VIX} > 24.0
-    \end{cases}
-    \end{equation}
+    where $w_i$ is the fraction of total wealth in stock $i$. Concentration is graded into three safety tiers:
+    \begin{itemize}
+        \item $\text{HHI} < 1,500$: \textbf{Safe / Well Diversified}. Wealth is distributed healthily across multiple companies.
+        \item $1,500 \le \text{HHI} \le 2,500$: \textbf{Moderate Concentration}. The portfolio is somewhat top-heavy and requires monitoring.
+        \item $\text{HHI} > 2,500$: \textbf{High Risk / Dangerously Concentrated}. A large percentage of capital is tied up in one or two stocks, exposing the investor to severe loss if those companies suffer setbacks.
+    \end{itemize}
+    \item \textbf{Seven-Section Diagnostic Report and AI Copilot}:
+    Generates an itemized diagnostic report flagging single stocks exceeding 25\%, sectors exceeding 40\%, and illiquid Tier 4 microcaps. An interactive conversational copilot (\texttt{/diagnosis/\{id\}/chat}) allows the user to ask questions and receive concrete remediation swap proposals.
 \end{enumerate}
 
-When market volatility is high (VIX $> 18$), Lucid automatically becomes more cautious. It increases the risk-penalty factor ($\lambda$) in its calculations, favoring large, stable, dividend-paying companies over volatile smaller firms.
+\noindent \textbf{Bridge to Rebalancing}: Clicking \textbf{Rebalance} in the diagnostic report seamlessly routes the investor into Workflow III (Stage 4.11) to execute corrective trades.
 
-\subsection{Step 4: Ensuring Stock Liquidity and Safety}
-A common trap for retail investors is buying shares in tiny or illiquid companies where very few shares are traded each day. In such stocks, an investor may find it impossible to sell their shares when they need their money back, or they may suffer large price losses due to a lack of buyers.
+\section{Workflow III: Continuous 300s Drift Monitoring and Statutory Rebalancing (Stages 4.10 to 4.12)}
 
-To protect users from illiquid stocks, Lucid maintains a synchronized master catalog of \textbf{2,639 listed Indian companies} and categorizes them into four institutional \textbf{Liquidity Tiers} based on their Average Daily Trading Volume (ADTV):
+\subsection{Stage 4.10: Continuous 300-Second Drift Radar Engine}
+Once a portfolio is active, market movements cause stock prices to fluctuate continuously. When one company's stock surges while another lags, the portfolio's actual weights drift away from their intended targets.
+
+Lucid's continuous drift radar monitors active portfolios automatically:
+\begin{itemize}
+    \item \textbf{Trading Hours Execution}: Runs every \textbf{300 seconds (5 minutes)} during official Indian market trading hours (Monday through Friday, 09:15 to 15:30 IST), respecting the official NSE trading calendar.
+    \item \textbf{Concurrency Protection}: Guarded by PostgreSQL transaction-level advisory lock \texttt{847291}, ensuring that concurrent worker processes never run duplicate drift evaluations.
+    \item \textbf{Live Valuation and Drift Measurement}: Measures the weight change for each holding $i$ and each industry sector $k$:
+    \begin{equation}
+    dw_i = w_i(t) - w_i^*, \quad ds_k = s_k(t) - s_k^*
+    \end{equation}
+    \item \textbf{Dual Operational Decision Branches}:
+    \begin{itemize}
+        \item \textbf{Branch A (Healthy Corridor)}: If $|dw_i| < 5.0\%$ for all stocks and $|ds_k| < 8.0\%$ for all sectors, the portfolio status is tagged as \textbf{ON\_TRACK}. Lucid takes no action, preventing unnecessary transaction taxes and portfolio churn.
+        \item \textbf{Branch B (Drift Breach)}: If any individual stock drifts by $\ge 5.0\%$ or any sector drifts by $\ge 8.0\%$, Lucid flags a \textbf{Drift Breach} and activates the Stage 4.11 trade realignment engine.
+    \end{itemize}
+    \item \textbf{Data Freshness Guards}: Every quote is tagged with its origin timestamp, showing whether market data is \texttt{LIVE}, \texttt{15-MIN DELAYED}, or \texttt{END OF DAY}.
+\end{itemize}
+
+\subsection{Stages 4.11 to 4.12: Before/After Rebalance Preview, Statutory Cost Engine, and Order Execution}
+When a drift breach occurs, Lucid does not execute trades silently behind the investor's back. Instead, it prepares a transparent, itemized before-and-after rebalance preview.
+
+\noindent \textbf{1. Concrete Trade Realignment}:
+Table~\ref{tab:rebalance_preview_example} illustrates how Lucid calculates corrective buy and sell orders to restore balance:
 
 \begin{table}[H]
 \centering
-\caption{Lucid Stock Universe Liquidity Tier Classification}
-\label{tab:liquidity_tiers}
+\small
+\caption{Rebalance Trade Preview: Before vs. After Allocation Realignment}
+\label{tab:rebalance_preview_example}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{llccc}
+\begin{tabular}{lcccc}
 \toprule
-\textbf{Liquidity Tier} & \textbf{Market Segment / Description} & \textbf{Min Daily Shares} & \textbf{Min Daily Value (Rs.)} & \textbf{Eligible for Recommendation} \\
+\textbf{Sector / Asset} & \textbf{Before (Drifted)} & \textbf{Proposed Action} & \textbf{After (Target $v+1$)} & \textbf{Status} \\
 \midrule
-\textbf{Tier 1: Ultra Liquid} & Nifty 50 and Nifty Next 50 blue-chip companies & $> 1,00,000$ & $> \text{Rs.~}1,00,00,000$ & \textbf{Yes (Top Priority)} \\
-\textbf{Tier 2: Broad Liquid} & Nifty Midcap 150 established mid-sized companies & $> 50,000$ & $> \text{Rs.~}50,00,000$ & \textbf{Yes (High Priority)} \\
-\textbf{Tier 3: Emerging Liquid} & Top half of Nifty Smallcap 250 growing companies & $> 10,000$ & $> \text{Rs.~}25,00,000$ & \textbf{Yes (Subject to Quality Filters)} \\
-\textbf{Tier 4: Restricted} & Micro-caps, penny stocks, or suspended series & $< 10,000$ & $< \text{Rs.~}25,00,000$ & \textbf{No (Excluded to Protect Capital)} \\
+\textbf{Information Technology} & 34.5\% (+6.5\% Drift) & \textbf{SELL 4 Shares} & 28.0\% & Aligned within Cap \\
+\textbf{Fast-Moving Consumer Goods} & 11.0\% (Under-Allocated) & \textbf{BUY 8 Shares} & 17.5\% & Restored to Target \\
+\textbf{Unallocated Cash Reserve} & Rs.~3,142.00 & Net Cash Conserved & $\ge \text{Rs.~}0.00$ & Guaranteed Surplus \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
-All active equities across the 2,639 listed exchange securities are evaluated dynamically. Only actively traded shares meeting institutional liquidity standards are recommended for new portfolios, while Tier 4 stocks remain searchable so investors can analyze historical holdings imported from their existing Demat statements.
-
-\section{Phase II: Stock Research and Multi-Agent Evaluation}
-
-\subsection{Step 5: Examining Company Financial Fundamentals}
-Just as a doctor examines vital signs before certifying a person healthy, Lucid examines six core financial metrics for each eligible company:
-\begin{enumerate}
-    \item \textbf{Return on Equity (ROE)}: Measures how efficiently a company generates profits from the money shareholders have invested:
-    \begin{equation}
-    \text{ROE} = \frac{\text{Annual Net Profit}}{\text{Total Shareholders' Equity}} \times 100\%
-    \end{equation}
-    Lucid prefers companies with an $\text{ROE} \ge 15\%$, showing strong profitability.
-    \item \textbf{Price-to-Earnings (P/E) Ratio}: Compares the company's stock price to its annual earnings per share. This shows whether a stock is cheap or expensive relative to industry peers.
-    \item \textbf{Debt-to-Equity Ratio (D/E)}: Compares the company's total borrowings to its net worth. Lucid strictly requires $\text{D/E} \le 1.5$ for non-banking companies, ensuring the business is not at risk of bankruptcy from heavy debt burdens.
-    \item \textbf{Operating Cash Flow}: Verifies that reported accounting profits represent real cash flowing into bank accounts rather than uncollected promises.
-    \item \textbf{Historical Price Volatility ($\sigma_i$)}: Measures how widely the stock's price has fluctuated over the past 252 trading sessions (one full year).
-    \item \textbf{Market Beta ($\beta_i$)}: Measures how sensitive the stock is to broad market movements. A stock with $\beta = 1.0$ moves in sync with the Nifty 50; a stock with $\beta = 1.5$ is 50\% more volatile than the market; and a stock with $\beta = 0.7$ is more defensive and stable.
-\end{enumerate}
-
-\subsection{Step 6 to Step 9: The Multi-Agent Research Team in Action}
-Once quantitative screening narrows the stock universe to roughly 50 promising companies, Lucid's team of 13 AI agents conducts in-depth qualitative evaluation:
+\noindent \textbf{2. Statutory Indian Transaction Cost Engine (October 2024 Schedule)}:
+Lucid calculates every mandatory government tax and exchange levy before any trade is confirmed:
 \begin{itemize}
-    \item \textbf{Macro Analyst Agent}: Reviews current Reserve Bank of India (RBI) interest rates and inflation figures to identify which industries will benefit from the current economic climate.
-    \item \textbf{Sector Specialist Agents}: Examine company competitive advantages (known as economic moats), such as strong brand names, technological leadership, or distribution networks.
-    \item \textbf{News and Sentiment Agent}: Reads recent news articles to identify any legal disputes, management scandals, or regulatory investigations that might endanger the company.
-    \item \textbf{Adversarial Critic Agent}: Acts as a professional skeptic. The Critic specifically searches for weaknesses or warning signs in the candidate companies, challenging overly optimistic opinions and eliminating candidates with hidden risks.
+    \item \textbf{Securities Transaction Tax (STT)}: 0.10\% charged on delivery equity trades.
+    \item \textbf{Exchange Turnover Fees}: 0.00297\% on NSE and 0.00375\% on BSE.
+    \item \textbf{Stamp Duty}: 0.015\% charged on buy orders under the Indian Stamp Act.
+    \item \textbf{SEBI Regulatory Turnover Fee}: 0.0001\% (Rs.~10 per crore).
+    \item \textbf{Goods and Services Tax (GST)}: 18.0\% applied to brokerage and transaction fees.
 \end{itemize}
 
-At the conclusion of this process, the agents produce a finalized shortlist of 15 to 25 high-quality companies, along with conviction ratings and plain-English reasons for their selection.
+\noindent \textbf{3. Post-Trade Cash Guarantee and Cooldown}:
+The rebalancing engine strictly enforces that post-trade unallocated cash must never fall below zero ($C_{\text{res}} \ge \text{Rs.~}0$). If taxes and charges exceed available cash reserves, the algorithm automatically trims 1 share from the largest purchase order. To prevent alert fatigue, Lucid enforces an automated \textbf{120-minute notification cooldown} before issuing repeated alerts for the same portfolio.
 
-\section{Phase III: Mathematical Optimization and Real-World Execution}
-
-\subsection{Step 10: Modern Portfolio Optimization (SciPy SLSQP)}
-A key design principle of Lucid is that \textbf{AI agents are never allowed to calculate stock numbers, percentages, or money allocations}. When artificial intelligence models attempt numerical calculations, they can produce mathematical errors or invent numbers out of thin air.
-
-Instead, Lucid passes the candidate shortlist to a proven, deterministic mathematical engine that uses the \textbf{Sequential Least Squares Programming (SLSQP)} solver from the scientific library \texttt{scipy.optimize}.
-
-\noindent \textbf{The Optimization Goal}:
-Depending on the investor's risk profile, the solver maximizes the \textbf{Sharpe Ratio} (the amount of investment return earned per unit of risk taken):
-\begin{equation}
-\max_{\mathbf{w}} \text{Sharpe Ratio} = \frac{\mathbf{w}^T \boldsymbol{\mu} - R_f}{\sqrt{\mathbf{w}^T \mathbf{\Sigma} \mathbf{w}}}
-\end{equation}
-where:
-\begin{itemize}
-    \item $\mathbf{w} = [w_1, w_2, \dots, w_K]^T$ is the vector of percentage weights allocated to each stock.
-    \item $\boldsymbol{\mu} = [\mu_1, \mu_2, \dots, \mu_K]^T$ is the expected annual return for each stock based on historical performance.
-    \item $R_f$ is the risk-free return rate in India (the interest rate paid by safe Indian government treasury bills, set at 7.0\% per year).
-    \item $\mathbf{\Sigma}$ is the covariance matrix measuring how the prices of the different stocks move together. If two stocks move in opposite directions, combining them lowers total portfolio risk.
-\end{itemize}
-
-\noindent \textbf{Strict Financial Rules (Constraints)}:
-The solver must satisfy three mandatory safety rules:
-\begin{enumerate}
-    \item \textbf{100\% Capital Allocation}: The weights of all stocks must add up to exactly 100\%:
-    \begin{equation}
-    \sum_{i=1}^{K} w_i = 1.0 \quad (100\%)
-    \end{equation}
-    \item \textbf{No Borrowing or Short Selling}: Every stock weight must be non-negative:
-    \begin{equation}
-    w_i \ge 0.0 \quad \text{for all stocks } i
-    \end{equation}
-    \item \textbf{Single-Stock Cap (Maximum 25\%)}: To prevent excessive exposure to any single company, no stock may exceed 25\% of the portfolio:
-    \begin{equation}
-    w_i \le 0.25 \quad (25\%)
-    \end{equation}
-    \item \textbf{Sector Diversification Cap (Maximum 40\%)}: To protect the investor against an industry downturn, all stocks belonging to the same sector (such as Information Technology or Banking) combined must not exceed 40\%:
-    \begin{equation}
-    \sum_{i \in \text{Sector}_m} w_i \le 0.40 \quad (40\%)
-    \end{equation}
-\end{enumerate}
-
-\subsection{Step 11: Converting Weights into Whole Shares}
-Under Indian stock market regulations, shares must be purchased as whole units. An investor cannot buy 3.42 shares of a company; they can only buy 3 shares or 4 shares.
-
-Because the optimizer calculates continuous weights (such as 14.32\%), Lucid translates these percentages into whole share counts without exceeding available capital $C$.
-
-\noindent \textbf{Stage 1: Floor Rounding}:
-For each stock $i$ with calculated weight $w_i^*$ and current price $P_i$, the initial whole-share quantity $q_i$ is determined by rounding down:
-\begin{equation}
-q_i = \left\lfloor \frac{C \cdot w_i^*}{P_i} \right\rfloor
-\end{equation}
-The total money allocated across all shares is:
-\begin{equation}
-C_{\text{alloc}} = \sum_{i=1}^{K} q_i \cdot P_i
-\end{equation}
-The leftover unallocated cash $C_{\text{residual}}$ is:
-\begin{equation}
-C_{\text{residual}} = C - C_{\text{alloc}} \ge 0
-\end{equation}
-
-\noindent \textbf{Stage 2: Cash Remainder Allocation}:
-If leftover cash remains ($C_{\text{residual}} > 0$), Lucid checks whether one additional share of the highest-conviction stocks can be bought without violating the 25\% single-stock limit:
-\begin{equation}
-(q_j + 1) \cdot P_j \le C_{\text{alloc}} + C_{\text{residual}} \quad \text{and} \quad \frac{(q_j + 1) \cdot P_j}{C} \le 0.25
-\end{equation}
-If the share fits within the budget, it is added. Any tiny remainder that cannot purchase a full share is preserved in the investor's cash reserve balance. Not a single rupee is lost or unaccounted for.
-
-\noindent \textbf{Simple Numerical Example}:
-Suppose an investor has $C = \text{Rs.~}50,000$, and the solver allocates a 15\% weight ($w_1^* = 0.15$, or Rs.~7,500) to Infosys, trading at $P_1 = \text{Rs.~}1,800$ per share:
-\begin{equation}
-q_1 = \left\lfloor \frac{7500}{1800} \right\rfloor = \lfloor 4.167 \rfloor = 4 \text{ whole shares}
-\end{equation}
-The 4 shares cost $4 \times 1800 = \text{Rs.~}7,200$, leaving Rs.~300 in the cash reserve pool for other purchases.
-
-\subsection{Step 12: Statutory Indian Tax and Transaction Fee Modeling}
-When an investor buys or sells shares on the Indian stock market, mandatory government taxes and exchange fees are charged. Lucid calculates these fees transparently so the user sees the exact total cost before executing any trade.
-
-Table~\ref{tab:transaction_costs} lists the official fee rates applied by Lucid:
-
-\begin{table}[H]
-\centering
-\caption{Statutory Indian Equity Delivery Transaction Fee Schedule}
-\label{tab:transaction_costs}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{llcc}
-\toprule
-\textbf{Fee Component} & \textbf{Authority / Legal Basis} & \textbf{Buy Rate} & \textbf{Sell Rate} \\
-\midrule
-\textbf{Securities Transaction Tax (STT)} & Department of Revenue, Govt. of India & 0.1000\% & 0.1000\% \\
-\textbf{Exchange Turnover Charge} & NSE / BSE & 0.00325\% & 0.00325\% \\
-\textbf{SEBI Turnover Fee} & Securities and Exchange Board of India & 0.0001\% (Rs.~10 per Cr) & 0.0001\% (Rs.~10 per Cr) \\
-\textbf{Stamp Duty} & Indian Stamp Act (Govt. of India) & 0.0150\% & 0.0000\% \\
-\textbf{Brokerage (Discount Broker Profile)} & Broker Platform (Zerodha / Groww profile) & Rs.~0.00 & Rs.~0.00 \\
-\textbf{Goods and Services Tax (GST)} & Ministry of Finance, Govt. of India & 18\% on (Brokerage + Txn + SEBI) & 18\% on (Brokerage + Txn + SEBI) \\
-\bottomrule
-\end{tabular}%
-}
-\end{table}
-
-\noindent \textbf{Numerical Example}:
-For a purchase of $\text{Rs.~}1,00,000$ worth of delivery equity shares:
-\begin{itemize}
-    \item $\text{STT} = 0.10\% \times 1,00,000 = \text{Rs.~}100.00$
-    \item $\text{Stamp Duty} = 0.015\% \times 1,00,000 = \text{Rs.~}15.00$
-    \item $\text{Exchange Fee} = 0.00325\% \times 1,00,000 = \text{Rs.~}3.25$
-    \item $\text{SEBI Fee} = 0.0001\% \times 1,00,000 = \text{Rs.~}0.10$
-    \item $\text{GST} = 18\% \times (3.25 + 0.10) = \text{Rs.~}0.60$
-    \item \textbf{Total Statutory Fees}:
-    \[
-    \text{Total Friction} = 100.00 + 15.00 + 3.25 + 0.10 + 0.60 = \text{Rs.~}118.95
-    \]
-    This equals only about 0.12\% of the total trade value.
-\end{itemize}
-
-\section{Phase IV: Market Monitoring, Diagnosis, and Fiduciary Explanations}
-
-\subsection{Step 13: Demat Portfolio (CAS) Diagnosis}
-Many investors already hold existing stocks purchased across multiple broker platforms (such as Zerodha, Groww, or Angel One). To give these investors clarity on their current investments, Lucid includes an automated Demat statement diagnostic tool.
-
-The user simply uploads their official monthly Consolidated Account Statement (CAS PDF) provided by CDSL or NSDL. Lucid parses the PDF, extracts every stock held, and evaluates:
-\begin{enumerate}
-    \item \textbf{Herfindahl-Hirschman Index (HHI)}:
-    Measures whether the investor's money is concentrated dangerously in too few companies:
-    \begin{equation}
-    \text{HHI} = \sum_{i=1}^{N} (s_i \times 100)^2
-    \end{equation}
-    where $s_i$ is the share of total portfolio wealth in stock $i$. An $\text{HHI} > 2500$ indicates severe concentration risk (for example, having 60\% of wealth in a single stock).
-    \item \textbf{Overlapping Holdings and Sector Skews}: Identifies whether the user is accidentally overexposed to a single industry (such as holding six different banking stocks that make up 55\% of their money).
-    \item \textbf{Actionable Health Ratings}: Marks each position with a clear recommendation: \textbf{Keep (Hold)}, \textbf{Add (Buy)}, \textbf{Trim (Sell)}, or \textbf{No Action Needed}.
-\end{enumerate}
-
-\subsection{Step 14: Continuous Background Monitoring and Drift Radar}
-Once a portfolio is active, its stock weights do not stay constant. If one stock doubles in price while another stays flat, the first stock becomes a much larger percentage of the portfolio than originally intended. This unintended shift is called \textbf{portfolio drift}.
-
-Lucid's background monitoring service evaluates all active portfolios every 300 seconds (5 minutes) during official Indian exchange trading hours (Monday through Friday, 09:15 to 15:30 IST).
-
-The drift for each stock $i$ at time $t$ is calculated as the difference between its current actual weight $w_i(t)$ and its planned target weight $w_{i,\text{target}}$:
-\begin{equation}
-\text{Drift}_i(t) = \left| \frac{q_i \cdot P_i(t)}{\sum_{j=1}^{K} q_j \cdot P_j(t) + C_{\text{cash}}} - w_{i,\text{target}} \right|
-\end{equation}
-
-If any single stock's weight moves away from its target by 5\% or more, or if an entire industry sector moves by 8\% or more:
-\begin{equation}
-\max_{i} \text{Drift}_i(t) \ge 0.05 \quad (5\%) \quad \lor \quad \max_{m} \text{SectorDrift}_m(t) \ge 0.08 \quad (8\%)
-\end{equation}
-Lucid automatically triggers a \textbf{Rebalance Alert}.
-
-\subsection{Step 15: Rebalance Impact Preview}
-When a rebalance alert is triggered, Lucid does not execute trades silently or automatically. Instead, it prepares a transparent \textbf{Rebalance Impact Preview} for the investor:
-\begin{itemize}
-    \item Shows the exact proposed trades (for example: ``Sell 5 shares of Stock A, Buy 3 shares of Stock B'').
-    \item Displays the portfolio balance before and after the proposed adjustment.
-    \item Calculates the statutory taxes and transaction fees that will be charged.
-    \item Guarantees that the cash required for new purchases does not exceed the proceeds from sales plus available cash reserves.
-\end{itemize}
-The investor remains in complete control and can inspect the exact impact before approving the rebalancing action.
-
-\subsection{Step 16: Dual-Level Fiduciary ``Stock-Why'' Explanations}
-Most robo-advisors show users a pie chart with stock names, giving no explanation as to why those particular companies were selected. This lack of transparency causes anxiety for retail investors.
-
-To eliminate this ``black box,'' Lucid provides a \textbf{dual-level explanation} for every recommended stock:
-\begin{enumerate}
-    \item \textbf{Retail Narrative Tier (For Everyday Investors)}: A conversational, easy-to-read explanation explaining the company's business model, competitive advantages, and why it fits the user's specific investment goal.
-    \item \textbf{Quantitative Metric Tier (For Serious Investors)}: A verifiable financial scorecard showing the company's Return on Equity (ROE), P/E ratio, Debt-to-Equity ratio, 1-year historical return, market beta, and its mathematical contribution to portfolio diversification.
-\end{enumerate}
-
-This dual-tier approach ensures that both novice investors and experienced traders have complete confidence and transparency in every investment recommendation.
+Once the investor reviews and approves the preview, the new allocation is committed as version $v+1$ in PostgreSQL, and execution-ready broker instructions are generated.
