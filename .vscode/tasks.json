@@ -1,0 +1,78 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Lucid: Start Application (Automated One-Command)",
+      "type": "shell",
+      "command": "./start_lucid.sh",
+      "windows": {
+        "command": "powershell -ExecutionPolicy Bypass -File .\\start_lucid.ps1"
+      },
+      "isBackground": true,
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Lucid: Stop Application",
+      "type": "shell",
+      "command": "./stop_lucid.sh",
+      "windows": {
+        "command": "powershell -ExecutionPolicy Bypass -File .\\stop_lucid.ps1"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Lucid: Service Status",
+      "type": "shell",
+      "command": "./status_lucid.sh",
+      "windows": {
+        "command": "powershell -ExecutionPolicy Bypass -File .\\status_lucid.ps1"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Lucid: Stream Live Logs",
+      "type": "shell",
+      "command": "./logs_lucid.sh all",
+      "windows": {
+        "command": "powershell -ExecutionPolicy Bypass -File .\\logs_lucid.ps1"
+      },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Lucid: Run Backend Tests (Pytest)",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/bin/pytest backend/tests -v",
+      "windows": {
+        "command": ".\\.venv\\Scripts\\pytest.exe backend/tests -v"
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Lucid: Verify Setup",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/bin/python scripts/verify_setup.py",
+      "windows": {
+        "command": ".\\.venv\\Scripts\\python.exe scripts\\verify_setup.py"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Lucid: Build Frontend (Next.js)",
+      "type": "shell",
+      "command": "cd frontend && npm run build",
+      "windows": {
+        "command": "cd frontend; npm run build"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

@@ -1,507 +1,632 @@
-# Lucid — Intelligent Investment Portfolio Platform for Indian Retail Equities
+<div align="center">
 
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+# 🌟 Lucid
+### Intelligent Investment Portfolio Platform for Indian Retail Equities
+**Bridging Institutional Wealth Management & Indian Retail Investors via Multi-Agent AI & Deterministic Financial Mathematics**
+
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.8-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Next.js](https://img.shields.io/badge/Next.js-16.4.2-black.svg?logo=next.js&logoColor=white)](https://nextjs.org)
 [![React](https://img.shields.io/badge/React-19.3.0-61DAFB.svg?logo=react&logoColor=black)](https://react.dev)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-4169E1.svg?logo=postgresql&logoColor=white)](https://www.postgresql.org)
-[![Python](https://img.shields.io/badge/Python-3.11_--_3.14-3776AB.svg?logo=python&logoColor=white)](https://python.org)
-[![LangGraph](https://img.shields.io/badge/LangGraph-Multi--Agent-orange.svg)](https://langchain-ai.github.io/langgraph/)
-[![SciPy](https://img.shields.io/badge/SciPy-SLSQP_Optimization-8CAAE6.svg?logo=scipy&logoColor=black)](https://scipy.org)
-[![License](https://img.shields.io/badge/License-Proprietary-red.svg)]()
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16.4-4169E1.svg?logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB.svg?logo=python&logoColor=white)](https://www.python.org)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-4.1-38B2AC.svg?logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
+[![SciPy](https://img.shields.io/badge/SciPy-1.15.2-8CAAE6.svg?logo=scipy&logoColor=white)](https://scipy.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Lucid is an institutional-grade, agentic AI-driven equity portfolio construction, continuous monitoring, and rebalancing platform engineered specifically for Indian retail investors across the **National Stock Exchange (NSE)** and **Bombay Stock Exchange (BSE)**.
+[Quick Start](#7-one-command-installation-and-launch) • [Features](#2-application-features) • [Screenshots](#3-application-screenshots) • [Architecture](#5-system-architecture) • [VS Code Setup](#9-vs-code-setup) • [Postman Collection](#16-postman-api-testing) • [Documentation](#22-detailed-documentation)
+
+</div>
 
 ---
 
-## ⚡ Quick Start — One-Command Automated Setup & Launcher
+> [!IMPORTANT]
+> **Academic & Educational Disclaimer**: Lucid is an academic research platform and institutional-grade decision-support prototype. It does not provide SEBI-registered investment advice, portfolio management services (PMS), or guarantee investment returns. All analyses, allocations, and simulations are for educational evaluation purposes.
 
-Run Lucid with a **single command**. The launcher automatically detects your operating system, configures Python `.venv`, installs frontend dependencies, generates cryptographically secure `.env` secrets, initializes PostgreSQL, executes Alembic migrations, seeds the 2,639-stock NSE/BSE universe, starts both backend and frontend servers, and launches your browser:
+---
 
-### macOS / Linux
+## 1. Lucid Overview
+
+### What is Lucid?
+**Lucid** is an open-source, full-stack intelligent investment portfolio platform designed specifically for the **Indian equity market** (National Stock Exchange - NSE, and Bombay Stock Exchange - BSE). It captures the disciplined methodologies of institutional Indian mutual fund managers and brings them directly to everyday retail investors.
+
+### Who is Lucid Built For?
+Retail equity investors in India face a fragmented market experience:
+- Social media "finfluencers" and tip-sheets promote speculative trading without risk suitability checks.
+- Traditional mutual funds charge ongoing expense ratios without giving investors transparent visibility into individual stock selection rationales.
+- Institutional wealth management tools (Bloomberg, FactSet) cost upwards of \$25,000 annually, putting disciplined factor analysis out of reach for retail investors.
+
+### What Problem Does Lucid Solve?
+Lucid bridges this divide by providing:
+1. **SEBI-Compliant Psychometric Risk Profiling**: Tailors equity recommendations to your exact risk tolerance (Conservative Preserver, Moderate Accumulator, or Aggressive Compounder), capital constraints, and investment time horizon.
+2. **Strict Separation of Qualitative AI & Deterministic Mathematics**: Uses multi-agent LLM analysis solely for qualitative research, company filing analysis, and news sentiment auditing, while relying entirely on **deterministic mathematical optimization (SciPy SLSQP)** for final asset weights. **The AI is never allowed to hallucinate or guess portfolio percentages.**
+3. **Whole-Share Integer Execution ($Q_i \in \mathbb{Z}^+)$**: The Indian equity market does not permit fractional shares. Lucid translates continuous theoretical weights into feasible, whole-share integer quantities and explicit unallocated cash cushions ($C_{\text{res}}$), ensuring every recommended portfolio can actually be executed in a standard demat account.
+4. **Transparent "Why This Stock?" Explainability**: Every recommended holding includes a dual-level fiduciary explanation detailing macroeconomic alignment, valuation metrics (P/E, P/B, ROE), Altman Z-score insolvency checks, and verified regulatory links.
+
+---
+
+## 2. Application Features
+
+| Feature | Description |
+|---|---|
+| **Natural Language Onboarding** | Guided conversational interview collecting investment capital, time horizon, financial goals, and sector preferences. |
+| **SEBI Psychometric Questionnaire** | 5-question psychometric risk assessment assigning investors to SEBI-aligned risk score tiers. |
+| **Comprehensive Security Master** | Synchronizes and maintains 2,639 active equity listings across NSE and BSE with sector and industry classifications. |
+| **Multi-Agent Research Pipeline** | 5-stage LangGraph workflow: Macro Analyst, Technical Market Analyst, Fundamental Research Analyst, News/SEBI Auditor, and Lead Strategist. |
+| **Deterministic SciPy SLSQP Solver** | Minimizes portfolio variance or maximizes the Sharpe ratio subject to strict single-stock ($\le 20\text{--}25\%$) and sector ($\le 30\text{--}40\%$) exposure caps. |
+| **Whole-Share Integer Allocator** | Converts continuous percentage weights into whole-share lot sizes using a bounded greedy allocator with zero cash overspend. |
+| **Demat Portfolio Diagnosis** | Uploads or inputs an existing stock portfolio to analyze sector concentration risk, valuation multiples, and benchmark beta drift. |
+| **Real-Time Portfolio Monitoring** | Continuously tracks portfolio drift against initial target weights and generates rebalancing recommendations when drift exceeds predefined thresholds ($\pm 5\%$). |
+| **Benchmark Comparison** | Real-time comparative tracking against benchmark indices including the Nifty 50 and BSE Sensex. |
+| **Tax-Aware Rebalancing Preview** | Previews rebalancing trades while accounting for Indian securities transaction taxes (STT) and long-term/short-term capital gains rules. |
+| **Interactive Fiduciary Drawer** | Slide-out factor proof drawer providing ROE, Debt/Equity, P/E, 30-day sentiment, and SEBI filing evidence for every holding. |
+| **Multi-Portfolio Versioning** | Maintains complete immutable historical versions of generated portfolios ($v_1, v_2, \dots$) with visual side-by-side comparison. |
+
+---
+
+## 3. Application Screenshots
+
+### Investor Dashboard & Market Overview
+The primary landing dashboard displays macroeconomic indicators (India 10-Year G-Sec yield, Repo Rate, CPI Inflation, and India VIX), active portfolio valuations, recent market updates, and quick navigation actions.
+
+<div align="center">
+  <img src="docs/screenshots/ui_landing_dashboard.png" alt="Lucid Investor Landing Dashboard" width="900" />
+</div>
+
+*Figure 3.1: Lucid Investor Dashboard displaying macroeconomic indicators, active portfolio performance, and quick navigation launchers.*
+
+---
+
+### Portfolio Allocation & Integer Holdings Breakdown
+Visualizes the generated portfolio with interactive Recharts sector distribution, risk metrics (Sharpe Ratio, Value-at-Risk 95%, Maximum Drawdown), discrete whole-share quantities ($Q_i$), share prices ($P_i$), and cash cushion ($C_{\text{res}}$).
+
+<div align="center">
+  <img src="docs/screenshots/ui_portfolio_allocation.png" alt="Portfolio Allocation & Integer Share Quantities" width="900" />
+</div>
+
+*Figure 3.2: Generated portfolio showing sector allocation, risk-adjusted metrics, exact share counts, and unallocated cash reserve.*
+
+---
+
+## 4. Technology Stack
+
+Lucid uses modern software libraries across backend, frontend, database, and optimization layers:
+
+```mermaid
+flowchart LR
+    subgraph Frontend["Frontend (Next.js 16 / React 19)"]
+        UI["Tailwind CSS 4.1"]
+        RC["Recharts Visualizations"]
+        TS["TypeScript 5.8"]
+    end
+    subgraph Backend["Backend (FastAPI 0.115 / Python 3.11+)"]
+        API["FastAPI REST Engine (82 Endpoints)"]
+        AUTH["PyJWT + Passlib Bcrypt"]
+        VAL["Pydantic V2 Schemas"]
+    end
+    subgraph Optimization["Optimization & AI"]
+        SLSQP["SciPy 1.15 SLSQP Solver"]
+        NUM["NumPy & Pandas"]
+        LG["LangGraph Agent Workflow"]
+        GEM["Google Gemini 3.8 Flash"]
+    end
+    subgraph Database["Database & Persistence"]
+        PG["PostgreSQL 16.4 Core (62 Tables)"]
+        ALEM["Alembic 1.14 Migrations"]
+        SQLA["SQLAlchemy 2.0 ORM"]
+    end
+
+    Frontend <-->|HTTP/REST JSON| Backend
+    Backend --> Optimization
+    Backend <-->|ACID Transactions| Database
+```
+
+### Verified Technology Versions
+
+| Component | Technology | Version | Purpose |
+|---|---|---|---|
+| **Frontend Framework** | Next.js (App Router, Turbopack) | `16.4.2` | High-performance React web application and server-side rendering. |
+| **UI Library** | React | `19.3.0` | Declarative user interfaces and state management. |
+| **Language** | TypeScript | `5.8.0` | End-to-end type safety across API contracts and UI states. |
+| **Styling** | Tailwind CSS | `4.1.0` | Utility-first responsive CSS styling with dark/light mode support. |
+| **Backend Framework** | FastAPI (ASGI) | `0.115.8` | Async Python web framework serving 82 REST API endpoints. |
+| **Web Server** | Uvicorn | `0.34.0` | Lightweight, asynchronous ASGI web server. |
+| **Database Engine** | PostgreSQL | `16.4` | Single authoritative operational database (62 application tables). |
+| **ORM & Migrations** | SQLAlchemy & Alembic | `2.0.38` / `1.14.1` | Relational database mapping, connection pooling, and schema versioning. |
+| **Math Optimizer** | SciPy | `1.15.2` | Sequential Least Squares Programming (SLSQP) for convex optimization. |
+| **Agent Orchestration** | LangGraph & LangChain Core | `0.4.0` / `0.3.40` | Cyclical multi-agent state management and researcher graph. |
+| **LLM Engine** | Google Gemini (Cloud) / Fallback | `gemini-3.8-flash` | Qualitative corporate research and plain-English explainability. |
+| **Market Data** | Yahoo Finance (`yfinance`) | `0.2.54` | Indian equity historical prices and financial ratios. |
+| **Authentication** | PyJWT & Passlib | `2.10.1` / `1.7.4` | Stateless Bearer JWT tokens and cryptographic password hashing. |
+
+---
+
+## 5. System Architecture
+
+Lucid adheres to a modular, layered architecture where presentation, business logic, deterministic mathematical optimization, qualitative AI, and transactional persistence are separated.
+
+<div align="center">
+  <img src="docs/screenshots/SYSTEM_ARCHITECTURE.png" alt="Lucid System Architecture Diagram" width="900" />
+</div>
+
+*Figure 5.1: Lucid Layered System Architecture showing Next.js client, FastAPI services, PostgreSQL 16 persistence, and SciPy optimizer.*
+
+### Multi-Agent Orchestration Flow
+The portfolio generation engine is governed by a 5-stage multi-agent pipeline designed in LangGraph:
+
+<div align="center">
+  <img src="docs/screenshots/AGENTIC_AI_ARCHITECTURE.png" alt="Multi-Agent AI Architecture" width="900" />
+</div>
+
+*Figure 5.2: Multi-Agent AI Workflow with qualitative analyst stages, strategist/critic loop, and deterministic mathematical solver.*
+
+---
+
+## 6. Prerequisites
+
+Before installing Lucid, ensure your computer has the following minimum software installed:
+
+| Tool | Minimum Version | Required For | Automatically Installed by Script? |
+|---|---|---|---|
+| **Git** | `2.30+` | Cloning and managing repository files. | Yes (via Homebrew on macOS / winget on Windows) |
+| **Python** | `3.11+` | Running the backend API, agents, and optimizer. | Yes (via Homebrew on macOS / winget on Windows) |
+| **Node.js & npm** | `18.0+` (Node) / `9.0+` (npm) | Running the Next.js investor web application. | Yes (via Homebrew on macOS / winget on Windows) |
+| **PostgreSQL** | `15.0+` or `16.0+` | Application database storing 62 relational tables. | Yes (via Homebrew on macOS) |
+| **VS Code** | Latest Stable | Integrated development, debugging, and testing. | Yes (via Homebrew Cask on macOS / winget on Windows) |
+
+> [!NOTE]
+> **No External Infrastructure Required**: Lucid does **NOT** require Redis, Neo4j, FAISS, Docker, or Celery. All operations run directly with Python, Node.js, and PostgreSQL.
+
+---
+
+## 7. One-Command Installation and Launch
+
+> **Goal**: A beginner with no software development experience can download Lucid, run one setup script, let the script install and configure everything automatically, and start using the web app in their browser.
+
+### macOS & Linux (Terminal)
+
 ```bash
+# 1. Clone the repository
 git clone https://github.com/imankur0011/Lucid.git
+
+# 2. Enter the project directory
 cd Lucid
+
+# 3. Make the launcher executable and run it
 chmod +x start_lucid.sh
 ./start_lucid.sh
 ```
 
-### Windows (PowerShell)
+### Windows 10/11 (PowerShell)
+
+Open PowerShell as an Administrator or standard user:
+
 ```powershell
+# 1. Clone the repository
 git clone https://github.com/imankur0011/Lucid.git
+
+# 2. Enter the project directory
 cd Lucid
+
+# 3. Run the automated PowerShell launcher
 powershell -ExecutionPolicy Bypass -File .\start_lucid.ps1
 ```
 
----
-
-### Service Lifecycle & Operational Scripts
-
-Lucid includes a dedicated suite of root lifecycle scripts to manage your local environment effortlessly:
-
-| Script | Command | Purpose |
-|---|---|---|
-| **Launcher** | `./start_lucid.sh` | Full automated 10-step installation, environment setup, DB provisioning, and dual-server launcher. |
-| **Status Inspector** | `./status_lucid.sh` | Displays real-time diagnostic table: Python/Node versions, DB connection, table counts, securities count, and backend/frontend PIDs & health. |
-| **Log Streamer** | `./logs_lucid.sh [target] [lines]` | Live-streams application logs (`backend`, `frontend`, `all`, `pip`, `npm`, or `clear`). |
-| **Service Stopper** | `./stop_lucid.sh` | Gracefully terminates backend and frontend processes, freeing ports 8000 & 3000 while preserving PostgreSQL. |
-| **Windows Launcher** | `powershell -File .\start_lucid.ps1` | Native PowerShell one-command setup for Windows environments. |
-| **DB Provisioner** | `python scripts/init_database.py` | Standalone script to create DB, run migrations, and seed universe. |
-
-#### How to Run the Lifecycle Scripts:
-
-```bash
-# Make all lifecycle scripts executable (one-time setup):
-chmod +x start_lucid.sh stop_lucid.sh status_lucid.sh logs_lucid.sh
-
-# 1. Start the complete application (Backend + Frontend + Database Setup)
-./start_lucid.sh
-
-# 2. Check real-time service and database health anytime:
-./status_lucid.sh
-
-# 3. Stream live application logs:
-./logs_lucid.sh               # Stream both backend and frontend concurrently
-./logs_lucid.sh backend       # Stream FastAPI backend server logs
-./logs_lucid.sh frontend      # Stream Next.js frontend server logs
-./logs_lucid.sh backend 100   # View the last 100 lines of backend logs
-./logs_lucid.sh clear         # Truncate and clean all log files in logs/
-
-# 4. Gracefully terminate running services:
-./stop_lucid.sh
-```
-
-> **Default Demo Login**: `developer@lucid.local` / `LucidDevPass123!`  
-> **Frontend**: [http://localhost:3000](http://localhost:3000) | **API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)  
-> **Detailed Documentation**: See [SETUP_AND_INSTALLATION.md](SETUP_AND_INSTALLATION.md) for full architecture and manual setup guide.
+Once execution completes:
+1. Your web browser opens to **`http://localhost:3000`**.
+2. Visual Studio Code opens with the pre-configured workspace and extensions.
+3. You can immediately log in using the demo account or register a new one.
 
 ---
 
-## Table of Contents
-0. [⚡ Quick Start — One-Command Automated Setup & Launcher](#-quick-start--one-command-automated-setup--launcher)
-1. [Overview & What Problem Lucid Solves](#1-overview--what-problem-lucid-solves)
-2. [Core Application Capabilities](#2-core-application-capabilities)
-3. [Technology Stack & System Architecture](#3-technology-stack--system-architecture)
-4. [Prerequisites & System Requirements](#4-prerequisites--system-requirements)
-5. [Downloading the Project from GitHub](#5-downloading-the-project-from-github)
-6. [Environment Variables Configuration](#6-environment-variables-configuration)
-7. [PostgreSQL Database Setup & Distribution](#7-postgresql-database-setup--distribution)
-8. [Backend Setup from Scratch (FastAPI)](#8-backend-setup-from-scratch-fastapi)
-9. [Frontend Setup from Scratch (Next.js)](#9-frontend-setup-from-scratch-nextjs)
-10. [Service Startup: Automated vs Multi-Terminal Manual](#10-service-startup-automated-vs-multi-terminal-manual)
-11. [Exact URLs & Service Ports](#11-exact-urls--service-ports)
-12. [First-Time Setup Verification Checklist](#12-first-time-setup-verification-checklist)
-13. [Postman API Testing Guide](#13-postman-api-testing-guide)
-14. [Troubleshooting & Frequently Asked Questions](#14-troubleshooting--frequently-asked-questions)
-15. [One-Page Developer Quick-Start](#15-one-page-developer-quick-start)
+## 8. What Happens Automatically?
 
----
-
-## 1. Overview & What Problem Lucid Solves
-
-### The Problem
-Indian retail investors face severe structural challenges in direct equity investing:
-- **Information Fragmentation**: Annual reports, quarterly earnings, and regulatory disclosures are scattered across exchanges, PDFs, and news outlets.
-- **Emotional & Behavioral Traps**: Retail capital routinely chases momentum near market tops or panics into lower circuits.
-- **Mutual Fund Inefficiencies**: Actively managed funds charge 1.5% to 2.5% recurring annual expense ratios while frequently underperforming the Nifty 50.
-- **Unattended Demat Drift**: Portfolios established with good intentions drift significantly over time, creating hidden single-stock and sector concentration risks.
-- **Illiquidity & Fractional Lot Pitfalls**: Retail robo-advisors often recommend decimal shares (e.g. 3.42 shares of MRF), which is legally impossible on Indian exchanges.
-
-### The Solution: Lucid
-Lucid combines the **fiduciary rigor of Indian mutual fund managers** with **deterministic mathematical optimization**:
-- **Agentic AI Research Gang**: 13 specialized LangGraph agent nodes synthesize macroeconomic monetary policy (RBI), market regimes (Nifty 50), fundamental balance sheets (ROE > 15%, D/E), and corporate disclosures.
-- **Hallucination-Free Optimization**: Numerical optimization is strictly decoupled from the LLM. SciPy's Sequential Least Squares Programming (SLSQP) solver determines Markowitz risk-adjusted weights subject to hard SEBI diversification bounds.
-- **Discrete Integer Shares & Cash Conservation**: Every allocation is translated into executable whole-share quantities:
-  $$\text{Shares}_i = \left\lfloor \frac{\text{Capital} \times w_i}{\text{Price}_i} \right\rfloor, \quad \sum (\text{Shares}_i \times \text{Price}_i) + \text{Cash} \equiv \text{Capital}$$
-- **Continuous Unattended Monitoring**: Background cron evaluates holding drift ($\ge 5\%$) and sector drift ($\ge 8\%$) every 5 minutes during Indian market hours (09:15–15:30 IST).
-- **Statutory Indian Transaction Costs**: Synthesizes whole-share BUY/SELL trade previews calculating Securities Transaction Tax (STT), Exchange Turnover charges, SEBI fees, GST (18%), and stamp duty.
-- **Fiduciary "Stock-Why" Explanations**: Toggleable dual-level explanations providing plain English for retail clients and verifiable econometric factor scores for institutional scrutiny.
-
----
-
-## 2. Core Application Capabilities
+When you execute `start_lucid.sh` or `start_lucid.ps1`, the script performs the following setup sequence without manual intervention:
 
 ```mermaid
-graph LR
-    A["Investor Profiling & Goals"] --> B["13-Node LangGraph Research Gang"]
-    B --> C["Deterministic SciPy SLSQP Solver"]
-    C --> D["Whole-Share Portfolio (Active NAV)"]
-    D --> E["5-Minute Drift Radar Monitoring"]
-    E --> F["Friction-Aware Rebalance Preview"]
-    G["Demat Holdings Entry / CAS Import"] --> H["HHI Overlap & Health Diagnosis"]
-    H --> F
-```
-
-1. **Intelligent Goal-Driven Creation**: Generates customized equity portfolios tailored to investor risk capacity (Conservative, Moderate, Aggressive) and specific financial milestones.
-2. **Full NSE/BSE Universe Directory**: Houses 2,639 listed equities and 2,715 listings, with the broad exchange universe eligible for recommendations across institutional liquidity tiers.
-3. **Continuous Background Monitoring**: Tracks asset and sector drift automatically during market hours.
-4. **Friction-Aware Rebalancing**: Produces executable whole-share trade orders with exact net cash calculations.
-5. **Demat Statement (CAS) Health Diagnosis**: Ingests CDSL/NSDL PDF statements to detect hidden stock overlaps, sector skews, and Herfindahl-Hirschman (HHI) concentration risks.
-6. **Dual-Level Explainability**: Transparent justification for every holding with zero financial hallucinations.
-
----
-
-## 3. Technology Stack & System Architecture
-
-### Technology Stack
-- **Frontend**: Next.js 16.4.2 (App Router), React 19.3.0, TypeScript 5, Tailwind CSS v4.
-- **Backend API**: FastAPI 0.115, Uvicorn ASGI Server, Pydantic v2, Python 3.11 – 3.14.
-- **Database (Exclusive Source of Truth)**: PostgreSQL 16+ (62 tables across 8 functional domains).
-- **Multi-Agent Orchestration**: LangGraph 0.4 StateGraph, LangChain Google GenAI (Gemini 3.8 Flash).
-- **Mathematical Engine**: SciPy 1.15 (SLSQP solver), NumPy 2.2, Pandas 2.2.
-- **Market Data Feeds**: NSE India Archives (`EQUITY_L.csv`), Yahoo Finance (`yfinance`), RBI Bulletins.
-- **Statement Parsing**: `pdfplumber`, regular expression tokenizers.
-
-### Architecture Overview
-Lucid operates across 8 decoupled architectural layers:
-```text
-Layer 1: Client Presentation Layer (Next.js 16.4 / React 19 UI)
-Layer 2: API Gateway & Security Middleware (FastAPI, JWT, Rate Limiting, CORS)
-Layer 3: Orchestration & State Management Layer (LangGraph StateGraph, 13 Nodes)
-Layer 4: Agentic AI & Intelligence Layer (Macro, Market, Fundamental, News, Critic)
-Layer 5: Quantitative & Mathematical Engine Layer (SciPy SLSQP, Integer Lot Rounding)
-Layer 6: Operational Services & Scheduler Layer (Continuous Monitoring Cron, Notifications)
-Layer 7: Data Access & Persistence Layer (PostgreSQL 16 Master, SQLAlchemy 2.0)
-Layer 8: External Integrations & Market Feeds (NSE, BSE, Yahoo Finance, RBI)
+flowchart TD
+    A["User runs ./start_lucid.sh"] --> B["Detects OS & Hardware Architecture"]
+    B --> C["Checks & Auto-Installs Missing Prerequisites (Git, Python 3.11+, Node.js, PostgreSQL)"]
+    C --> D["Detects & Configures Visual Studio Code + 10 Recommended Workspace Extensions"]
+    D --> E["Creates Isolated Python Virtualenv (.venv) & Installs Backend Requirements"]
+    E --> F["Installs Frontend Node Modules (Next.js 16 & React 19)"]
+    F --> G["Generates .env with Secure Random Keys (JWT_SECRET_KEY, APP_SECRET_KEY)"]
+    G --> H["Verifies / Starts PostgreSQL Server & Provisions 'portfolio_dev' Database"]
+    H --> I["Applies Alembic Schema Migrations & Seeds 2,639 NSE/BSE Equities"]
+    I --> J["Resolves Port Conflicts & Starts FastAPI (Port 8000) and Next.js (Port 3000)"]
+    J --> K["Polls Health Check Endpoints Until 100% Ready"]
+    K --> L["Automatically Opens Browser (http://localhost:3000) & VS Code Workspace"]
 ```
 
 ---
 
-## 4. Prerequisites & System Requirements
+## 9. VS Code Setup
 
-Verify that your local workstation meets the following prerequisites:
+Lucid provides pre-configured Visual Studio Code settings located in the `.vscode/` directory:
 
-| Software | Required Version | Why Lucid Needs It | How to Verify | Installation Guide |
-|---|---|---|---|---|
-| **Git** | `v2.30+` | Source control and version synchronization | `git --version` | Pre-installed or `brew install git` |
-| **Python** | `3.11 – 3.14` | Backend runtime (FastAPI, SciPy, SQLAlchemy) | `python3 --version` | `brew install python@3.14` or `pyenv install 3.12.7` |
-| **Node.js** | `v20.x or v25.x` | Frontend runtime (Next.js 16.4.2) | `node --version` | `brew install node` |
-| **npm** | `v10.x+` | Frontend package manager | `npm --version` | Bundled with Node.js |
-| **PostgreSQL** | `v15+ or v16+` | **Sole operational database** (62 tables) | `psql --version` | `brew install postgresql@16` |
+### Included Workspace Extensions (`.vscode/extensions.json`)
+The launcher configures the following extensions:
+- **Python (`ms-python.python`)**: Autocomplete, linting, and environment detection.
+- **Pylance (`ms-python.vscode-pylance`)**: Static type checking and code navigation.
+- **Python Debugger (`ms-python.debugpy`)**: Interactive breakpoints for FastAPI routes.
+- **ESLint (`dbaeumer.vscode-eslint`)**: TypeScript and React linting.
+- **Prettier (`esbenp.prettier-vscode`)**: Automatic code formatting on save.
+- **Tailwind CSS IntelliSense (`bradlc.vscode-tailwindcss`)**: Class completion and preview.
+- **PostgreSQL (`ckolkman.vscode-postgres`)**: In-editor database management.
+- **GitLens (`eamodio.gitlens`)**: Visual Git history and blame tracking.
+- **Even Better TOML (`tamasfe.even-better-toml`)**: TOML configuration support.
+- **YAML (`redhat.vscode-yaml`)**: YAML validation.
 
-### Infrastructure Clarifications (Code Reality):
-> [!NOTE]
-> - **PostgreSQL 16**: The **exclusive runtime database**. All 62 domain application tables reside here.
-> - **Excluded Legacy Infrastructure**: Neo4j, Redis, Celery, FAISS, and Ollama are not used and have been completely removed from active configuration and runtime dependencies. Do NOT install or run external graph, cache, or vector infrastructure to run Lucid.
-> - **Docker**: Optional for containerization; direct native terminal execution is faster and recommended for local development.
-
----
-
-## 5. Downloading the Project from GitHub
-
-Clone the repository from GitHub:
-
-```bash
-# 1. Clone repository
-git clone https://github.com/imankur0011/Lucid.git
-
-# 2. Enter project directory
-cd Lucid
-
-# 3. Confirm Git branch (must be 'main')
-git branch --show-current
-```
+### VS Code Tasks & Debugging Profiles
+- **Run Tasks** (`Terminal -> Run Task...`):
+  - `Lucid: Start Application (Automated One-Command)`
+  - `Lucid: Stop Application`
+  - `Lucid: Service Status`
+  - `Lucid: Stream Live Logs`
+  - `Lucid: Run Backend Tests (Pytest)`
+  - `Lucid: Verify Setup`
+- **Debugging** (`Run & Debug` or `F5`):
+  - `Lucid: Debug Backend (FastAPI / Uvicorn)`: Launches backend in debug mode with hot reloading.
+  - `Lucid: Debug Pytest (Full Suite)`: Launches backend unit tests with step-through debugging.
 
 ---
 
-## 6. Environment Variables Configuration
+## 10. First-Time Application Usage
 
-Copy the provided `.env.example` template to `.env` in the project root:
+Follow this quick guide to create your first intelligent portfolio:
 
-```bash
-cp .env.example .env
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Investor as Retail Investor
+    participant UI as Next.js Web UI (:3000)
+    participant API as FastAPI Backend (:8000)
+    participant DB as PostgreSQL Core (:5433)
+
+    Investor->>UI: 1. Register Account / Sign In
+    UI->>API: POST /api/v1/auth/login
+    API-->>UI: 200 OK (Bearer JWT Token)
+    Investor->>UI: 2. Complete 5-Question Risk Assessment
+    UI->>API: POST /api/v1/investor/risk-assessment
+    API-->>UI: Risk Tier Assigned (Moderate Accumulator)
+    Investor->>UI: 3. Set Mandate (Capital: ₹1,00,000, Horizon: 3 Years)
+    UI->>API: POST /api/v1/portfolio/generate
+    API->>DB: Query 2,639 Equities & Filter Liquid Pool
+    API->>API: Run SLSQP Solver & Whole-Share Allocator
+    API->>DB: Atomic ACID Commit Across 6 Relational Tables
+    API-->>UI: Complete Portfolio (Weights, Shares, Cash, Explainability)
+    UI-->>Investor: Interactive Dashboard & Factor Proof Drawer
 ```
 
-### Key Environment Variables Table:
-
-| Variable | Required? | Default / Example Value | Description |
-|---|---|---|---|
-| `POSTGRES_HOST` | **Yes** | `localhost` | PostgreSQL server hostname |
-| `POSTGRES_PORT` | **Yes** | `5432` | PostgreSQL server port |
-| `POSTGRES_DB` | **Yes** | `majorproject` | Database name |
-| `POSTGRES_USER` | **Yes** | `postgres` | Database username |
-| `POSTGRES_PASSWORD` | **Yes** | `password` | Database user password |
-| `DATABASE_URL` | Optional | `postgresql+psycopg2://postgres:password@localhost:5432/majorproject` | Full database connection string (overrides individual postgres settings) |
-| `APP_ENV` | Optional | `development` | Runtime environment (`development`, `staging`, `production`) |
-| `APP_PORT` | Optional | `8000` | Port for FastAPI backend |
-| `APP_SECRET_KEY` | **Yes** | `change-me-app-secret-32-chars` | Secret key for session security |
-| `JWT_SECRET_KEY` | **Yes** | `change-me-jwt-secret-min-32-chars` | HMAC-SHA256 signing key (min 32 chars in staging/production) |
-| `CORS_ORIGINS` | Optional | `http://localhost:3000` | Whitelisted frontend origins |
-| `GEMINI_API_KEY` | Optional | `AIzaSy...` | Google Gemini key for LLM agents (has rule-based fallback if omitted) |
-| `LLM_PROVIDER` | Optional | `gemini` | LLM provider (`gemini` or `ollama`) |
-| `LLM_MODEL` | Optional | `gemini-3.8-flash` | LLM model identifier |
-| `RISK_FREE_RATE_PCT` | Optional | `7.0` | Benchmark yield for Sharpe ratio (India 10Y G-Sec) |
-
-> [!CAUTION]
-> In `staging` or `production` environments, `JWT_SECRET_KEY` **must** be at least 32 characters long and cannot contain `"change-me"`. Lucid validates keys on startup and fails closed if insecure credentials are used.
+### Step-by-Step Instructions:
+1. **Open the App**: Navigate to `http://localhost:3000` in your web browser.
+2. **Log In**: Use the pre-seeded developer credentials:
+   - **Email**: `developer@lucid.local`
+   - **Password**: `LucidDevPass123!`
+   *(Or click "Create Account" to register your own profile).*
+3. **Complete Suitability Profile**: Take the 5-question psychometric assessment to establish your risk capacity and investment horizon.
+4. **Generate a Portfolio**: Enter your investable capital (e.g., ₹1,00,000 or ₹5,00,000), select your risk profile, and click **"Generate Portfolio"**.
+5. **Inspect the Allocation**: Review the recommended equities, sector breakdown, whole-share integer share counts ($Q_i$), and unallocated cash reserve ($C_{\text{res}}$).
+6. **Explore "Why This Stock?"**: Click on any stock ticker to open the fiduciary proof drawer showing Altman Z-score, valuation metrics, and news sentiment audit.
+7. **Demat Diagnosis**: Navigate to the Diagnosis tab and input holdings from your existing broker statement to identify sector concentration risks and portfolio drift.
 
 ---
 
-## 7. PostgreSQL Database Setup & Distribution
+## 11. Environment Variables and API Keys
 
-### Step 7.1: Start PostgreSQL Service
-```bash
-# macOS (Homebrew)
-brew services start postgresql@16
+Configuration settings are stored in `.env` in the project root. When you first launch Lucid, the script automatically copies `.env.example` and generates secure keys.
 
-# Linux (systemd)
-sudo systemctl start postgresql
-```
-
-### Step 7.2: Create Database and Extensions
-Run the initialization script:
-```bash
-psql -U postgres -f database/create_database.sql
-```
-*Or execute manually in `psql`:*
-```sql
-CREATE DATABASE majorproject;
-\c majorproject;
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-```
-
-### Step 7.3: Run Database Migrations
-Apply Alembic migrations to create all 62 relational tables:
-```bash
-cd backend
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-alembic upgrade head
-```
-
-### Step 7.4: Seed Reference Data & Full Security Master
-Populate the SEBI risk questionnaires, economic indicators, and the complete 2,639 listed equities from NSE:
-```bash
-# From project root:
-python database/seed_reference_data.py
-```
-
-### Step 7.5: Verify Database
-```bash
-psql -U postgres -d majorproject -c "
-SELECT 
-    (SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE') AS tables,
-    (SELECT count(*) FROM securities) AS securities,
-    (SELECT count(*) FROM companies) AS companies,
-    (SELECT count(*) FROM instrument_listings) AS listings;
-"
-```
-*Expected Output: `tables: 62`, `securities: 2639`, `companies: 2639`, `listings: 2715`.*
-
----
-
-## 8. Backend Setup from Scratch (FastAPI)
-
-```bash
-# 1. Enter backend directory
-cd backend
-
-# 2. Create virtual environment
-python3 -m venv .venv
-
-# 3. Activate virtual environment
-source .venv/bin/activate
-
-# 4. Upgrade pip and install dependencies
-pip install --upgrade pip
-pip install -r requirements.txt
-
-# 5. Validate environment
-cd ..
-python scripts/validate_env.py
-
-# 6. Start FastAPI development server
-cd backend
-uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-### Backend Availability Checks:
-- Root API Ping: `curl http://localhost:8000/`
-- Health Endpoint: `curl http://localhost:8000/health`
-- Interactive OpenAPI Swagger UI: Open `http://localhost:8000/docs` in your browser.
-
----
-
-## 9. Frontend Setup from Scratch (Next.js)
-
-Open a **separate terminal**:
-
-```bash
-# 1. Enter frontend directory
-cd frontend
-
-# 2. Install Node dependencies
-npm install
-
-# 3. Start Next.js development server
-npm run dev
-```
-
-### Frontend Availability:
-Open `http://localhost:3000` in your web browser.
-
-### Production Build Verification (Optional):
-```bash
-npm run build
-npm run start
-```
-
----
-
-## 10. Service Startup: Automated vs Multi-Terminal Manual
-
-### Option A: Automated One-Command Launch (Recommended)
-
-Run the unified startup script from the repository root:
-
-```bash
-chmod +x start_lucid.sh
-./start_lucid.sh
-```
-
-This single command automatically performs the entire pipeline:
-1. Validates Python 3.11+, Node.js 18+, and PostgreSQL client tools.
-2. Creates `.venv` and installs dependencies from `backend/requirements.txt` (cached via hash).
-3. Installs frontend packages in `frontend/node_modules`.
-4. Generates `.env` with cryptographically secure random JWT and App secrets.
-5. Verifies PostgreSQL connectivity and starts the service if needed.
-6. Runs Alembic database migrations and seeds the 2,639-stock NSE/BSE security universe.
-7. Automatically checks and frees ports `8000` and `3000` from any stale processes.
-8. Starts FastAPI backend on port `8000` with health check readiness polling.
-9. Starts Next.js frontend on port `3000` with HTTP readiness polling.
-10. Automatically launches `http://localhost:3000` in your default browser.
-
-To stop services, simply press `Ctrl+C` in the terminal, or run `./stop_lucid.sh` from any terminal.
-
-### Option B: Multi-Terminal Manual Startup (Alternative)
-
-If you prefer to run services in separate dedicated terminals for debugging:
-
-```text
-┌────────────────────────────────────────────────────────────┐
-│ TERMINAL 1: PostgreSQL Database                            │
-│ $ brew services start postgresql@16                        │
-│ $ PYTHONPATH=. python scripts/init_database.py             │
-└────────────────────────────┬───────────────────────────────┘
-                             │
-                             ▼
-┌────────────────────────────────────────────────────────────┐
-│ TERMINAL 2: FastAPI Backend API Server                     │
-│ $ source .venv/bin/activate                                │
-│ $ uvicorn backend.main:app --host 0.0.0.0 --port 8000     │
-└────────────────────────────┬───────────────────────────────┘
-                             │
-                             ▼
-┌────────────────────────────────────────────────────────────┐
-│ TERMINAL 3: Next.js Frontend UI                            │
-│ $ cd frontend                                              │
-│ $ npm run dev                                              │
-└────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 11. Exact URLs & Service Ports
-
-| Service / Interface | URL | Purpose | Authentication |
-|---|---|---|---|
-| **Lucid Web UI** | `http://localhost:3000` | Investor Dashboard & Portfolio Journey | Browser Session |
-| **Backend REST API** | `http://localhost:8000` | Core API Root | Public |
-| **API Health Check** | `http://localhost:8000/health` | Service & PostgreSQL Health | Public |
-| **Database Diagnostics** | `http://localhost:8000/api/db/stats` | Entity Count Summary (Dev mode) | Public |
-| **Swagger UI Documentation**| `http://localhost:8000/docs` | Interactive OpenAPI Testbed | Public |
-| **ReDoc Documentation** | `http://localhost:8000/redoc` | Static Technical API Reference | Public |
-| **PostgreSQL Database** | `localhost:5432` | Relational Storage (`majorproject`) | DB User / Password |
-
----
-
-## 12. First-Time Setup Verification Checklist
-
-Run the automated self-test script from the project root:
-
-```bash
-python scripts/verify_setup.py
-```
-
-### Manual Verification Checklist:
-- [x] **Database Connectivity**: `curl http://localhost:8000/health` returns `{"api": "up", "database": {"status": "healthy"}}`.
-- [x] **Security Universe**: `curl http://localhost:8000/api/v1/market-data/universe-stats` returns 2,639 securities across the broad market universe.
-- [x] **User Registration**: `POST /api/v1/auth/register` creates a new investor and returns JWT tokens.
-- [x] **Market Regime**: `GET /api/v1/market-data/regime` returns Nifty 50 DMA trend and India VIX volatility regime.
-- [x] **Portfolio Creation**: `POST /api/v1/portfolio-generation-requests` runs the 13-node LangGraph pipeline and outputs whole-share allocations.
-- [x] **Continuous Monitoring**: `GET /api/v1/portfolios/{id}/monitoring` computes holding and sector drift.
-- [x] **Rebalancing Preview**: `GET /api/v1/portfolios/{id}/rebalance-preview` generates BUY/SELL orders with statutory transaction fees.
-- [x] **Frontend Rendering**: Dashboard at `http://localhost:3000` displays holdings, charts, and drift radar.
-
----
-
-## 13. Postman API Testing Guide
-
-Lucid includes an importable, pre-configured Postman suite in the `postman/` directory:
-
-1. Open Postman desktop app.
-2. Click **Import** and select:
-   - `postman/Lucid_API_Collection.json` (96 requests across 16 functional folders)
-   - `postman/Lucid_Development_Environment.json` (Environment variables)
-3. Select **"Lucid Local Development Environment"** in the top-right environment dropdown.
-4. Execute `02 - Authentication -> Login`. The test script automatically saves `{{accessToken}}` to your environment.
-5. All subsequent requests automatically attach `Authorization: Bearer {{accessToken}}`.
-6. Refer to [`postman/README.md`](./postman/README.md) for detailed folder walkthroughs and Newman CLI instructions.
-
----
-
-## 14. Troubleshooting & Frequently Asked Questions
-
-| Symptom / Error | Root Cause | Exact Resolution |
+| Variable | Default Value | Description |
 |---|---|---|
-| `psycopg2.OperationalError: Connection refused` | PostgreSQL daemon is not running on port 5432 | Run `brew services start postgresql@16` or check status with `pg_isready`. |
-| `FATAL: database "majorproject" does not exist` | Database not created | Run `psql -U postgres -f database/create_database.sql`. |
-| `CRITICAL SECURITY CONFIGURATION ERROR` | Insecure/default secrets used in staging/production | Set `JWT_SECRET_KEY` in `.env` to at least 32 characters. |
-| `Port 8000 or 3000 already in use` | Another process is holding the port | Free the port: `lsof -ti:8000 \| xargs kill -9` or `lsof -ti:3000 \| xargs kill -9`. |
-| `Yahoo Finance HTTP 429 Rate limit` | Rapid sequential requests to free tier | Normal; Lucid caches prices in PostgreSQL and retries with backoff. |
-| `ModuleNotFoundError: No module named 'backend'` | Virtualenv not activated or PYTHONPATH unset | Run `source .venv/bin/activate` or `export PYTHONPATH=.`. |
+| `POSTGRES_HOST` | `localhost` | PostgreSQL host address. |
+| `POSTGRES_PORT` | `5432` / `5433` | PostgreSQL port. |
+| `POSTGRES_DB` | `portfolio_dev` | Application database name. |
+| `POSTGRES_USER` | Current user / `postgres` | Database username. |
+| `POSTGRES_PASSWORD` | `""` | Database password (empty for local peer auth). |
+| `APP_ENV` | `development` | Application runtime environment (`development` / `production`). |
+| `APP_PORT` | `8000` | Port for FastAPI backend. |
+| `JWT_SECRET_KEY` | *Auto-generated* | HMAC-SHA256 secret key for signing auth tokens (min 32 characters). |
+| `APP_SECRET_KEY` | *Auto-generated* | Cryptographic application secret key. |
+| `CORS_ORIGINS` | `http://localhost:3000` | Whitelisted frontend origins. |
+| `LLM_PROVIDER` | `gemini` | Qualitative LLM provider (`gemini` or `ollama`). |
+| `LLM_MODEL` | `gemini-3.8-flash` | Gemini model name. |
+| `GEMINI_API_KEY` | *Empty* | *(Optional)* Google Gemini API key. If omitted, Lucid runs with deterministic rule-based models. |
 
 ---
 
-## 15. One-Page Developer Quick-Start
+## 12. Database Setup and Verification
 
-### Recommended: One-Command Lifecycle Workflow
+Lucid uses PostgreSQL 16 as its single transactional operational database.
 
-For daily development, use the automated script suite:
-
-```bash
-# 1. Start application (automated setup + backend + frontend)
-./start_lucid.sh
-
-# 2. Inspect real-time status of services and database (in another terminal)
-./status_lucid.sh
-
-# 3. Live-stream backend or frontend logs
-./logs_lucid.sh backend
-./logs_lucid.sh frontend
-
-# 4. Stop all running Lucid services cleanly
-./stop_lucid.sh
+```mermaid
+erDiagram
+    APP_USERS ||--o{ INVESTOR_PROFILES : "configures"
+    INVESTOR_PROFILES ||--o{ RISK_ASSESSMENTS : "evaluated by"
+    INVESTOR_PROFILES ||--o{ FINANCIAL_GOALS : "targets"
+    COMPANIES ||--|{ SECURITIES : "issues"
+    SECURITIES ||--|{ INSTRUMENT_LISTINGS : "trades on NSE/BSE"
+    SECURITIES ||--o{ MARKET_PRICES : "has historical OHLCV"
+    PORTFOLIO_GENERATION_REQUESTS ||--|{ INVESTOR_PORTFOLIO_HEADS : "yields"
+    INVESTOR_PORTFOLIO_HEADS ||--|{ PORTFOLIO_VERSIONS : "versions (v1, v2)"
+    PORTFOLIO_VERSIONS ||--|{ PORTFOLIO_SECURITY_DECISIONS : "contains allocations"
+    PORTFOLIO_SECURITY_DECISIONS ||--|| RECOMMENDATION_EXPLANATIONS : "justified by"
 ```
 
-### Manual Multi-Terminal Fallback
+*Figure 12.1: High-level database entity relationship across user profiles, securities, portfolios, and fiduciary explanations.*
 
-For developers wishing to start components individually:
-
+### Automated Database Provisioning (`scripts/init_database.py`)
+The launcher automatically runs this utility. You can also run it manually at any time:
 ```bash
-# 1. Start Database
-brew services start postgresql@16
+.venv/bin/python scripts/init_database.py
+```
+This utility:
+- Verifies that PostgreSQL is accepting connections.
+- Automatically creates `portfolio_dev` if it does not exist.
+- Installs `pgcrypto` and `uuid-ossp` extensions.
+- Applies Alembic schema migrations up to the latest revision.
+- Populates SEBI psychometric questions and macroeconomic indicators.
+- Synchronizes the 2,639 active equity universe across NSE and BSE.
+- Confirms that all 62 relational application tables are active.
 
-# 2. Start Backend (Terminal 1)
+---
+
+## 13. Application URLs and Ports
+
+When Lucid is running, access the services using the following URLs:
+
+| Service | URL | Purpose |
+|---|---|---|
+| **Investor Web UI** | [http://localhost:3000](http://localhost:3000) | Main user interface for portfolio creation, monitoring, and diagnosis. |
+| **Backend REST API** | [http://localhost:8000](http://localhost:8000) | Core FastAPI server handling business logic, data, and optimization. |
+| **API Health Check** | [http://localhost:8000/api/health](http://localhost:8000/api/health) | Real-time JSON health check for API and PostgreSQL connection. |
+| **Interactive Swagger Docs** | [http://localhost:8000/docs](http://localhost:8000/docs) | Interactive Swagger UI for testing all 82 REST endpoints. |
+| **OpenAPI Specification** | [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json) | Complete OpenAPI JSON schema. |
+
+---
+
+## 14. Lifecycle Commands
+
+Lucid provides dedicated scripts in the root directory for lifecycle management:
+
+| Operation | macOS / Linux | Windows PowerShell |
+|---|---|---|
+| **Start Application** | `./start_lucid.sh` | `powershell -File .\start_lucid.ps1` |
+| **Check System Status** | `./status_lucid.sh` | `powershell -File .\status_lucid.ps1` |
+| **Stream Live Logs** | `./logs_lucid.sh all` | `powershell -File .\logs_lucid.ps1` |
+| **Stop All Services** | `./stop_lucid.sh` | `powershell -File .\stop_lucid.ps1` |
+
+### Real-Time Status Inspector (`./status_lucid.sh`)
+Check the health of all services at any time from another terminal:
+```bash
+./status_lucid.sh
+```
+Output:
+```text
+======================================================================
+                    LUCID SYSTEM STATUS INSPECTOR                     
+======================================================================
+
+[1] System & Runtime Environment:
+   OS / Arch        : Darwin (arm64)
+   Python           : 3.14.7
+   Virtualenv       : Active (.venv)
+   Node.js          : v25.2.1
+   npm              : 11.6.2
+
+[2] Backend API Service (Port 8000):
+   Status           : ● RUNNING & HEALTHY
+   PID              : 19705
+   URL              : http://localhost:8000
+   Health Response  : {"api":"up","database":{"status":"healthy","total_tables":63}}
+
+[3] Frontend Web Application (Port 3000):
+   Status           : ● RUNNING & READY
+   HTTP Status      : 200 OK
+
+[4] PostgreSQL Database Status & Record Counts:
+   Connection       : ✓ CONNECTED
+   Schema Tables    : 63 tables registered
+   Exchange Stocks  : 2639 securities stored (NSE/BSE)
+   User Accounts    : Active
+======================================================================
+```
+
+---
+
+## 15. Manual Development Setup
+
+If you prefer starting services manually across separate terminal windows:
+
+### Terminal 1: Backend & Database
+```bash
+# 1. Activate virtual environment
 source .venv/bin/activate
-uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 
-# 3. Start Frontend (Terminal 2)
+# 2. Verify environment configuration
+PYTHONPATH=. python scripts/validate_env.py
+
+# 3. Start FastAPI server with live reloading
+PYTHONPATH=. uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### Terminal 2: Frontend
+```bash
 cd frontend
 npm run dev
-
-# 4. Open in Browser
-open http://localhost:3000
-open http://localhost:8000/docs
 ```
+
+---
+
+## 16. Postman API Testing
+
+Lucid includes an official Postman API collection covering all 82 REST endpoints with automated JWT bearer token population and edge-case assertions.
+
+- **Collection File**: `postman/Lucid_API_Collection.json` (96 requests across 16 folders)
+- **Environment File**: `postman/Lucid_Development_Environment.json`
+
+### Postman Folder Structure:
+1. `01 - Health & System Information`
+2. `02 - Authentication & User Management` *(Contains login request that sets `{{jwt_token}}` automatically)*
+3. `03 - Investor Onboarding & Profile`
+4. `04 - Financial Goals Management`
+5. `05 - Risk Suitability & Assessment`
+6. `06 - Market & Security Data`
+7. `07 - Portfolio Creation & Optimization`
+8. `08 - Real-Time Portfolio Monitoring & Whole-Share Rebalancing`
+9. `09 - Reasoning Trace, Stock Why & Evidence`
+10. `10 - Scenario Analysis & Stress Testing`
+11. `11 - Portfolio Comparison & Conversational Assistant`
+12. `12 - Trade Execution Basket Export`
+13. `13 - Portfolio Diagnosis & Rebalancing`
+14. `14 - Official Exchange Filings & URL Verification`
+15. `15 - In-App Notifications System`
+16. `16 - Negative & Edge Case Tests`
+
+---
+
+## 17. Testing and Verification
+
+Lucid includes automated verification tools to ensure system integrity:
+
+```bash
+# 1. Run the end-to-end setup verification audit
+.venv/bin/python scripts/verify_setup.py
+
+# 2. Run backend test suites (Pytest)
+.venv/bin/pytest backend/tests -v
+
+# 3. Test mathematical optimization simplex bounds specifically
+.venv/bin/pytest backend/tests/test_portfolio_engine.py -v
+
+# 4. Verify Next.js frontend production build
+cd frontend && npm run build
+```
+
+---
+
+## 18. Troubleshooting
+
+| Issue / Error | Root Cause | Solution |
+|---|---|---|
+| **`Connection refused` on PostgreSQL** | PostgreSQL is stopped or running on a different port. | Run `brew services start postgresql@16` on macOS or `sudo systemctl start postgresql` on Linux. Check port using `pg_isready -p 5432` or `pg_isready -p 5433` and verify `POSTGRES_PORT` in `.env`. |
+| **`Port 8000 or 3000 already in use`** | Lingering background process from a prior run. | Run `./stop_lucid.sh` (or `powershell .\stop_lucid.ps1`). It terminates lingering instances and frees the ports. |
+| **`No module named 'backend'`** | Executing Python from a subdirectory without proper path. | Run all commands from the project root with `PYTHONPATH=. .venv/bin/python ...`. |
+| **`code: command not found`** | VS Code CLI is not linked in your system PATH. | In VS Code, press `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows), type `Shell Command: Install 'code' command in PATH`, and press Enter. |
+| **`Gemini API 429 Quota Exceeded`** | Exceeded free-tier Google AI Studio RPM limits. | Lucid automatically switches to its deterministic rule engine. You can also clear `GEMINI_API_KEY` in `.env` to run fully offline. |
+| **Frontend build or styling errors** | Outdated packages in `node_modules`. | Run `cd frontend && rm -rf node_modules .next && npm install`. |
+
+---
+
+## 19. Security and Data Handling
+
+- **Stateless Bearer Tokens**: User authentication utilizes signed JSON Web Tokens (JWT) adhering to RFC 7518 Section 3.2.
+- **Password Protection**: Passwords are never stored in plaintext; they are hashed using the Bcrypt algorithm with unique salt factors.
+- **Fail-Closed Secrets**: In staging and production modes, Lucid verifies that neither `JWT_SECRET_KEY` nor `APP_SECRET_KEY` uses insecure default placeholders, failing startup immediately if unconfigured.
+- **Local Data Isolation**: All investor profiles, risk scores, holdings, and portfolio versions reside exclusively in your local PostgreSQL database. No customer financial information is transmitted to third-party model providers.
+
+---
+
+## 20. Stop, Reset, and Uninstall
+
+### Stopping Services Gracefully
+```bash
+./stop_lucid.sh              # macOS / Linux
+powershell .\stop_lucid.ps1  # Windows PowerShell
+```
+*This terminates backend and frontend servers while preserving all database tables, user records, and portfolios.*
+
+### Complete Database Reset (Caution)
+To wipe local test records and reset the database to an initial clean state:
+```bash
+# Drops and recreates the database, re-runs migrations and universe seeding
+.venv/bin/python -c "
+import psycopg2
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+from backend.config import settings
+conn = psycopg2.connect(dbname='postgres', user=settings.postgres_user, host=settings.postgres_host, port=settings.postgres_port)
+conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+cur = conn.cursor()
+cur.execute(f'DROP DATABASE IF EXISTS \"{settings.postgres_db}\";')
+cur.close()
+conn.close()
+"
+.venv/bin/python scripts/init_database.py
+```
+
+---
+
+## 21. Project Structure
+
+```text
+Lucid/
+├── backend/                        # FastAPI REST API & Financial Python Engines
+│   ├── agent/                      # LangGraph Multi-Agent Researcher Nodes & State
+│   ├── alembic/                    # Database Migrations & Version Tracking
+│   ├── api/v1/                     # 82 REST API Endpoints (Auth, Portfolio, Market, etc.)
+│   ├── database/                   # SQLAlchemy Engine, Session, & Model Declarations
+│   ├── market_data/                # NSE/BSE Universe Sync, Price Ingestion & Ratios
+│   ├── models/                     # 62 Relational Domain Table Definitions
+│   ├── portfolio_engine/           # SciPy SLSQP Solver & Whole-Share Allocator
+│   └── tests/                      # 32 Pytest Test Suites (Auth, Math, DB, Integrations)
+├── frontend/                       # Next.js 16 Web Application (React 19, TypeScript)
+│   ├── src/app/                    # Next.js App Router Pages & API Proxies
+│   ├── src/components/             # UI Components (Dashboard, Allocations, Fiduciary Drawer)
+│   └── src/lib/                    # TypeScript API Client & State Store
+├── postman/                        # Postman API Collection (16 Folders, 96 Requests)
+├── scripts/                        # Automated Database, Validation & Audit Utilities
+│   ├── init_database.py            # Automated Database Provisioning & Seeding
+│   ├── validate_env.py             # Developer Environment Validator
+│   └── verify_setup.py             # End-to-End System Health Audit
+├── .vscode/                        # Pre-Configured VS Code Workspace Settings
+│   ├── extensions.json             # 10 Recommended Workspace Extensions
+│   ├── launch.json                 # Fast Debugging Profiles for Backend & Pytest
+│   ├── settings.json               # Python, Prettier, & ESLint Preferences
+│   └── tasks.json                  # One-Click Run & Stop Tasks
+├── docs/                           # Diagrams, Documentation & Screenshots
+├── .env.example                    # Verified Environment Variables Template
+├── start_lucid.sh                  # One-Command Automated Setup & Launcher (macOS/Linux)
+├── start_lucid.ps1                 # One-Command Automated Setup & Launcher (Windows)
+├── stop_lucid.sh                   # Graceful Service Termination Script (macOS/Linux)
+├── stop_lucid.ps1                  # Graceful Service Termination Script (Windows)
+├── status_lucid.sh                 # System & Service Health Inspector (macOS/Linux)
+├── status_lucid.ps1                # System & Service Health Inspector (Windows)
+├── logs_lucid.sh                   # Service Log Inspection & Streaming Utility (macOS/Linux)
+└── logs_lucid.ps1                  # Service Log Inspection & Streaming Utility (Windows)
+```
+
+---
+
+## 22. Detailed Documentation
+
+For comprehensive technical explanations, consult the companion documents:
+
+- **[SETUP_AND_INSTALLATION.md](SETUP_AND_INSTALLATION.md)**: In-depth setup guide, Windows manual procedures, and troubleshooting.
+- **[SYSTEM_ARCHITECTURE.md](SYSTEM_ARCHITECTURE.md)**: Architectural patterns, component diagrams, and data flows.
+- **[AGENTIC_AI_ARCHITECTURE.md](AGENTIC_AI_ARCHITECTURE.md)**: LangGraph agent graph, specialist analyst prompts, and feedback loops.
+- **[API_CONTRACT.md](API_CONTRACT.md)**: OpenAPI specification, endpoint parameters, and JSON payloads.
+- **[DATABASE_ARCHITECTURE.md](DATABASE_ARCHITECTURE.md)**: 62-table schema, indexing strategies, and normalization standards.
+- **[METHODOLOGY.md](METHODOLOGY.md)**: Mathematical formulation of Mean-Variance SLSQP optimization and whole-share rounding.
+- **[DATASET_USED.md](DATASET_USED.md)**: Exchange data feeds, Yahoo Finance integrations, and corporate filing registries.
+
+---
+
+## 23. Limitations and Future Scope
+
+### Current Limitations
+- **Academic Research Scope**: Lucid is built for research and decision support; it does not place live market orders with real brokerage accounts.
+- **Free-Tier API Rate Limits**: Public market endpoints (Yahoo Finance, Free FRED) may experience intermittent rate limiting during peak market hours. Lucid mitigates this using cached baselines and deterministic fallback models.
+- **Single Currency**: Focused exclusively on Indian Rupee ($\text{INR } ₹$) denominated equities on the NSE and BSE.
+
+### Future Scope
+- **Direct Broker Integration**: Standardized OAuth integration with SEBI-registered brokers (e.g., Zerodha Kite Connect, Angel One SmartAPI, Upstox) for 1-click execution of generated whole-share order baskets.
+- **Multi-Asset Allocation**: Extending the SciPy optimizer to cover sovereign gold bonds (SGB), real estate investment trusts (REITs), and debt mutual funds.
+- **Tax-Loss Harvesting Engine**: Automated scanning of existing demat portfolios toward the end of the financial year to realize tax-loss harvesting offsets under Indian income tax provisions.
+
+---
+
+<div align="center">
+
+**Built with ❤️ for Indian Retail Investors**  
+*Disciplined Financial Mathematics Meets Agentic AI*
+
+</div>

@@ -64,6 +64,49 @@ if ($PyMajor -lt 3 -or ($PyMajor -eq 3 -and $PyMinor -lt 11)) {
 }
 Write-Host "   Python Version Verified : $PyVer (>= 3.11)" -ForegroundColor Green
 
+# Check and Configure VS Code
+$hasCode = Test-CommandAvailable "code" "Visual Studio Code CLI"
+if (-not $hasCode) {
+    $vscodePath = "$env:LOCALAPPDATA\Programs\Microsoft VS Code\bin"
+    if (Test-Path (Join-Path $vscodePath "code.cmd")) {
+        $env:Path += ";$vscodePath"
+        $hasCode = $true
+        Write-Host "   Visual Studio Code CLI : ✓ Found in AppData" -ForegroundColor Green
+    } elseif (Get-Command winget -ErrorAction SilentlyContinue) {
+        Write-Host "   Installing Visual Studio Code via winget..." -ForegroundColor Yellow
+        winget install --id Microsoft.VisualStudioCode -e --silent --accept-source-agreements --accept-package-agreements | Out-Null
+        if (Test-Path (Join-Path $vscodePath "code.cmd")) {
+            $env:Path += ";$vscodePath"
+            $hasCode = $true
+        }
+    }
+}
+
+# Install recommended VS Code workspace extensions in background
+if ($hasCode) {
+    Write-Host "   Configuring recommended VS Code workspace extensions in background..." -ForegroundColor Cyan
+    $recommendedExts = @(
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.debugpy",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "ckolkman.vscode-postgres",
+        "eamodio.gitlens",
+        "tamasfe.even-better-toml",
+        "redhat.vscode-yaml"
+    )
+    try {
+        $installed = & code --list-extensions 2>$null
+        foreach ($ext in $recommendedExts) {
+            if ($installed -notcontains $ext) {
+                Start-Process -FilePath "code" -ArgumentList "--install-extension $ext --force" -WindowStyle Hidden -ErrorAction SilentlyContinue
+            }
+        }
+    } catch {}
+}
+
 # [3/10] Prepare Python Virtual Environment
 Write-Host "`n[3/10] Preparing Python Virtual Environment..." -ForegroundColor White
 $VenvDir = Join-Path $RootDir ".venv"
@@ -114,16 +157,14 @@ if (-not (Test-Path $NodeModules)) {
 # [5/10] Configure Environment Variables (.env)
 Write-Host "`n[5/10] Validating Environment Configuration (.env)..." -ForegroundColor White
 $EnvFile = Join-Path $RootDir ".env"
-$EnvExample = Join-Path $RootDir ".env.example"
+$ExampleFile = Join-Path $RootDir ".env.example"
 
 if (-not (Test-Path $EnvFile)) {
     Write-Host "   '.env' not found. Creating from .env.example..."
-    Copy-Item $EnvExample $EnvFile
-    
-    $JwtSecret = & $VenvPy -c "import secrets; print(secrets.token_urlsafe(32))"
-    $AppSecret = & $VenvPy -c "import secrets; print(secrets.token_urlsafe(32))"
-    
-    $Content = Get-Content $EnvFile
+    Copy-Item $ExampleFile $EnvFile
+    $JwtSecret = [System.Guid]::NewGuid().ToString("N") + [System.Guid]::NewGuid().ToString("N")
+    $AppSecret = [System.Guid]::NewGuid().ToString("N") + [System.Guid]::NewGuid().ToString("N")
+    $Content = Get-Content $EnvFile -Raw
     $Content = $Content -replace "JWT_SECRET_KEY=.*", "JWT_SECRET_KEY=$JwtSecret"
     $Content = $Content -replace "APP_SECRET_KEY=.*", "APP_SECRET_KEY=$AppSecret"
     $Content | Set-Content $EnvFile
@@ -222,5 +263,9 @@ Write-Host ""
 Write-Host "Opening Lucid in your default browser..." -ForegroundColor Cyan
 Start-Process "http://localhost:3000"
 
-Write-Host "`nTo stop services, run: Stop-Process -Id $($BackendProcess.Id),$($FrontendProcess.Id) -Force" -ForegroundColor Yellow
+if (Get-Command code -ErrorAction SilentlyContinue) {
+    Write-Host "Opening Lucid workspace in Visual Studio Code..." -ForegroundColor Cyan
+    Start-Process "code" -ArgumentList "`"$RootDir`""
+}
 
+Write-Host "`nTo stop services, run: powershell .\stop_lucid.ps1" -ForegroundColor Yellow

@@ -106,6 +106,35 @@ check_cmd "node" "Node.js" || MISSING_TOOLS=$((MISSING_TOOLS + 1))
 check_cmd "npm" "npm" || MISSING_TOOLS=$((MISSING_TOOLS + 1))
 check_cmd "psql" "PostgreSQL Client (psql)" || MISSING_TOOLS=$((MISSING_TOOLS + 1))
 
+# Check VS Code & Code CLI
+VS_CODE_INSTALLED=0
+if command -v code >/dev/null 2>&1; then
+    VS_CODE_INSTALLED=1
+elif [ "$OS_NAME" = "Darwin" ]; then
+    if [ -x "/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code" ]; then
+        export PATH="/Applications/Visual Studio Code.app/Contents/Resources/app/bin:$PATH"
+        VS_CODE_INSTALLED=1
+    elif [ -x "$HOME/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code" ]; then
+        export PATH="$HOME/Applications/Visual Studio Code.app/Contents/Resources/app/bin:$PATH"
+        VS_CODE_INSTALLED=1
+    fi
+fi
+
+if [ $VS_CODE_INSTALLED -eq 1 ]; then
+    echo -e "   Visual Studio Code CLI    : ${GREEN}✓ Available${NC} ($(command -v code))"
+else
+    echo -e "   Visual Studio Code CLI    : ${YELLOW}○ Not Found in PATH${NC}"
+    if [ "$OS_NAME" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
+        echo -e "   ${CYAN}ℹ️ Attempting automatic VS Code installation via Homebrew...${NC}"
+        brew install --cask visual-studio-code >/dev/null 2>&1 || true
+        if [ -x "/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code" ]; then
+            export PATH="/Applications/Visual Studio Code.app/Contents/Resources/app/bin:$PATH"
+            VS_CODE_INSTALLED=1
+            echo -e "   Visual Studio Code CLI    : ${GREEN}✓ Installed successfully${NC}"
+        fi
+    fi
+fi
+
 # Optional tool check
 if command -v postman >/dev/null 2>&1; then
     echo -e "   Postman                   : ${GREEN}✓ Installed${NC} (Optional)"
@@ -113,7 +142,7 @@ else
     echo -e "   Postman                   : ${YELLOW}○ Optional (Not Installed)${NC}"
 fi
 
-# Auto-install missing tools via Homebrew on macOS
+# Auto-install missing core tools via Homebrew on macOS
 if [ $MISSING_TOOLS -gt 0 ]; then
     if [ "$OS_NAME" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
         echo -e "\n${YELLOW}⚠️ Missing required tools detected. Attempting automatic installation via Homebrew...${NC}"
@@ -124,6 +153,29 @@ if [ $MISSING_TOOLS -gt 0 ]; then
         echo -e "\n${RED}❌ Missing required tools: Please install Python 3.11+, Node.js 18+, and PostgreSQL before running Lucid.${NC}"
         exit 1
     fi
+fi
+
+# Install recommended VS Code extensions in background if code CLI is available
+if [ $VS_CODE_INSTALLED -eq 1 ]; then
+    echo "   Configuring recommended VS Code workspace extensions in background..."
+    RECOMMENDED_EXTS=(
+        "ms-python.python"
+        "ms-python.vscode-pylance"
+        "ms-python.debugpy"
+        "dbaeumer.vscode-eslint"
+        "esbenp.prettier-vscode"
+        "bradlc.vscode-tailwindcss"
+        "ckolkman.vscode-postgres"
+        "eamodio.gitlens"
+        "tamasfe.even-better-toml"
+        "redhat.vscode-yaml"
+    )
+    INSTALLED_EXTS=$(code --list-extensions 2>/dev/null || true)
+    for ext in "${RECOMMENDED_EXTS[@]}"; do
+        if ! echo "$INSTALLED_EXTS" | grep -qi "^${ext}$"; then
+            code --install-extension "$ext" --force >/dev/null 2>&1 &
+        fi
+    done
 fi
 
 # Verify Python version >= 3.11
@@ -222,7 +274,7 @@ if [ -z "$GEMINI_KEY" ] || [ "$GEMINI_KEY" = "your_gemini_api_key_here" ]; then
         echo -e "${YELLOW}🔑 Optional Google Gemini API Key:${NC}"
         echo "   Lucid uses Google Gemini 3.8 Flash for qualitative agent research."
         echo "   (If skipped, Lucid runs in fully deterministic rule-based fallback mode)."
-        read -r -p "   Enter GEMINI_API_KEY (press Enter to skip): " ENTERED_KEY
+        read -t 10 -r -p "   Enter GEMINI_API_KEY (press Enter or wait 10s to skip): " ENTERED_KEY || ENTERED_KEY=""
         if [ -n "$ENTERED_KEY" ]; then
             sed -i '' "s/GEMINI_API_KEY=.*/GEMINI_API_KEY=$ENTERED_KEY/" "$ENV_FILE" 2>/dev/null || sed -i "s/GEMINI_API_KEY=.*/GEMINI_API_KEY=$ENTERED_KEY/" "$ENV_FILE"
             echo -e "   ${GREEN}✅ Gemini API key configured.${NC}"
@@ -424,6 +476,12 @@ elif command -v xdg-open >/dev/null 2>&1; then
     xdg-open "http://localhost:3000" >/dev/null 2>&1 || true
 elif command -v start >/dev/null 2>&1; then
     start "http://localhost:3000" >/dev/null 2>&1 || true
+fi
+
+# Open VS Code workspace automatically if code is available
+if command -v code >/dev/null 2>&1; then
+    echo -e "${CYAN}Opening Lucid workspace in Visual Studio Code...${NC}"
+    code "$ROOT_DIR" >/dev/null 2>&1 || true
 fi
 
 echo -e "${BOLD}======================================================================${NC}"

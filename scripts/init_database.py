@@ -104,7 +104,7 @@ def run_migrations():
         alembic_ini = ROOT_DIR / "alembic.ini"
         alembic_cfg = Config(str(alembic_ini))
         alembic_cfg.set_main_option("script_location", str(ROOT_DIR / "backend" / "alembic"))
-        alembic_cfg.set_main_option("sqlalchemy.url", str(settings.database_url))
+        alembic_cfg.set_main_option("sqlalchemy.url", str(settings.postgres_url))
         command.upgrade(alembic_cfg, "head")
         print("   ✅ Alembic migrations applied successfully.")
         return True
