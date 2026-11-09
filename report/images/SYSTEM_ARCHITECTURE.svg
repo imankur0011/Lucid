@@ -1,0 +1,230 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 860" width="100%" height="100%" style="background:#FFFFFF; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <filter id="cardShadow" x="-2%" y="-2%" width="104%" height="106%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#334155"/>
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563EB"/>
+    </marker>
+  </defs>
+
+  <!-- Title & Subtitle -->
+  <text x="550" y="38" text-anchor="middle" font-size="24" font-weight="800" fill="#0F172A" letter-spacing="-0.3">Lucid: Six-Tier Decoupled System Architecture</text>
+  <text x="550" y="62" text-anchor="middle" font-size="14" font-weight="500" fill="#64748B">Modular Enterprise Architecture for Goal-Based Retail Wealth Management</text>
+
+  <!-- TIER 1: Presentation Layer -->
+  <g transform="translate(40, 85)">
+    <rect width="1020" height="95" rx="10" fill="#F8FAFC" stroke="#0284C7" stroke-width="2" filter="url(#cardShadow)"/>
+    <rect width="1020" height="28" rx="10" fill="#E0F2FE"/>
+    <rect y="18" width="1020" height="10" fill="#E0F2FE"/>
+    <text x="20" y="20" font-size="14" font-weight="700" fill="#0369A1">TIER 1: CLIENT PRESENTATION LAYER (Next.js 16.4 • React 19 • Tailwind CSS)</text>
+    <text x="990" y="20" text-anchor="end" font-size="12" font-weight="600" fill="#0284C7">PORT 3000</text>
+    
+    <!-- 4 Sub-modules -->
+    <rect x="20" y="38" width="230" height="46" rx="6" fill="#FFFFFF" stroke="#BAE6FD" stroke-width="1.5"/>
+    <text x="135" y="57" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">Investor Onboarding</text>
+    <text x="135" y="74" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">5-Question Risk &amp; Mandate</text>
+
+    <rect x="270" y="38" width="230" height="46" rx="6" fill="#FFFFFF" stroke="#BAE6FD" stroke-width="1.5"/>
+    <text x="385" y="57" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">Portfolio Dashboard</text>
+    <text x="385" y="74" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">Whole Shares &amp; NAV Charts</text>
+
+    <rect x="520" y="38" width="230" height="46" rx="6" fill="#FFFFFF" stroke="#BAE6FD" stroke-width="1.5"/>
+    <text x="635" y="57" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">2-Level Stock-Why Modal</text>
+    <text x="635" y="74" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">Plain-English &amp; Exchange Links</text>
+
+    <rect x="770" y="38" width="230" height="46" rx="6" fill="#FFFFFF" stroke="#BAE6FD" stroke-width="1.5"/>
+    <text x="885" y="57" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">Demat CAS &amp; Drift Radar</text>
+    <text x="885" y="74" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">HHI Audit &amp; Trade Previews</text>
+  </g>
+
+  <!-- Flow 1->2 Connector -->
+  <line x1="550" y1="180" x2="550" y2="208" stroke="#0284C7" stroke-width="2" marker-end="url(#arrowBlue)" marker-start="url(#arrowBlue)"/>
+  <rect x="420" y="186" width="260" height="18" rx="4" fill="#FFFFFF" stroke="#0284C7" stroke-width="1"/>
+  <text x="550" y="199" text-anchor="middle" font-size="11" font-weight="600" fill="#0369A1">REST APIs / JWT Session / Strict CORS</text>
+
+  <!-- TIER 2: API Gateway -->
+  <g transform="translate(40, 212)">
+    <rect width="1020" height="95" rx="10" fill="#F8FAFC" stroke="#2563EB" stroke-width="2" filter="url(#cardShadow)"/>
+    <rect width="1020" height="28" rx="10" fill="#DBEAFE"/>
+    <rect y="18" width="1020" height="10" fill="#DBEAFE"/>
+    <text x="20" y="20" font-size="14" font-weight="700" fill="#1D4ED8">TIER 2: BACKEND API GATEWAY &amp; SERVICES (FastAPI 0.115 • Uvicorn ASGI)</text>
+    <text x="990" y="20" text-anchor="end" font-size="12" font-weight="600" fill="#2563EB">82 REST ENDPOINTS</text>
+
+    <rect x="20" y="38" width="230" height="46" rx="6" fill="#FFFFFF" stroke="#BFDBFE" stroke-width="1.5"/>
+    <text x="135" y="57" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">Auth &amp; Rate Limiter</text>
+    <text x="135" y="74" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">Argon2id Hash • 120 req/min</text>
+
+    <rect x="270" y="38" width="230" height="46" rx="6" fill="#FFFFFF" stroke="#BFDBFE" stroke-width="1.5"/>
+    <text x="385" y="57" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">Portfolio &amp; Why Services</text>
+    <text x="385" y="74" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">Creation, Versioning &amp; Proofs</text>
+
+    <rect x="520" y="38" width="230" height="46" rx="6" fill="#FFFFFF" stroke="#BFDBFE" stroke-width="1.5"/>
+    <text x="635" y="57" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">Demat Diagnosis Service</text>
+    <text x="635" y="74" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">pdfplumber CAS Parser &amp; HHI</text>
+
+    <rect x="770" y="38" width="230" height="46" rx="6" fill="#FFFFFF" stroke="#BFDBFE" stroke-width="1.5"/>
+    <text x="885" y="57" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">300s Drift Monitoring</text>
+    <text x="885" y="74" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">Session Lock 847291 • Alerts</text>
+  </g>
+
+  <!-- Split Connectors 2->3 and 2->4 -->
+  <line x1="320" y1="307" x2="320" y2="338" stroke="#7C3AED" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="780" y1="307" x2="780" y2="338" stroke="#059669" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- TIER 3 & TIER 4: Dual Core (AI Qualitative + Math Deterministic) -->
+  <!-- TIER 3 (Left Half): Agentic AI Orchestration -->
+  <g transform="translate(40, 342)">
+    <rect width="490" height="230" rx="10" fill="#FAF5FF" stroke="#7C3AED" stroke-width="2" filter="url(#cardShadow)"/>
+    <rect width="490" height="28" rx="10" fill="#EDE9FE"/>
+    <rect y="18" width="490" height="10" fill="#EDE9FE"/>
+    <text x="15" y="20" font-size="13" font-weight="700" fill="#6D28D9">TIER 3: AGENTIC AI INTELLIGENCE LAYER</text>
+    <text x="475" y="20" text-anchor="end" font-size="11" font-weight="600" fill="#7C3AED">LangGraph 0.4</text>
+
+    <!-- Content inside Tier 3 -->
+    <rect x="15" y="38" width="460" height="34" rx="5" fill="#FFFFFF" stroke="#DDD6FE" stroke-width="1"/>
+    <text x="245" y="55" text-anchor="middle" font-size="12" font-weight="700" fill="#0F172A">PortfolioAgentState (35 Fields across 5 Partitions)</text>
+    <text x="245" y="67" text-anchor="middle" font-size="10" font-weight="500" fill="#64748B">Mandate • Universe • Analyst Reports • Critic Loop • Math</text>
+
+    <!-- Chained Analyst Flow -->
+    <rect x="15" y="80" width="105" height="52" rx="5" fill="#FFFFFF" stroke="#DDD6FE" stroke-width="1"/>
+    <text x="67" y="100" text-anchor="middle" font-size="11" font-weight="700" fill="#0F172A">Macro (N3)</text>
+    <text x="67" y="115" text-anchor="middle" font-size="10" fill="#64748B">Repo &amp; CPI</text>
+    <text x="67" y="126" text-anchor="middle" font-size="9" fill="#059669">Cash Buffer</text>
+
+    <line x1="120" y1="106" x2="132" y2="106" stroke="#7C3AED" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <rect x="133" y="80" width="105" height="52" rx="5" fill="#FFFFFF" stroke="#DDD6FE" stroke-width="1"/>
+    <text x="185" y="100" text-anchor="middle" font-size="11" font-weight="700" fill="#0F172A">Market (N4)</text>
+    <text x="185" y="115" text-anchor="middle" font-size="10" fill="#64748B">VIX &amp; 200 DMA</text>
+    <text x="185" y="126" text-anchor="middle" font-size="9" fill="#059669">Beta Ceiling</text>
+
+    <line x1="238" y1="106" x2="250" y2="106" stroke="#7C3AED" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <rect x="251" y="80" width="105" height="52" rx="5" fill="#FFFFFF" stroke="#DDD6FE" stroke-width="1"/>
+    <text x="303" y="100" text-anchor="middle" font-size="11" font-weight="700" fill="#0F172A">Fundam. (N5)</text>
+    <text x="303" y="115" text-anchor="middle" font-size="10" fill="#64748B">ROE, P/E, D/E</text>
+    <text x="303" y="126" text-anchor="middle" font-size="9" fill="#059669">Z-Factor Score</text>
+
+    <line x1="356" y1="106" x2="368" y2="106" stroke="#7C3AED" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <rect x="369" y="80" width="105" height="52" rx="5" fill="#FFFFFF" stroke="#DDD6FE" stroke-width="1"/>
+    <text x="421" y="100" text-anchor="middle" font-size="11" font-weight="700" fill="#0F172A">News/SEBI (N6)</text>
+    <text x="421" y="115" text-anchor="middle" font-size="10" fill="#64748B">30d Headlines</text>
+    <text x="421" y="126" text-anchor="middle" font-size="9" fill="#059669">Pledges &lt;5%</text>
+
+    <!-- Strategist and Critic Loop -->
+    <rect x="15" y="140" width="222" height="42" rx="5" fill="#FFFFFF" stroke="#DDD6FE" stroke-width="1"/>
+    <text x="126" y="157" text-anchor="middle" font-size="11" font-weight="700" fill="#0F172A">Lead Strategist (Node 7)</text>
+    <text x="126" y="172" text-anchor="middle" font-size="10" fill="#64748B">Selects K ∈ [10..16] Candidate Stocks</text>
+
+    <line x1="237" y1="161" x2="253" y2="161" stroke="#7C3AED" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <rect x="253" y="140" width="222" height="42" rx="5" fill="#FFFFFF" stroke="#DDD6FE" stroke-width="1"/>
+    <text x="364" y="157" text-anchor="middle" font-size="11" font-weight="700" fill="#0F172A">Adversarial Critic (N8-N9)</text>
+    <text x="364" y="172" text-anchor="middle" font-size="10" fill="#64748B">Rework Loop (≤2) • Mandate Audit</text>
+
+    <!-- Circuit breaker box -->
+    <rect x="15" y="190" width="460" height="30" rx="5" fill="#F3E8FF" stroke="#C084FC" stroke-width="1"/>
+    <text x="245" y="210" text-anchor="middle" font-size="11" font-weight="700" fill="#6B21A8">Primary: Gemini 3.8 Flash  ⇄  0.48s Fallback: Rule Engine v2</text>
+  </g>
+
+  <!-- Horizontal connector 3 -> 4 -->
+  <line x1="530" y1="457" x2="568" y2="457" stroke="#059669" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="525" y="446" width="42" height="22" rx="3" fill="#FFFFFF" stroke="#059669" stroke-width="1"/>
+  <text x="546" y="461" text-anchor="middle" font-size="10" font-weight="700" fill="#065F46">10-16</text>
+
+  <!-- TIER 4 (Right Half): Deterministic Quantitative Engine -->
+  <g transform="translate(570, 342)">
+    <rect width="490" height="230" rx="10" fill="#F0FDF4" stroke="#059669" stroke-width="2" filter="url(#cardShadow)"/>
+    <rect width="490" height="28" rx="10" fill="#DCFCE7"/>
+    <rect y="18" width="490" height="10" fill="#DCFCE7"/>
+    <text x="15" y="20" font-size="13" font-weight="700" fill="#15803D">TIER 4: DETERMINISTIC MATH &amp; FINANCIAL ENGINE</text>
+    <text x="475" y="20" text-anchor="end" font-size="11" font-weight="600" fill="#059669">Zero-LLM • SciPy 1.15</text>
+
+    <!-- Step 1: SLSQP -->
+    <rect x="15" y="38" width="460" height="42" rx="5" fill="#FFFFFF" stroke="#BBF7D0" stroke-width="1"/>
+    <text x="245" y="56" text-anchor="middle" font-size="12" font-weight="700" fill="#0F172A">SciPy SLSQP Constrained Quadratic Optimizer</text>
+    <text x="245" y="71" text-anchor="middle" font-size="10" font-weight="500" fill="#64748B">Max Sharpe (Mod/Agg) | Min Var (Cons) • Bounds: Stock ≤25%, Sector ≤40%</text>
+
+    <!-- Step 2: Lot Rounding -->
+    <rect x="15" y="88" width="460" height="42" rx="5" fill="#FFFFFF" stroke="#BBF7D0" stroke-width="1"/>
+    <text x="245" y="106" text-anchor="middle" font-size="12" font-weight="700" fill="#0F172A">Whole-Share Integer Lot Sizing &amp; Cash Conservation</text>
+    <text x="245" y="121" text-anchor="middle" font-size="10" font-weight="500" fill="#64748B">Floor: Qi = ⌊(wi* · V) / Pi⌋ • Greedy Remainder Pass • Guarantee: Cash ≥ ₹0</text>
+
+    <!-- Step 3: Statutory Costs -->
+    <rect x="15" y="138" width="460" height="42" rx="5" fill="#FFFFFF" stroke="#BBF7D0" stroke-width="1"/>
+    <text x="245" y="156" text-anchor="middle" font-size="12" font-weight="700" fill="#0F172A">Statutory Indian Transaction Cost Engine (Oct 2024 SEBI)</text>
+    <text x="245" y="171" text-anchor="middle" font-size="10" font-weight="500" fill="#64748B">STT (0.10%) • Exchange (0.00297%) • Stamp (0.015%) • GST (18%)</text>
+
+    <!-- Verification Gate -->
+    <rect x="15" y="188" width="460" height="32" rx="5" fill="#DCFCE7" stroke="#86EFAC" stroke-width="1"/>
+    <text x="245" y="208" text-anchor="middle" font-size="11" font-weight="700" fill="#14532D">Invariant Gate (N11): Post-Rounding Validation &amp; Metric Verification</text>
+  </g>
+
+  <!-- Connectors from 3 & 4 to 5 -->
+  <line x1="285" y1="572" x2="285" y2="602" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="815" y1="572" x2="815" y2="602" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- TIER 5: Relational Persistence Layer -->
+  <g transform="translate(40, 606)">
+    <rect width="1020" height="95" rx="10" fill="#F8FAFC" stroke="#475569" stroke-width="2" filter="url(#cardShadow)"/>
+    <rect width="1020" height="28" rx="10" fill="#E2E8F0"/>
+    <rect y="18" width="1020" height="10" fill="#E2E8F0"/>
+    <text x="20" y="20" font-size="14" font-weight="700" fill="#334155">TIER 5: RELATIONAL PERSISTENCE LAYER (PostgreSQL 16.4 • SQLAlchemy 2.0 • Alembic)</text>
+    <text x="990" y="20" text-anchor="end" font-size="12" font-weight="600" fill="#475569">62 DOMAIN TABLES • ACID COMMIT</text>
+
+    <rect x="20" y="38" width="230" height="46" rx="6" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+    <text x="135" y="57" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">Security Master (9 Tables)</text>
+    <text x="135" y="74" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">2,639 Stocks • 2,715 Listings</text>
+
+    <rect x="270" y="38" width="230" height="46" rx="6" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+    <text x="385" y="57" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">Market &amp; News (11 Tables)</text>
+    <text x="385" y="74" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">Prices, OHLCV, Z-Scores, VIX</text>
+
+    <rect x="520" y="38" width="230" height="46" rx="6" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+    <text x="635" y="57" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">Portfolios &amp; Why (13 Tables)</text>
+    <text x="635" y="74" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">Versions, Decisions, Evidence</text>
+
+    <rect x="770" y="38" width="230" height="46" rx="6" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+    <text x="885" y="57" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">Audit &amp; Demat (17 Tables)</text>
+    <text x="885" y="74" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">Agent Runs, CAS Audits, Alerts</text>
+  </g>
+
+  <!-- Flow 5->6 Connector -->
+  <line x1="550" y1="701" x2="550" y2="729" stroke="#EA580C" stroke-width="2" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+  <rect x="420" y="707" width="260" height="18" rx="4" fill="#FFFFFF" stroke="#EA580C" stroke-width="1"/>
+  <text x="550" y="720" text-anchor="middle" font-size="11" font-weight="600" fill="#C2410C">Ingestion Adapters • Resilient Caching</text>
+
+  <!-- TIER 6: External Market Data & Cloud Feeds -->
+  <g transform="translate(40, 733)">
+    <rect width="1020" height="95" rx="10" fill="#FFF7ED" stroke="#EA580C" stroke-width="2" filter="url(#cardShadow)"/>
+    <rect width="1020" height="28" rx="10" fill="#FFEDD5"/>
+    <rect y="18" width="1020" height="10" fill="#FFEDD5"/>
+    <text x="20" y="20" font-size="14" font-weight="700" fill="#C2410C">TIER 6: EXTERNAL MARKET DATA &amp; CLOUD INTEGRATIONS</text>
+    <text x="990" y="20" text-anchor="end" font-size="12" font-weight="600" fill="#EA580C">FREE-TIER ADAPTERS &amp; RESILIENT CACHE</text>
+
+    <rect x="20" y="38" width="185" height="46" rx="6" fill="#FFFFFF" stroke="#FED7AA" stroke-width="1.5"/>
+    <text x="112" y="57" text-anchor="middle" font-size="12" font-weight="700" fill="#0F172A">NSE &amp; BSE Archives</text>
+    <text x="112" y="74" text-anchor="middle" font-size="10" font-weight="500" fill="#64748B">2,639 Master Equities</text>
+
+    <rect x="225" y="38" width="185" height="46" rx="6" fill="#FFFFFF" stroke="#FED7AA" stroke-width="1.5"/>
+    <text x="317" y="57" text-anchor="middle" font-size="12" font-weight="700" fill="#0F172A">Yahoo Finance API</text>
+    <text x="317" y="74" text-anchor="middle" font-size="10" font-weight="500" fill="#64748B">15-Min Lag • 1Y OHLCV</text>
+
+    <rect x="430" y="38" width="185" height="46" rx="6" fill="#FFFFFF" stroke="#FED7AA" stroke-width="1.5"/>
+    <text x="522" y="57" text-anchor="middle" font-size="12" font-weight="700" fill="#0F172A">RBI Bulletins &amp; MoSPI</text>
+    <text x="522" y="74" text-anchor="middle" font-size="10" font-weight="500" fill="#64748B">Repo 6.50% • CPI 5.10%</text>
+
+    <rect x="635" y="38" width="185" height="46" rx="6" fill="#FFFFFF" stroke="#FED7AA" stroke-width="1.5"/>
+    <text x="727" y="57" text-anchor="middle" font-size="12" font-weight="700" fill="#0F172A">NSE Index Stream</text>
+    <text x="727" y="74" text-anchor="middle" font-size="10" font-weight="500" fill="#64748B">India VIX &amp; Nifty 50</text>
+
+    <rect x="840" y="38" width="160" height="46" rx="6" fill="#FFFFFF" stroke="#FED7AA" stroke-width="1.5"/>
+    <text x="920" y="57" text-anchor="middle" font-size="12" font-weight="700" fill="#0F172A">Google Gemini API</text>
+    <text x="920" y="74" text-anchor="middle" font-size="10" font-weight="500" fill="#64748B">gemini-3.8-flash</text>
+  </g>
+</svg>

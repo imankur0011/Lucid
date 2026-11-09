@@ -1,0 +1,215 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 840" width="100%" height="100%" style="background:#FFFFFF; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <filter id="mShadow" x="-2%" y="-2%" width="104%" height="106%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+    <marker id="mArr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#334155"/>
+    </marker>
+    <marker id="mArrBlue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563EB"/>
+    </marker>
+    <marker id="mArrGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#16A34A"/>
+    </marker>
+    <marker id="mArrRed" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#DC2626"/>
+    </marker>
+  </defs>
+
+  <!-- Title & Subtitle -->
+  <text x="550" y="38" text-anchor="middle" font-size="24" font-weight="800" fill="#0F172A">Lucid: End-to-End Application Methodology</text>
+  <text x="550" y="60" text-anchor="middle" font-size="14" font-weight="500" fill="#64748B">Integrated Three-Workflow Lifecycle: Portfolio Creation, Demat Diagnosis &amp; Continuous Drift Monitoring</text>
+
+  <!-- ======================================================== -->
+  <!-- WORKFLOW I: NEW PORTFOLIO CREATION (STAGES 4.1 to 4.8) -->
+  <!-- ======================================================== -->
+  <g transform="translate(35, 80)">
+    <rect width="1030" height="235" rx="10" fill="#F8FAFC" stroke="#2563EB" stroke-width="2" filter="url(#mShadow)"/>
+    <rect width="1030" height="28" rx="10" fill="#DBEAFE"/>
+    <rect y="18" width="1030" height="10" fill="#DBEAFE"/>
+    <text x="20" y="20" font-size="13" font-weight="800" fill="#1D4ED8">WORKFLOW I: NEW PORTFOLIO CREATION METHODOLOGY (STAGES 4.1 – 4.8)</text>
+    <text x="1005" y="20" text-anchor="end" font-size="11" font-weight="600" fill="#2563EB">ONBOARDING → FUNNEL → AI VETTING → SLSQP → WHOLE SHARES</text>
+
+    <!-- Stage 4.1: Onboarding -->
+    <rect x="20" y="38" width="220" height="180" rx="8" fill="#FFFFFF" stroke="#BFDBFE" stroke-width="1.5"/>
+    <rect x="20" y="38" width="220" height="26" rx="8" fill="#EFF6FF"/>
+    <rect x="20" y="54" width="220" height="10" fill="#EFF6FF"/>
+    <text x="130" y="56" text-anchor="middle" font-size="12" font-weight="700" fill="#1E40AF">1. Onboarding (Stage 4.1)</text>
+    <text x="35" y="85" font-size="11" font-weight="700" fill="#0F172A">• Capital: ≥ ₹10,000</text>
+    <text x="35" y="105" font-size="11" font-weight="500" fill="#475569">• Horizon: 3 to 360 Months</text>
+    <text x="35" y="125" font-size="11" font-weight="500" fill="#475569">• 5-Question Risk Score:</text>
+    <text x="45" y="142" font-size="10.5" font-weight="600" fill="#2563EB">Conservative / Moderate / Agg.</text>
+    <text x="35" y="165" font-size="11" font-weight="500" fill="#475569">• NLP Sector Exclusions</text>
+    <rect x="30" y="180" width="200" height="26" rx="4" fill="#F1F5F9"/>
+    <text x="130" y="197" text-anchor="middle" font-size="10.5" font-weight="600" fill="#334155">Output: Structured Mandate</text>
+
+    <line x1="240" y1="128" x2="270" y2="128" stroke="#2563EB" stroke-width="2" marker-end="url(#mArrBlue)"/>
+
+    <!-- Stages 4.2-4.4: Regime, Funnel, Factors -->
+    <rect x="270" y="38" width="230" height="180" rx="8" fill="#FFFFFF" stroke="#BFDBFE" stroke-width="1.5"/>
+    <rect x="270" y="38" width="230" height="26" rx="8" fill="#EFF6FF"/>
+    <rect x="270" y="54" width="230" height="10" fill="#EFF6FF"/>
+    <text x="385" y="56" text-anchor="middle" font-size="12" font-weight="700" fill="#1E40AF">2. Regime &amp; Funnel (4.2-4.4)</text>
+    <text x="285" y="85" font-size="11" font-weight="700" fill="#0F172A">• VIX Regime Detection:</text>
+    <text x="295" y="102" font-size="10.5" font-weight="600" fill="#059669">Calm (&lt;13) | Mod (14.2) | Vol | Ext</text>
+    <text x="285" y="125" font-size="11" font-weight="700" fill="#0F172A">• 3-Tier Liquidity Funnel:</text>
+    <text x="295" y="142" font-size="10.5" font-weight="600" fill="#2563EB">2,639 Master → 504 Liquid Pool</text>
+    <text x="285" y="165" font-size="11" font-weight="500" fill="#475569">• Factor Z-Scores: Quality, Val, Mom</text>
+    <rect x="280" y="180" width="210" height="26" rx="4" fill="#F1F5F9"/>
+    <text x="385" y="197" text-anchor="middle" font-size="10.5" font-weight="600" fill="#334155">Output: 30-60 Candidate Pool</text>
+
+    <line x1="500" y1="128" x2="530" y2="128" stroke="#2563EB" stroke-width="2" marker-end="url(#mArrBlue)"/>
+
+    <!-- Stages 4.5-4.7: AI & SLSQP Math -->
+    <rect x="530" y="38" width="240" height="180" rx="8" fill="#FFFFFF" stroke="#BFDBFE" stroke-width="1.5"/>
+    <rect x="530" y="38" width="240" height="26" rx="8" fill="#EFF6FF"/>
+    <rect x="530" y="54" width="240" height="10" fill="#EFF6FF"/>
+    <text x="650" y="56" text-anchor="middle" font-size="12" font-weight="700" fill="#1E40AF">3. AI Committee &amp; Math (4.5-4.7)</text>
+    <text x="545" y="85" font-size="11" font-weight="700" fill="#0F172A">• LangGraph Multi-Agent Team:</text>
+    <text x="555" y="102" font-size="10.5" font-weight="500" fill="#64748B">Macro • Market • Fund • News • Critic</text>
+    <text x="545" y="125" font-size="11" font-weight="700" fill="#0F172A">• SciPy SLSQP Solver (Max Sharpe):</text>
+    <text x="555" y="142" font-size="10.5" font-weight="600" fill="#059669">Stock ≤25% • Sector ≤40%</text>
+    <text x="545" y="165" font-size="11" font-weight="700" fill="#0F172A">• Whole-Share Integer Allocation:</text>
+    <rect x="540" y="180" width="220" height="26" rx="4" fill="#F1F5F9"/>
+    <text x="650" y="197" text-anchor="middle" font-size="10.5" font-weight="600" fill="#334155">Output: Qi Whole Lots &amp; Cash ≥ ₹0</text>
+
+    <line x1="770" y1="128" x2="800" y2="128" stroke="#2563EB" stroke-width="2" marker-end="url(#mArrBlue)"/>
+
+    <!-- Stage 4.8: Portfolio & Why -->
+    <rect x="800" y="38" width="210" height="180" rx="8" fill="#FFFFFF" stroke="#BFDBFE" stroke-width="1.5"/>
+    <rect x="800" y="38" width="210" height="26" rx="8" fill="#EFF6FF"/>
+    <rect x="800" y="54" width="210" height="10" fill="#EFF6FF"/>
+    <text x="905" y="56" text-anchor="middle" font-size="12" font-weight="700" fill="#1E40AF">4. Portfolio &amp; Why (Stage 4.8)</text>
+    <text x="815" y="85" font-size="11" font-weight="700" fill="#0F172A">• Discrete Whole Holdings:</text>
+    <text x="825" y="102" font-size="10.5" font-weight="500" fill="#475569">e.g. HDFCBANK 32 sh, RELIANCE 16</text>
+    <text x="815" y="125" font-size="11" font-weight="700" fill="#0F172A">• Key Performance Metrics:</text>
+    <text x="825" y="142" font-size="10.5" font-weight="600" fill="#059669">Div Score 95.5 • Sharpe 0.41</text>
+    <text x="815" y="165" font-size="11" font-weight="500" fill="#475569">• 2-Level Stock-Why Explanations</text>
+    <rect x="810" y="180" width="190" height="26" rx="4" fill="#DCFCE7"/>
+    <text x="905" y="197" text-anchor="middle" font-size="10.5" font-weight="700" fill="#166534">Committed Active Portfolio</text>
+  </g>
+
+  <!-- Transition Arrow to Workflow III -->
+  <line x1="905" y1="315" x2="905" y2="350" stroke="#0F172A" stroke-width="2.5" marker-end="url(#mArr)"/>
+  <rect x="795" y="322" width="220" height="18" rx="4" fill="#FFFFFF" stroke="#0F172A" stroke-width="1"/>
+  <text x="905" y="335" text-anchor="middle" font-size="10.5" font-weight="700" fill="#0F172A">Track Active Portfolio Every 300s</text>
+
+  <!-- ======================================================== -->
+  <!-- LOWER SECTION: WORKFLOW II (LEFT) & WORKFLOW III (RIGHT) -->
+  <!-- ======================================================== -->
+
+  <!-- WORKFLOW II: Demat Portfolio Diagnosis -->
+  <g transform="translate(35, 360)">
+    <rect width="360" height="440" rx="10" fill="#FFFBEB" stroke="#D97706" stroke-width="2" filter="url(#mShadow)"/>
+    <rect width="360" height="28" rx="10" fill="#FEF3C7"/>
+    <rect y="18" width="360" height="10" fill="#FEF3C7"/>
+    <text x="15" y="20" font-size="12" font-weight="800" fill="#B45309">WORKFLOW II: DEMAT DIAGNOSIS (4.9)</text>
+    <text x="345" y="20" text-anchor="end" font-size="10" font-weight="700" fill="#92400E">CAS AUDIT</text>
+
+    <!-- Step 1: Upload -->
+    <rect x="20" y="42" width="320" height="65" rx="6" fill="#FFFFFF" stroke="#FDE68A" stroke-width="1.5"/>
+    <text x="180" y="62" text-anchor="middle" font-size="12" font-weight="700" fill="#0F172A">1. CAS Statement Ingestion</text>
+    <text x="180" y="80" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">CDSL / NSDL PDF or Broker CSV Upload</text>
+    <text x="180" y="95" text-anchor="middle" font-size="10" font-weight="600" fill="#B45309">pdfplumber 0.11.5 Statement Engine</text>
+
+    <line x1="180" y1="107" x2="180" y2="127" stroke="#D97706" stroke-width="1.5" marker-end="url(#mArr)"/>
+
+    <!-- Step 2: Entity Resolution -->
+    <rect x="20" y="127" width="320" height="65" rx="6" fill="#FFFFFF" stroke="#FDE68A" stroke-width="1.5"/>
+    <text x="180" y="147" text-anchor="middle" font-size="12" font-weight="700" fill="#0F172A">2. 3-Step Entity Resolution</text>
+    <text x="180" y="165" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">Matches across 2,639 listed stocks</text>
+    <text x="180" y="180" text-anchor="middle" font-size="10" font-weight="600" fill="#B45309">ISIN Match → pg_trgm (&gt;0.4) → Levenshtein</text>
+
+    <line x1="180" y1="192" x2="180" y2="212" stroke="#D97706" stroke-width="1.5" marker-end="url(#mArr)"/>
+
+    <!-- Step 3: HHI Audit -->
+    <rect x="20" y="212" width="320" height="65" rx="6" fill="#FFFFFF" stroke="#FDE68A" stroke-width="1.5"/>
+    <text x="180" y="232" text-anchor="middle" font-size="12" font-weight="700" fill="#0F172A">3. HHI Concentration Audit</text>
+    <text x="180" y="250" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">HHI = ∑ (wi · 100)²</text>
+    <text x="180" y="265" text-anchor="middle" font-size="10" font-weight="700" fill="#166534">&lt;1500 Safe | 1500-2500 Mod | &gt;2500 High Risk</text>
+
+    <line x1="180" y1="277" x2="180" y2="297" stroke="#D97706" stroke-width="1.5" marker-end="url(#mArr)"/>
+
+    <!-- Step 4: Diagnosis Report & Bridge -->
+    <rect x="20" y="297" width="320" height="80" rx="6" fill="#FFFFFF" stroke="#FDE68A" stroke-width="1.5"/>
+    <text x="180" y="317" text-anchor="middle" font-size="12" font-weight="700" fill="#0F172A">4. 7-Section Diagnostic Report</text>
+    <text x="180" y="335" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">Flags Single-Stock (&gt;25%) &amp; Sector (&gt;40%)</text>
+    <text x="180" y="352" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">Interactive Copilot Chat: /diagnosis/{id}/chat</text>
+    <text x="180" y="367" text-anchor="middle" font-size="10" font-weight="700" fill="#B45309">Suggests Remediation Swaps</text>
+
+    <!-- Bridge to Rebalance Engine -->
+    <rect x="20" y="392" width="320" height="34" rx="5" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1"/>
+    <text x="180" y="413" text-anchor="middle" font-size="11" font-weight="800" fill="#92400E">Bridge → Rebalance into Disciplined Portfolio</text>
+  </g>
+
+  <!-- Cross-link from Workflow II to Workflow III Rebalance -->
+  <path d="M 395,769 L 410,769 L 410,640 L 445,640" fill="none" stroke="#D97706" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#mArr)"/>
+  <rect x="375" y="695" width="70" height="18" rx="4" fill="#FEF3C7" stroke="#D97706" stroke-width="1"/>
+  <text x="410" y="708" text-anchor="middle" font-size="9" font-weight="700" fill="#B45309">Rebalance</text>
+
+  <!-- WORKFLOW III: Continuous Monitoring, Drift & Rebalance -->
+  <g transform="translate(425, 360)">
+    <rect width="640" height="440" rx="10" fill="#F0FDF4" stroke="#059669" stroke-width="2" filter="url(#mShadow)"/>
+    <rect width="640" height="28" rx="10" fill="#DCFCE7"/>
+    <rect y="18" width="640" height="10" fill="#DCFCE7"/>
+    <text x="20" y="20" font-size="12" font-weight="800" fill="#15803D">WORKFLOW III: 300s DRIFT RADAR &amp; REBALANCING</text>
+    <text x="620" y="20" text-anchor="end" font-size="11" font-weight="600" fill="#059669">STAGES 4.10 – 4.12</text>
+
+    <!-- Stage 4.10: 300s Drift Radar -->
+    <rect x="20" y="42" width="600" height="75" rx="6" fill="#FFFFFF" stroke="#A7F3D0" stroke-width="1.5"/>
+    <text x="320" y="64" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">Stage 4.10: Continuous 300s Drift Radar Daemon</text>
+    <text x="320" y="82" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">Runs Mon–Fri 09:15–15:30 IST • Session Advisory Lock: pg_try_advisory_lock(847291)</text>
+    <text x="320" y="99" text-anchor="middle" font-size="11" font-weight="600" fill="#059669">Live Revaluation against NSE Quotes • Freshness Guards: LIVE / 15-MIN DELAYED / EOD</text>
+
+    <!-- Decision Diamond: Drift Breach -->
+    <polygon points="320,135 400,165 320,195 240,165" fill="#FFFFFF" stroke="#059669" stroke-width="2"/>
+    <text x="320" y="161" text-anchor="middle" font-size="11" font-weight="800" fill="#166534">Drift Breach?</text>
+    <text x="320" y="175" text-anchor="middle" font-size="9" font-weight="600" fill="#64748B">Stock ≥5% | Sec ≥8%</text>
+
+    <!-- Branch A: Hold (No Breach) -->
+    <line x1="240" y1="165" x2="165" y2="165" stroke="#16A34A" stroke-width="2" marker-end="url(#mArrGreen)"/>
+    <text x="202" y="157" text-anchor="middle" font-size="10.5" font-weight="700" fill="#16A34A">No Breach</text>
+
+    <rect x="25" y="142" width="140" height="46" rx="6" fill="#DCFCE7" stroke="#16A34A" stroke-width="1.5"/>
+    <text x="95" y="161" text-anchor="middle" font-size="11" font-weight="700" fill="#15803D">Branch A: Hold</text>
+    <text x="95" y="176" text-anchor="middle" font-size="10" font-weight="500" fill="#14532D">Status: ON_TRACK</text>
+
+    <!-- Branch B: Trigger Rebalance -->
+    <line x1="320" y1="195" x2="320" y2="235" stroke="#DC2626" stroke-width="2" marker-end="url(#mArrRed)"/>
+    <text x="375" y="215" text-anchor="middle" font-size="11" font-weight="700" fill="#DC2626">Breach Detected</text>
+
+    <!-- Stage 4.11: Before/After Preview -->
+    <g transform="translate(20, 235)">
+      <rect width="600" height="90" rx="6" fill="#FFFFFF" stroke="#A7F3D0" stroke-width="1.5"/>
+      <text x="300" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">Stage 4.11: Before / After Rebalance Preview</text>
+      
+      <!-- Mini comparison block -->
+      <rect x="20" y="34" width="260" height="46" rx="4" fill="#FEE2E2" stroke="#FCA5A5" stroke-width="1"/>
+      <text x="150" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#991B1B">BEFORE (Drifted State)</text>
+      <text x="150" y="68" text-anchor="middle" font-size="10.5" font-weight="500" fill="#7F1D1D">IT 34.5% (+6.5% Drift) → SELL 4 Sh</text>
+
+      <line x1="285" y1="57" x2="315" y2="57" stroke="#059669" stroke-width="2" marker-end="url(#mArr)"/>
+
+      <rect x="320" y="34" width="260" height="46" rx="4" fill="#DCFCE7" stroke="#86EFAC" stroke-width="1"/>
+      <text x="450" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#166534">AFTER (Realignment Target v+1)</text>
+      <text x="450" y="68" text-anchor="middle" font-size="10.5" font-weight="500" fill="#14532D">IT 28.0% (Aligned) • FMCG 17.5% (+8 Sh)</text>
+    </g>
+
+    <!-- Stage 4.12: Statutory Cost Engine & Order Execution -->
+    <g transform="translate(20, 335)">
+      <rect width="600" height="90" rx="6" fill="#FFFFFF" stroke="#A7F3D0" stroke-width="1.5"/>
+      <text x="300" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">Stage 4.12: Statutory Indian Cost Engine &amp; Order Execution</text>
+      
+      <!-- Tax Schedule -->
+      <rect x="20" y="34" width="370" height="46" rx="4" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+      <text x="205" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">Mandatory Levies (October 2024 Schedule):</text>
+      <text x="205" y="68" text-anchor="middle" font-size="10.5" font-weight="500" fill="#475569">STT (0.10%) • NSE/BSE (0.003%) • Stamp (0.015%) • GST (18%)</text>
+
+      <!-- Post-Trade Cash Guarantee -->
+      <rect x="405" y="34" width="175" height="46" rx="4" fill="#ECFDF5" stroke="#6EE7B7" stroke-width="1"/>
+      <text x="492" y="52" text-anchor="middle" font-size="10.5" font-weight="800" fill="#065F46">Cash Guarantee</text>
+      <text x="492" y="68" text-anchor="middle" font-size="10" font-weight="600" fill="#047857">C_res ≥ ₹0 (Trims 1 Sh)</text>
+    </g>
+  </g>
+</svg>

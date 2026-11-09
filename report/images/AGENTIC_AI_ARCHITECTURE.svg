@@ -1,0 +1,220 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1050 820" width="100%" height="100%" style="background:#FFFFFF; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <filter id="shadow" x="-2%" y="-2%" width="104%" height="106%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#334155"/>
+    </marker>
+    <marker id="arrGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#16A34A"/>
+    </marker>
+    <marker id="arrRed" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#DC2626"/>
+    </marker>
+  </defs>
+
+  <!-- Title & Subtitle -->
+  <text x="525" y="36" text-anchor="middle" font-size="24" font-weight="800" fill="#0F172A">Lucid: 13-Node LangGraph Multi-Agent Workflow</text>
+  <text x="525" y="58" text-anchor="middle" font-size="14" font-weight="500" fill="#64748B">Five-Stage Sequential Research, Deterministic Optimization &amp; Fiduciary Explanations</text>
+
+  <!-- Shared State Header Bar -->
+  <g transform="translate(35, 75)">
+    <rect width="980" height="42" rx="8" fill="#0F172A" filter="url(#shadow)"/>
+    <text x="25" y="26" font-size="13" font-weight="700" fill="#F8FAFC">SHARED GRAPH STATE: PortfolioAgentState (35 Fields in backend/agent/state.py)</text>
+    <text x="960" y="26" text-anchor="end" font-size="11" font-weight="600" fill="#94A3B8">Mandate (11) • Universe (3) • Analysts (4) • Critic (7) • Math &amp; Proofs (10)</text>
+  </g>
+
+  <!-- STAGE 1: Suitability Gate -->
+  <g transform="translate(35, 132)">
+    <rect width="980" height="100" rx="8" fill="#F0FDFA" stroke="#0D9488" stroke-width="2" filter="url(#shadow)"/>
+    <rect width="180" height="24" rx="4" fill="#CCFBF1"/>
+    <text x="90" y="17" text-anchor="middle" font-size="11" font-weight="800" fill="#0F766E">STAGE 1: SUITABILITY GATE</text>
+
+    <!-- Node 1 -->
+    <rect x="25" y="34" width="220" height="52" rx="6" fill="#FFFFFF" stroke="#99F6E4" stroke-width="1.5"/>
+    <text x="135" y="54" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">Node 1: Manager</text>
+    <text x="135" y="73" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">Parse Mandate &amp; Init State</text>
+
+    <line x1="245" y1="60" x2="280" y2="60" stroke="#0D9488" stroke-width="2" marker-end="url(#arr)"/>
+
+    <!-- Node 2 -->
+    <rect x="280" y="34" width="250" height="52" rx="6" fill="#FFFFFF" stroke="#99F6E4" stroke-width="1.5"/>
+    <text x="405" y="54" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">Node 2: Suitability Checker</text>
+    <text x="405" y="73" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">₹10k Min • 504 Liquid Equities</text>
+
+    <line x1="530" y1="60" x2="570" y2="60" stroke="#0D9488" stroke-width="2" marker-end="url(#arr)"/>
+
+    <!-- Router D1 Decision Diamond -->
+    <polygon points="630,35 690,60 630,85 570,60" fill="#FFFFFF" stroke="#0D9488" stroke-width="2"/>
+    <text x="630" y="58" text-anchor="middle" font-size="11" font-weight="800" fill="#0F766E">D1: Pass?</text>
+    <text x="630" y="71" text-anchor="middle" font-size="9" font-weight="600" fill="#64748B">≥5 Stocks/3 Sec</text>
+
+    <!-- Branch Pass -->
+    <line x1="690" y1="60" x2="745" y2="60" stroke="#16A34A" stroke-width="2" marker-end="url(#arrGreen)"/>
+    <text x="715" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#16A34A">Pass</text>
+
+    <!-- Stage 1 Output Card -->
+    <rect x="745" y="34" width="210" height="52" rx="6" fill="#CCFBF1" stroke="#0D9488" stroke-width="1.5"/>
+    <text x="850" y="54" text-anchor="middle" font-size="12" font-weight="700" fill="#0F766E">Suitability Approved</text>
+    <text x="850" y="73" text-anchor="middle" font-size="11" font-weight="500" fill="#134E4A">504 Liquid Pool to Stage 2</text>
+  </g>
+
+  <!-- Flow 1 -> 2 Connector -->
+  <line x1="525" y1="232" x2="525" y2="252" stroke="#2563EB" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- STAGE 2: Chained Specialist Analysts -->
+  <g transform="translate(35, 254)">
+    <rect width="980" height="110" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="2" filter="url(#shadow)"/>
+    <rect width="280" height="24" rx="4" fill="#DBEAFE"/>
+    <text x="140" y="17" text-anchor="middle" font-size="11" font-weight="800" fill="#1E40AF">STAGE 2: CHAINED SPECIALIST RESEARCH ANALYSTS</text>
+
+    <!-- 4 Chained Analyst Nodes -->
+    <rect x="25" y="36" width="210" height="60" rx="6" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.5"/>
+    <text x="130" y="58" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">N3: Macro Analyst</text>
+    <text x="130" y="75" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">RBI Repo 6.50% • CPI 5.10%</text>
+    <text x="130" y="88" text-anchor="middle" font-size="10" font-weight="700" fill="#2563EB">OUT: Cash Buffer 2.5–5%</text>
+
+    <line x1="235" y1="66" x2="265" y2="66" stroke="#2563EB" stroke-width="2" marker-end="url(#arr)"/>
+
+    <rect x="265" y="36" width="210" height="60" rx="6" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.5"/>
+    <text x="370" y="58" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">N4: Market Analyst</text>
+    <text x="370" y="75" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">India VIX • 200-DMA Trend</text>
+    <text x="370" y="88" text-anchor="middle" font-size="10" font-weight="700" fill="#2563EB">OUT: Regime &amp; Beta Cap</text>
+
+    <line x1="475" y1="66" x2="505" y2="66" stroke="#2563EB" stroke-width="2" marker-end="url(#arr)"/>
+
+    <rect x="505" y="36" width="210" height="60" rx="6" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.5"/>
+    <text x="610" y="58" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">N5: Fundamental Analyst</text>
+    <text x="610" y="75" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">ROE ≥15% • D/E ≤1.0 • P/E</text>
+    <text x="610" y="88" text-anchor="middle" font-size="10" font-weight="700" fill="#2563EB">OUT: Winsorized Z-Scores</text>
+
+    <line x1="715" y1="66" x2="745" y2="66" stroke="#2563EB" stroke-width="2" marker-end="url(#arr)"/>
+
+    <rect x="745" y="36" width="210" height="60" rx="6" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.5"/>
+    <text x="850" y="58" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">N6: News &amp; Regulatory</text>
+    <text x="850" y="75" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">30d News • Pledges &lt;5%</text>
+    <text x="850" y="88" text-anchor="middle" font-size="10" font-weight="700" fill="#2563EB">OUT: Sentiment [-1, +1]</text>
+  </g>
+
+  <!-- Flow 2 -> 3 Connector -->
+  <line x1="525" y1="364" x2="525" y2="384" stroke="#7C3AED" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- STAGE 3: Strategist & Critic Loop -->
+  <g transform="translate(35, 386)">
+    <rect width="980" height="110" rx="8" fill="#FAF5FF" stroke="#7C3AED" stroke-width="2" filter="url(#shadow)"/>
+    <rect width="250" height="24" rx="4" fill="#EDE9FE"/>
+    <text x="125" y="17" text-anchor="middle" font-size="11" font-weight="800" fill="#6D28D9">STAGE 3: STRATEGIST &amp; CRITIC LOOP</text>
+
+    <!-- Node 7: Strategist -->
+    <rect x="25" y="36" width="230" height="60" rx="6" fill="#FFFFFF" stroke="#DDD6FE" stroke-width="1.5"/>
+    <text x="140" y="58" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">Node 7: Lead Strategist</text>
+    <text x="140" y="75" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">Selects K ∈ [10..16] Candidates</text>
+    <text x="140" y="88" text-anchor="middle" font-size="10" font-weight="600" fill="#7C3AED">Core • Growth • Defensive</text>
+
+    <line x1="255" y1="66" x2="295" y2="66" stroke="#7C3AED" stroke-width="2" marker-end="url(#arr)"/>
+
+    <!-- Node 8: Critic -->
+    <rect x="295" y="36" width="220" height="60" rx="6" fill="#FFFFFF" stroke="#DDD6FE" stroke-width="1.5"/>
+    <text x="405" y="58" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">Node 8: Adversarial Critic</text>
+    <text x="405" y="75" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">Mandate &amp; Concentration Audit</text>
+    <text x="405" y="88" text-anchor="middle" font-size="10" font-weight="600" fill="#DC2626">Temp 0.1 • Strict Skeptic</text>
+
+    <line x1="515" y1="66" x2="555" y2="66" stroke="#7C3AED" stroke-width="2" marker-end="url(#arr)"/>
+
+    <!-- Router D2 Decision Diamond -->
+    <polygon points="615,41 675,66 615,91 555,66" fill="#FFFFFF" stroke="#7C3AED" stroke-width="2"/>
+    <text x="615" y="64" text-anchor="middle" font-size="11" font-weight="800" fill="#6D28D9">D2: Approved?</text>
+    <text x="615" y="77" text-anchor="middle" font-size="9" font-weight="600" fill="#64748B">Caps &amp; Ethics</text>
+
+    <!-- Branch Rework Loop back to Node 9 -->
+    <path d="M 615,41 L 615,28 L 405,28 L 405,36" fill="none" stroke="#DC2626" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrRed)"/>
+    <rect x="475" y="20" width="80" height="15" rx="3" fill="#FEE2E2"/>
+    <text x="515" y="31" text-anchor="middle" font-size="9" font-weight="700" fill="#DC2626">Rework (≤2)</text>
+
+    <!-- Branch Approved to Math -->
+    <line x1="675" y1="66" x2="735" y2="66" stroke="#16A34A" stroke-width="2" marker-end="url(#arrGreen)"/>
+    <text x="705" y="58" text-anchor="middle" font-size="11" font-weight="700" fill="#16A34A">Approved</text>
+
+    <!-- Stage 3 Output Card -->
+    <rect x="735" y="36" width="220" height="60" rx="6" fill="#EDE9FE" stroke="#7C3AED" stroke-width="1.5"/>
+    <text x="845" y="58" text-anchor="middle" font-size="13" font-weight="700" fill="#6D28D9">Vetted Candidates</text>
+    <text x="845" y="75" text-anchor="middle" font-size="11" font-weight="500" fill="#4C1D95">10–16 Critic-Approved Stocks</text>
+    <text x="845" y="88" text-anchor="middle" font-size="10" font-weight="700" fill="#15803D">Dispatched to SLSQP Solver</text>
+  </g>
+
+  <!-- Flow 3 -> 4 Connector -->
+  <line x1="525" y1="496" x2="525" y2="516" stroke="#059669" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- STAGE 4: Deterministic Math & Validation -->
+  <g transform="translate(35, 518)">
+    <rect width="980" height="110" rx="8" fill="#F0FDF4" stroke="#059669" stroke-width="2" filter="url(#shadow)"/>
+    <rect width="360" height="24" rx="4" fill="#DCFCE7"/>
+    <text x="180" y="17" text-anchor="middle" font-size="11" font-weight="800" fill="#166534">STAGE 4: ZERO-LLM DETERMINISTIC MATH &amp; VALIDATION</text>
+
+    <!-- Node 10A: SLSQP -->
+    <rect x="25" y="36" width="220" height="60" rx="6" fill="#FFFFFF" stroke="#86EFAC" stroke-width="1.5"/>
+    <text x="135" y="58" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">Node 10A: SciPy SLSQP</text>
+    <text x="135" y="75" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">Max Sharpe / Min Variance</text>
+    <text x="135" y="88" text-anchor="middle" font-size="10" font-weight="600" fill="#059669">Bounds: Stock ≤25%, Sec ≤40%</text>
+
+    <line x1="245" y1="66" x2="275" y2="66" stroke="#059669" stroke-width="2" marker-end="url(#arr)"/>
+
+    <!-- Node 10B: Integer Rounding -->
+    <rect x="275" y="36" width="230" height="60" rx="6" fill="#FFFFFF" stroke="#86EFAC" stroke-width="1.5"/>
+    <text x="390" y="58" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">Node 10B: Integer Sizing</text>
+    <text x="390" y="75" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">Floor Lots: Qi = ⌊(wi* · V)/Pi⌋</text>
+    <text x="390" y="88" text-anchor="middle" font-size="10" font-weight="700" fill="#059669">Guaranteed Cash Reserve ≥ ₹0</text>
+
+    <line x1="505" y1="66" x2="545" y2="66" stroke="#059669" stroke-width="2" marker-end="url(#arr)"/>
+
+    <!-- Router D4: Invariant Gate -->
+    <polygon points="605,41 665,66 605,91 545,66" fill="#FFFFFF" stroke="#059669" stroke-width="2"/>
+    <text x="605" y="64" text-anchor="middle" font-size="11" font-weight="800" fill="#166534">D4: Valid?</text>
+    <text x="605" y="77" text-anchor="middle" font-size="9" font-weight="600" fill="#64748B">Stock/Sec Caps</text>
+
+    <line x1="665" y1="66" x2="725" y2="66" stroke="#16A34A" stroke-width="2" marker-end="url(#arrGreen)"/>
+    <text x="695" y="58" text-anchor="middle" font-size="11" font-weight="700" fill="#16A34A">Pass</text>
+
+    <!-- Node 11 Verification Badge -->
+    <rect x="725" y="36" width="230" height="60" rx="6" fill="#DCFCE7" stroke="#059669" stroke-width="1.5"/>
+    <text x="840" y="58" text-anchor="middle" font-size="13" font-weight="700" fill="#166534">Node 11: Compliance Gate</text>
+    <text x="840" y="75" text-anchor="middle" font-size="11" font-weight="500" fill="#14532D">100% Invariants Satisfied</text>
+    <text x="840" y="88" text-anchor="middle" font-size="10" font-weight="700" fill="#047857">Div Score 95.5 • Sharpe 0.41</text>
+  </g>
+
+  <!-- Flow 4 -> 5 Connector -->
+  <line x1="525" y1="628" x2="525" y2="648" stroke="#0F172A" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- STAGE 5: Fiduciary Explanation & ACID Persistence -->
+  <g transform="translate(35, 650)">
+    <rect width="980" height="100" rx="8" fill="#F8FAFC" stroke="#0F172A" stroke-width="2" filter="url(#shadow)"/>
+    <rect width="320" height="24" rx="4" fill="#E2E8F0"/>
+    <text x="160" y="17" text-anchor="middle" font-size="11" font-weight="800" fill="#0F172A">STAGE 5: FIDUCIARY EXPLANATION &amp; PERSISTENCE</text>
+
+    <!-- Node 12 -->
+    <rect x="25" y="34" width="300" height="52" rx="6" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+    <text x="175" y="54" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">Node 12: Fiduciary Moderator</text>
+    <text x="175" y="73" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">Level-1 Thesis &amp; Level-2 NSE/BSE Proofs</text>
+
+    <line x1="325" y1="60" x2="365" y2="60" stroke="#0F172A" stroke-width="2" marker-end="url(#arr)"/>
+
+    <!-- Node 13 -->
+    <rect x="365" y="34" width="310" height="52" rx="6" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+    <text x="520" y="54" text-anchor="middle" font-size="13" font-weight="700" fill="#0F172A">Node 13: PostgreSQL ACID Commit</text>
+    <text x="520" y="73" text-anchor="middle" font-size="11" font-weight="500" fill="#64748B">Atomic Write: 6 Tables (Versions, Decisions)</text>
+
+    <line x1="675" y1="60" x2="715" y2="60" stroke="#16A34A" stroke-width="2.5" marker-end="url(#arrGreen)"/>
+
+    <!-- Final Output Pill -->
+    <rect x="715" y="34" width="240" height="52" rx="26" fill="#15803D" filter="url(#shadow)"/>
+    <text x="835" y="55" text-anchor="middle" font-size="13" font-weight="800" fill="#FFFFFF">ACTIVE PORTFOLIO</text>
+    <text x="835" y="72" text-anchor="middle" font-size="11" font-weight="600" fill="#DCFCE7">Whole Shares Ready for Review</text>
+  </g>
+
+  <!-- Bottom Architectural Safety Pillar -->
+  <g transform="translate(35, 765)">
+    <rect width="980" height="38" rx="6" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1"/>
+    <text x="490" y="24" text-anchor="middle" font-size="11.5" font-weight="700" fill="#92400E">ARCHITECTURAL PILLAR: Strict Separation of Qualitative AI (Nodes 3-9, 12) from Deterministic Math (Nodes 10-11) — Zero Hallucinations</text>
+  </g>
+</svg>
