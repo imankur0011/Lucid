@@ -49,13 +49,7 @@ Table~\ref{tab:external_data_sources} provides a comprehensive overview of every
 \end{table}
 
 \subsection{Free-Tier API Data Delays and Real-Time Limitations}
-A central operational reality of Lucid is its reliance on public, free-tier application programming interfaces (APIs) and web endpoints rather than multi-thousand-dollar institutional data feeds.
-
-\subsubsection{Why Lucid Uses Free-Tier Data Endpoints}
-Commercial institutional market terminals (such as Bloomberg Professional, Refinitiv Eikon, or direct exchange FIX multicast feeds) cost between \$24,000 and \$35,000 per user annually. While such services deliver sub-second, tick-by-tick order book data, their high cost is completely impractical for an academic research project and counterproductive for everyday retail investors. To ensure accessibility, Lucid is purposefully architected to function entirely using free public APIs, open exchange registries, and standard cloud AI quotas.
-
-\subsubsection{Specific Delays Associated with Each Free External API}
-Because free data sources do not offer live institutional streaming, each provider introduces specific operational delays:
+Because Lucid connects to public free-tier endpoints rather than dedicated institutional feeds, each external data provider introduces specific operational delays:
 \begin{enumerate}
     \item \textbf{15-Minute Statutory Exchange Delay (Yahoo Finance and NSE Public Streams)}: 
     Public market data feeds provided by Yahoo Finance (\texttt{yfinance}) and the National Stock Exchange public web portal are legally restricted by Indian exchange regulations to a \textbf{15-minute statutory delay} during live market hours (09:15 to 15:30 IST). Free endpoints do not supply sub-second, tick-by-tick Level 2 (order depth) or Level 3 (order queue) feeds. As a result, intraday quotes, stock prices, and the India VIX index reflect market conditions from 15 minutes prior.

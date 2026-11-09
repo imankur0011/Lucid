@@ -20,6 +20,7 @@ export const BRAND = {
     { id: "why", label: "Why This Portfolio?", shortLabel: "Why This?" },
     { id: "scenarios", label: "Stress Tests & AI", shortLabel: "Stress & AI" },
     { id: "diagnosis", label: "Demat Diagnosis", shortLabel: "Diagnosis" },
+    { id: "benchmarks", label: "Backtest vs Nifty 50", shortLabel: "Backtest" },
   ],
   supportEmail: "support@lucid.invalid",
   currencySymbol: "₹",

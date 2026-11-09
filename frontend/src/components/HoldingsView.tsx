@@ -24,6 +24,7 @@ import {
   IconArrowUpRight,
   IconTrash,
   IconRefresh,
+  IconTrendingUp,
 } from "./icons";
 import { getStockDetails } from "../lib/stockRationales";
 import { DeletePortfolioModal } from "./DeletePortfolioModal";
@@ -40,6 +41,7 @@ interface HoldingsViewProps {
   onPortfolioDeleted?: () => void;
   onOpenStockWhy?: (symbol: string, companyName?: string) => void;
   onPortfolioUpdated?: (version: PortfolioVersion) => void;
+  onViewBenchmarks?: () => void;
 }
 
 export function HoldingsView({
@@ -53,6 +55,7 @@ export function HoldingsView({
   onPortfolioDeleted,
   onOpenStockWhy,
   onPortfolioUpdated,
+  onViewBenchmarks,
 }: HoldingsViewProps) {
   const [expandedSymbol, setExpandedSymbol] = useState<string | null>(null);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
@@ -368,6 +371,19 @@ export function HoldingsView({
               >
                 <IconCompare className="w-4 h-4 text-[#4338CA]" />
                 <span>Compare</span>
+              </button>
+            )}
+
+            {/* Backtest vs Nifty 50 Trigger */}
+            {onViewBenchmarks && (
+              <button
+                onClick={onViewBenchmarks}
+                type="button"
+                className="px-4 py-2.5 rounded-xl bg-[#F7F6F1] hover:bg-[#EFECE4] border border-[#E5E3DA] text-[#142A3B] text-sm font-bold flex items-center gap-2 transition-all cursor-pointer shadow-xs"
+                title="View 252-day empirical backtest comparing Lucid against Nifty 50 and Equal-Weight baselines"
+              >
+                <IconTrendingUp className="w-4 h-4 text-[#166534]" />
+                <span>Backtest vs Nifty 50</span>
               </button>
             )}
 

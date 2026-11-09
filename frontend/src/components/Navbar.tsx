@@ -13,6 +13,7 @@ import {
   IconX,
   IconUser,
   IconArrowUpRight,
+  IconTrendingUp,
 } from "./icons";
 import { RiskAssessment } from "../lib/api";
 import { NotificationsPanel } from "./NotificationsPanel";
@@ -51,6 +52,7 @@ export function Navbar({
     why: <IconLightbulb className="w-4 h-4" />,
     scenarios: <IconBolt className="w-4 h-4" />,
     diagnosis: <IconRefresh className="w-4 h-4" />,
+    benchmarks: <IconTrendingUp className="w-4 h-4" />,
   };
 
   return (

@@ -38,6 +38,7 @@ import { StressScenariosView } from "../components/StressScenariosView";
 import { VersionComparisonModal } from "../components/VersionComparisonModal";
 import { ProfileAuthModal } from "../components/ProfileAuthModal";
 import { StockWhyModal } from "../components/StockWhyModal";
+import { BenchmarksView } from "../components/BenchmarksView";
 import { IconAlertTriangle, IconX } from "../components/icons";
 
 export type AppView = "landing" | "auth" | "onboarding" | "dashboard";
@@ -481,6 +482,7 @@ export default function Home() {
                   onPortfolioDeleted={handlePortfolioDeleted}
                   onOpenStockWhy={handleOpenStockWhy}
                   onPortfolioUpdated={handlePortfolioUpdated}
+                  onViewBenchmarks={() => setActiveTab("benchmarks")}
                 />
               </div>
             )}
@@ -527,6 +529,13 @@ export default function Home() {
                   onResetDiagnosis={handleResetDiagnosis}
                   riskCategory={assessment?.risk_category || "moderate"}
                 />
+              </div>
+            )}
+
+            {/* Tab 5: Backtesting & Benchmarks Evaluation */}
+            {activeTab === "benchmarks" && (
+              <div key="benchmarks" className="view-transition">
+                <BenchmarksView benchmarkData={benchmarkData} />
               </div>
             )}
           </div>
