@@ -68,3 +68,4 @@ if ($stoppedAnything) {
 
 Write-Host "Note: PostgreSQL database server remains untouched and running." -ForegroundColor Cyan
 Write-Host "======================================================================" -ForegroundColor Cyan
+

@@ -43,3 +43,4 @@ switch ($Target.ToLower()) {
         Get-Content -Path $BackendLog -Tail $Lines -Wait
     }
 }
+

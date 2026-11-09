@@ -127,3 +127,4 @@ if ($backendRunning -and $frontendRunning -and $dbOk) {
     Write-Host "   Start Lucid using: powershell .\start_lucid.ps1"
 }
 Write-Host "======================================================================" -ForegroundColor White
+
