@@ -1,0 +1,211 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 1150" width="1240px" height="1150px" style="background:#FFFFFF; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arr" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#1E293B"/>
+    </marker>
+    <marker id="arrReply" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0D9488"/>
+    </marker>
+    <marker id="arrWarn" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#B45309"/>
+    </marker>
+    <marker id="arrPurple" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7C3AED"/>
+    </marker>
+    <marker id="arrBlue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563EB"/>
+    </marker>
+  </defs>
+
+  <!-- Top Title Banner -->
+  <g transform="translate(30, 20)">
+    <rect width="1180" height="54" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" filter="url(#shadow)"/>
+    <rect width="8" height="54" rx="4" fill="#2563EB"/>
+    <text x="24" y="25" font-size="16" font-weight="800" fill="#0F172A">CONTINUOUS DRIFT RADAR &amp; STATUTORY REBALANCING (API_MONITORING_REBALANCE_FLOW)</text>
+    <text x="24" y="44" font-size="12" font-weight="500" fill="#64748B">Step-by-step sequence: 300s Background Radar, Advisory Locking, Drift Breach &amp; Rebalance Preview</text>
+    <rect x="1050" y="14" width="120" height="26" rx="4" fill="#DBEAFE"/>
+    <text x="1110" y="31" text-anchor="middle" font-size="11" font-weight="700" fill="#1E40AF">14 API STEPS</text>
+  </g>
+  <line x1="100" y1="140" x2="100" y2="1080" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <line x1="340" y1="140" x2="340" y2="1080" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <line x1="590" y1="140" x2="590" y2="1080" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <line x1="850" y1="140" x2="850" y2="1080" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <line x1="1100" y1="140" x2="1100" y2="1080" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <g transform="translate(28, 90)">
+    <rect width="145" height="46" rx="6" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="72" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#1E40AF">Scheduler</text>
+    <text x="72" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">APScheduler (300s)</text>
+  </g>
+  <g transform="translate(268, 90)">
+    <rect width="145" height="46" rx="6" fill="#FAF5FF" stroke="#DDD6FE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="72" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#7C3AED">MonitoringSvc</text>
+    <text x="72" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">drift_radar.py</text>
+  </g>
+  <g transform="translate(518, 90)">
+    <rect width="145" height="46" rx="6" fill="#F0FDF4" stroke="#A7F3D0" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="72" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#047857">PostgreSQL 16</text>
+    <text x="72" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">Advisory Lock 847291</text>
+  </g>
+  <g transform="translate(778, 90)">
+    <rect width="145" height="46" rx="6" fill="#FFF7ED" stroke="#FED7AA" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="72" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#C2410C">RebalancingSvc</text>
+    <text x="72" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">statutory_friction.py</text>
+  </g>
+  <g transform="translate(1028, 90)">
+    <rect width="145" height="46" rx="6" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="72" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#0D9488">Investor UI</text>
+    <text x="72" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">RebalanceModal.tsx</text>
+  </g>
+  <g transform="translate(28, 1085)">
+    <rect width="145" height="46" rx="6" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="72" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#1E40AF">Scheduler</text>
+    <text x="72" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">APScheduler (300s)</text>
+  </g>
+  <g transform="translate(268, 1085)">
+    <rect width="145" height="46" rx="6" fill="#FAF5FF" stroke="#DDD6FE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="72" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#7C3AED">MonitoringSvc</text>
+    <text x="72" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">drift_radar.py</text>
+  </g>
+  <g transform="translate(518, 1085)">
+    <rect width="145" height="46" rx="6" fill="#F0FDF4" stroke="#A7F3D0" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="72" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#047857">PostgreSQL 16</text>
+    <text x="72" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">Advisory Lock 847291</text>
+  </g>
+  <g transform="translate(778, 1085)">
+    <rect width="145" height="46" rx="6" fill="#FFF7ED" stroke="#FED7AA" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="72" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#C2410C">RebalancingSvc</text>
+    <text x="72" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">statutory_friction.py</text>
+  </g>
+  <g transform="translate(1028, 1085)">
+    <rect width="145" height="46" rx="6" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="72" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#0D9488">Investor UI</text>
+    <text x="72" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">RebalanceModal.tsx</text>
+  </g>
+  <!-- Box: DRIFT BREACH GATE: ASSET DRIFT &gt;= 5.0% OR SECTOR &gt;= 8.0% -->
+  <g transform="translate(230, 415)">
+    <rect width="480" height="135" rx="6" fill="#FFFBEB" stroke="#B45309" stroke-width="1.5" stroke-dasharray="6,4"/>
+    <rect x="12" y="6" width="416" height="22" rx="4" fill="#FFFFFF" stroke="#B45309" stroke-width="1.2"/>
+    <text x="220" y="21" text-anchor="middle" font-size="10" font-weight="800" fill="#B45309">DRIFT BREACH GATE: ASSET DRIFT &gt;= 5.0% OR SECTOR &gt;= 8.0%</text>
+  </g>
+  <!-- Box: USER REBALANCING REVIEW &amp; EXECUTION -->
+  <g transform="translate(230, 630)">
+    <rect width="940" height="445" rx="6" fill="#F0FDFA" stroke="#0D9488" stroke-width="1.5" stroke-dasharray="6,4"/>
+    <rect x="12" y="6" width="269" height="22" rx="4" fill="#FFFFFF" stroke="#0D9488" stroke-width="1.2"/>
+    <text x="146" y="21" text-anchor="middle" font-size="10" font-weight="800" fill="#0D9488">USER REBALANCING REVIEW &amp; EXECUTION</text>
+  </g>
+  <!-- Step 1: 100 -> 590 -->
+  <line x1="106" y1="180" x2="584" y2="180" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="129" cy="169" r="10.5" fill="#0F172A"/>
+  <text x="129" y="173" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">1</text>
+  <rect x="145" y="160" width="44" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="167" y="172" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">LOCK</text>
+  <text x="197" y="173" font-size="12" font-weight="700" fill="#0F172A">pg_try_advisory_lock(847291)</text>
+  <text x="145" y="195" font-size="10.5" font-weight="500" fill="#64748B">Obtains mutex to prevent concurrent cluster drift runs</text>
+  <!-- Step 2: 100 -> 340 -->
+  <line x1="106" y1="240" x2="334" y2="240" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="129" cy="229" r="10.5" fill="#0F172A"/>
+  <text x="129" y="233" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">2</text>
+  <rect x="145" y="220" width="44" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="167" y="232" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">TICK</text>
+  <text x="197" y="233" font-size="12" font-weight="700" fill="#0F172A">Timer Tick (300s): run_drift_radar()</text>
+  <text x="145" y="255" font-size="10.5" font-weight="500" fill="#64748B">Wakes monitoring loop during market hours (09:15–15:30 IST)</text>
+  <!-- Step 3: 340 -> 590 -->
+  <line x1="346" y1="300" x2="584" y2="300" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="369" cy="289" r="10.5" fill="#0F172A"/>
+  <text x="369" y="293" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">3</text>
+  <rect x="385" y="280" width="36" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="403" y="292" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">SQL</text>
+  <text x="429" y="293" font-size="12" font-weight="700" fill="#0F172A">SELECT active holdings &amp; target weights</text>
+  <text x="385" y="315" font-size="10.5" font-weight="500" fill="#64748B">Loads current Q_i, purchase price, target weight w_i*</text>
+  <!-- Step 4: Self-loop on MonitoringSvc -->
+  <path d="M 340,360 C 376,348 376,382 346,375" fill="none" stroke="#0F172A" stroke-width="1.8" marker-end="url(#arr)"/>
+  <circle cx="320" cy="366" r="10.5" fill="#0F172A"/>
+  <text x="320" y="370" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">4</text>
+  <rect x="390" y="346" width="44" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="412" y="358" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">EVAL</text>
+  <text x="442" y="358" font-size="12" font-weight="700" fill="#0F172A">Evaluate Real-Time Drift</text>
+  <text x="390" y="376" font-size="10.5" font-weight="500" fill="#64748B">Revalues at live prices P_i(t); computes |w_i(t) - w_i*|</text>
+  <!-- Step 5: 340 -> 590 -->
+  <line x1="346" y1="460" x2="584" y2="460" stroke="#B45309" stroke-width="2" marker-end="url(#arrWarn)"/>
+  <circle cx="369" cy="449" r="10.5" fill="#B45309"/>
+  <text x="369" y="453" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">5</text>
+  <rect x="385" y="440" width="52" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="411" y="452" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">ALERT</text>
+  <text x="445" y="453" font-size="12" font-weight="700" fill="#0F172A">INSERT INTO notifications</text>
+  <text x="385" y="475" font-size="10.5" font-weight="500" fill="#64748B">Emits DRIFT_WARNING alert if stock drift ≥ 5% or sector ≥ 8%</text>
+  <!-- Step 6: 340 -> 590 -->
+  <line x1="346" y1="520" x2="584" y2="520" stroke="#B45309" stroke-width="2" marker-end="url(#arrWarn)"/>
+  <circle cx="369" cy="509" r="10.5" fill="#B45309"/>
+  <text x="369" y="513" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">6</text>
+  <rect x="385" y="500" width="44" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="407" y="512" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">PEND</text>
+  <text x="437" y="513" font-size="12" font-weight="700" fill="#0F172A">INSERT INTO rebalance_suggestions</text>
+  <text x="385" y="535" font-size="10.5" font-weight="500" fill="#64748B">Stages candidate trade list with status = &#x27;PENDING&#x27;</text>
+  <!-- Step 7: 100 -> 590 -->
+  <line x1="106" y1="580" x2="584" y2="580" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="129" cy="569" r="10.5" fill="#0F172A"/>
+  <text x="129" y="573" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">7</text>
+  <rect x="145" y="560" width="60" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="175" y="572" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">UNLOCK</text>
+  <text x="213" y="573" font-size="12" font-weight="700" fill="#0F172A">pg_advisory_unlock(847291)</text>
+  <text x="145" y="595" font-size="10.5" font-weight="500" fill="#64748B">Releases concurrency advisory lock for next cycle</text>
+  <!-- Step 8: 1100 <- 340 -->
+  <line x1="1094" y1="675" x2="346" y2="675" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="369" cy="664" r="10.5" fill="#0F172A"/>
+  <text x="369" y="668" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">8</text>
+  <rect x="385" y="655" width="36" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="403" y="667" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">GET</text>
+  <text x="429" y="668" font-size="12" font-weight="700" fill="#0F172A">/api/v1/portfolios/{id}/rebalance-preview</text>
+  <text x="385" y="690" font-size="10.5" font-weight="500" fill="#64748B">Investor clicks notification to open Rebalance Modal</text>
+  <!-- Step 9: 340 -> 850 -->
+  <line x1="346" y1="735" x2="844" y2="735" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="369" cy="724" r="10.5" fill="#0F172A"/>
+  <text x="369" y="728" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">9</text>
+  <rect x="385" y="715" width="44" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="407" y="727" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">CALC</text>
+  <text x="437" y="728" font-size="12" font-weight="700" fill="#0F172A">calculate_rebalance_preview()</text>
+  <text x="385" y="750" font-size="10.5" font-weight="500" fill="#64748B">Computes required BUY/SELL lots &amp; transaction friction</text>
+  <!-- Step 10: Self-loop on RebalancingSvc -->
+  <path d="M 850,800 C 886,788 886,822 856,815" fill="none" stroke="#C2410C" stroke-width="1.8" marker-end="url(#arr)"/>
+  <circle cx="830" cy="806" r="10.5" fill="#C2410C"/>
+  <text x="830" y="810" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">10</text>
+  <rect x="900" y="786" width="44" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="922" y="798" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">SEBI</text>
+  <text x="952" y="798" font-size="12" font-weight="700" fill="#0F172A">Statutory Cost Engine (Oct 2024)</text>
+  <text x="900" y="816" font-size="10.5" font-weight="500" fill="#64748B">STT 0.10%, Stamp 0.015% &amp; GST friction</text>
+  <!-- Step 11: 850 -> 1100 -->
+  <line x1="856" y1="865" x2="1094" y2="865" stroke="#0D9488" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#arrReply)"/>
+  <circle cx="879" cy="854" r="10.5" fill="#0D9488"/>
+  <text x="879" y="858" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">11</text>
+  <rect x="895" y="845" width="36" height="17" rx="3" fill="#CCFBF1"/>
+  <text x="913" y="857" text-anchor="middle" font-size="9.5" font-weight="800" fill="#0F766E">200</text>
+  <text x="939" y="858" font-size="12" font-weight="700" fill="#047857">200 OK (Rebalance Preview)</text>
+  <text x="895" y="880" font-size="10.5" font-weight="500" fill="#0D9488">Returns proposed orders, friction &amp; cash reserve</text>
+  <!-- Step 12: 1100 <- 340 -->
+  <line x1="1094" y1="930" x2="346" y2="930" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="369" cy="919" r="10.5" fill="#0F172A"/>
+  <text x="369" y="923" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">12</text>
+  <rect x="385" y="910" width="44" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="407" y="922" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">POST</text>
+  <text x="437" y="923" font-size="12" font-weight="700" fill="#0F172A">/api/v1/portfolios/{id}/apply-rebalance</text>
+  <text x="385" y="945" font-size="10.5" font-weight="500" fill="#64748B">Investor confirms orders; triggers atomic version commit</text>
+  <!-- Step 13: 340 -> 590 -->
+  <line x1="346" y1="990" x2="584" y2="990" stroke="#047857" stroke-width="2" marker-end="url(#arrPurple)"/>
+  <circle cx="369" cy="979" r="10.5" fill="#047857"/>
+  <text x="369" y="983" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">13</text>
+  <rect x="385" y="970" width="44" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="407" y="982" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">ACID</text>
+  <text x="437" y="983" font-size="12" font-weight="700" fill="#0F172A">INSERT INTO portfolio_versions (v+1)</text>
+  <text x="385" y="1005" font-size="10.5" font-weight="500" fill="#64748B">Creates immutable version tree; resets drift to 0.0%</text>
+  <!-- Step 14: 340 -> 1100 -->
+  <line x1="346" y1="1050" x2="1094" y2="1050" stroke="#0D9488" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#arrReply)"/>
+  <circle cx="369" cy="1039" r="10.5" fill="#0D9488"/>
+  <text x="369" y="1043" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">14</text>
+  <rect x="385" y="1030" width="36" height="17" rx="3" fill="#CCFBF1"/>
+  <text x="403" y="1042" text-anchor="middle" font-size="9.5" font-weight="800" fill="#0F766E">200</text>
+  <text x="429" y="1043" font-size="12" font-weight="700" fill="#047857">200 OK (Execution Complete)</text>
+  <text x="385" y="1065" font-size="10.5" font-weight="500" fill="#0D9488">Live portfolio updated; new holdings active</text>
+</svg>

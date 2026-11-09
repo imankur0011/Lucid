@@ -145,33 +145,38 @@ When an investor uploads their monthly Demat statement (PDF format), the browser
 \section{API Sequence Interaction Flows}
 Figures~\ref{fig:api_auth_seq} through \ref{fig:api_diag_seq} display the step-by-step sequence diagrams for the primary user workflows:
 
-\begin{figure}[!htbp]
+\clearpage
+\begin{figure}[p]
     \centering
-    \includegraphics[width=0.88\textwidth, height=0.35\textheight, keepaspectratio]{API_AUTH_FLOW.pdf}
+    \includegraphics[width=\textwidth, height=0.72\textheight, keepaspectratio]{API_AUTH_FLOW.pdf}
     \caption{API Sequence Diagram: User Registration, Login, and Session Token Flow}
     \label{fig:api_auth_seq}
 \end{figure}
 
-\begin{figure}[!htbp]
+\clearpage
+\begin{figure}[p]
     \centering
-    \includegraphics[width=0.88\textwidth, height=0.35\textheight, keepaspectratio]{API_PORTFOLIO_GENERATION_FLOW.pdf}
+    \includegraphics[width=\textwidth, height=0.72\textheight, keepaspectratio]{API_PORTFOLIO_GENERATION_FLOW.pdf}
     \caption[API Sequence Diagram: Multi-Agent Portfolio Solver Flow]{API Sequence Diagram: Multi-Agent Portfolio Generation and Solver Flow}
     \label{fig:api_port_seq}
 \end{figure}
 
-\begin{figure}[!htbp]
+\clearpage
+\begin{figure}[p]
     \centering
-    \includegraphics[width=0.88\textwidth, height=0.35\textheight, keepaspectratio]{API_MONITORING_REBALANCE_FLOW.pdf}
+    \includegraphics[width=\textwidth, height=0.72\textheight, keepaspectratio]{API_MONITORING_REBALANCE_FLOW.pdf}
     \caption{API Sequence Diagram: Continuous Drift Radar and Rebalance Preview Flow}
     \label{fig:api_mon_seq}
 \end{figure}
 
-\begin{figure}[!htbp]
+\clearpage
+\begin{figure}[p]
     \centering
-    \includegraphics[width=0.88\textwidth, height=0.35\textheight, keepaspectratio]{API_DIAGNOSIS_FLOW.pdf}
+    \includegraphics[width=\textwidth, height=0.72\textheight, keepaspectratio]{API_DIAGNOSIS_FLOW.pdf}
     \caption{API Sequence Diagram: Demat CAS Statement PDF Diagnosis Flow}
     \label{fig:api_diag_seq}
 \end{figure}
+\clearpage
 
 \section{Postman Collection and Developer Testing Tools}
 To allow engineers and system auditors to test the API easily, Lucid provides an importable Postman collection located in \texttt{postman/}:

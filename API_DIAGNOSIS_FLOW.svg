@@ -1,0 +1,249 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1460 1240" width="1460px" height="1240px" style="background:#FFFFFF; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arr" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#1E293B"/>
+    </marker>
+    <marker id="arrReply" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0D9488"/>
+    </marker>
+    <marker id="arrWarn" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#B45309"/>
+    </marker>
+    <marker id="arrPurple" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7C3AED"/>
+    </marker>
+    <marker id="arrBlue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563EB"/>
+    </marker>
+  </defs>
+
+  <!-- Top Title Banner -->
+  <g transform="translate(30, 20)">
+    <rect width="1400" height="54" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" filter="url(#shadow)"/>
+    <rect width="8" height="54" rx="4" fill="#2563EB"/>
+    <text x="24" y="25" font-size="16" font-weight="800" fill="#0F172A">DEMAT STATEMENT (CAS PDF) DIAGNOSIS &amp; COPILOT (API_DIAGNOSIS_FLOW)</text>
+    <text x="24" y="44" font-size="12" font-weight="500" fill="#64748B">Step-by-step sequence: CAS PDF Parsing, Trigram Entity Matching, HHI Concentration Audit &amp; AI Copilot</text>
+    <rect x="1270" y="14" width="120" height="26" rx="4" fill="#DBEAFE"/>
+    <text x="1330" y="31" text-anchor="middle" font-size="11" font-weight="700" fill="#1E40AF">16 API STEPS</text>
+  </g>
+  <line x1="90" y1="140" x2="90" y2="1170" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <line x1="290" y1="140" x2="290" y2="1170" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <line x1="500" y1="140" x2="500" y2="1170" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <line x1="710" y1="140" x2="710" y2="1170" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <line x1="930" y1="140" x2="930" y2="1170" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <line x1="1150" y1="140" x2="1150" y2="1170" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <line x1="1350" y1="140" x2="1350" y2="1170" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <g transform="translate(23, 90)">
+    <rect width="135" height="46" rx="6" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#1E40AF">Investor</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">Retail Client</text>
+  </g>
+  <g transform="translate(223, 90)">
+    <rect width="135" height="46" rx="6" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#4338CA">Next.js UI</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">DiagnosisView.tsx</text>
+  </g>
+  <g transform="translate(433, 90)">
+    <rect width="135" height="46" rx="6" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#0D9488">FastAPI Router</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">/api/v1/diagnosis</text>
+  </g>
+  <g transform="translate(643, 90)">
+    <rect width="135" height="46" rx="6" fill="#FAF5FF" stroke="#DDD6FE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#7C3AED">DiagnosisSvc</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">cas_extractor.py</text>
+  </g>
+  <g transform="translate(863, 90)">
+    <rect width="135" height="46" rx="6" fill="#FFF7ED" stroke="#FED7AA" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#C2410C">Entity Resolver</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">pg_trgm (&gt;0.4)</text>
+  </g>
+  <g transform="translate(1083, 90)">
+    <rect width="135" height="46" rx="6" fill="#F0FDF4" stroke="#A7F3D0" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#047857">PostgreSQL 16</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">existing_portfolios</text>
+  </g>
+  <g transform="translate(1283, 90)">
+    <rect width="135" height="46" rx="6" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#2563EB">AI Copilot</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">Gemini Flash</text>
+  </g>
+  <g transform="translate(23, 1175)">
+    <rect width="135" height="46" rx="6" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#1E40AF">Investor</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">Retail Client</text>
+  </g>
+  <g transform="translate(223, 1175)">
+    <rect width="135" height="46" rx="6" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#4338CA">Next.js UI</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">DiagnosisView.tsx</text>
+  </g>
+  <g transform="translate(433, 1175)">
+    <rect width="135" height="46" rx="6" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#0D9488">FastAPI Router</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">/api/v1/diagnosis</text>
+  </g>
+  <g transform="translate(643, 1175)">
+    <rect width="135" height="46" rx="6" fill="#FAF5FF" stroke="#DDD6FE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#7C3AED">DiagnosisSvc</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">cas_extractor.py</text>
+  </g>
+  <g transform="translate(863, 1175)">
+    <rect width="135" height="46" rx="6" fill="#FFF7ED" stroke="#FED7AA" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#C2410C">Entity Resolver</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">pg_trgm (&gt;0.4)</text>
+  </g>
+  <g transform="translate(1083, 1175)">
+    <rect width="135" height="46" rx="6" fill="#F0FDF4" stroke="#A7F3D0" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#047857">PostgreSQL 16</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">existing_portfolios</text>
+  </g>
+  <g transform="translate(1283, 1175)">
+    <rect width="135" height="46" rx="6" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#2563EB">AI Copilot</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">Gemini Flash</text>
+  </g>
+  <!-- Box: QUANTITATIVE CONCENTRATION &amp; HHI RISK DIAGNOSIS -->
+  <g transform="translate(190, 635)">
+    <rect width="1020" height="315" rx="6" fill="#FAF5FF" stroke="#7C3AED" stroke-width="1.5" stroke-dasharray="6,4"/>
+    <rect x="12" y="6" width="353" height="22" rx="4" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.2"/>
+    <text x="188" y="21" text-anchor="middle" font-size="10" font-weight="800" fill="#7C3AED">QUANTITATIVE CONCENTRATION &amp; HHI RISK DIAGNOSIS</text>
+  </g>
+  <!-- Box: INTERACTIVE AI COPILOT CONSULTATION -->
+  <g transform="translate(30, 975)">
+    <rect width="1380" height="195" rx="6" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.5" stroke-dasharray="6,4"/>
+    <rect x="12" y="6" width="269" height="22" rx="4" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.2"/>
+    <text x="146" y="21" text-anchor="middle" font-size="10" font-weight="800" fill="#2563EB">INTERACTIVE AI COPILOT CONSULTATION</text>
+  </g>
+  <!-- Step 1: 90 -> 290 -->
+  <line x1="96" y1="180" x2="284" y2="180" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="119" cy="169" r="10.5" fill="#0F172A"/>
+  <text x="119" y="173" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">1</text>
+  <rect x="135" y="160" width="44" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="157" y="172" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">FILE</text>
+  <text x="187" y="173" font-size="12" font-weight="700" fill="#0F172A">Upload Demat Statement (CAS PDF)</text>
+  <text x="135" y="195" font-size="10.5" font-weight="500" fill="#64748B">Uploads monthly NSDL / CDSL CAS PDF or Zerodha CSV</text>
+  <!-- Step 2: 290 -> 500 -->
+  <line x1="296" y1="235" x2="494" y2="235" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="319" cy="224" r="10.5" fill="#0F172A"/>
+  <text x="319" y="228" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">2</text>
+  <rect x="335" y="215" width="44" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="357" y="227" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">POST</text>
+  <text x="387" y="228" font-size="12" font-weight="700" fill="#0F172A">/api/v1/diagnosis/upload-cas</text>
+  <text x="335" y="250" font-size="10.5" font-weight="500" fill="#64748B">Multipart form-data with optional PDF password</text>
+  <!-- Step 3: 500 -> 710 -->
+  <line x1="506" y1="290" x2="704" y2="290" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="529" cy="279" r="10.5" fill="#0F172A"/>
+  <text x="529" y="283" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">3</text>
+  <rect x="545" y="270" width="68" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="579" y="282" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">EXTRACT</text>
+  <text x="621" y="283" font-size="12" font-weight="700" fill="#0F172A">parse_cas_statement(file_bytes)</text>
+  <text x="545" y="305" font-size="10.5" font-weight="500" fill="#64748B">pdfplumber extracts ISIN, security name, quantity &amp; cost</text>
+  <!-- Step 4: 710 -> 930 -->
+  <line x1="716" y1="345" x2="924" y2="345" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="739" cy="334" r="10.5" fill="#0F172A"/>
+  <text x="739" y="338" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">4</text>
+  <rect x="755" y="325" width="68" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="789" y="337" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">RESOLVE</text>
+  <text x="831" y="338" font-size="12" font-weight="700" fill="#0F172A">resolve_company_identifiers()</text>
+  <text x="755" y="360" font-size="10.5" font-weight="500" fill="#64748B">Matches raw broker symbols to canonical securities</text>
+  <!-- Step 5: Self-loop on Entity Resolver -->
+  <path d="M 930,405 C 966,393 966,427 936,420" fill="none" stroke="#C2410C" stroke-width="1.8" marker-end="url(#arr)"/>
+  <circle cx="910" cy="411" r="10.5" fill="#C2410C"/>
+  <text x="910" y="415" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">5</text>
+  <rect x="980" y="391" width="52" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="1006" y="403" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">MATCH</text>
+  <text x="1040" y="403" font-size="12" font-weight="700" fill="#0F172A">3-Tier Entity Resolution Algorithm</text>
+  <text x="980" y="421" font-size="10.5" font-weight="500" fill="#64748B">1. ISIN Exact → 2. Trigram → 3. Levenshtein</text>
+  <!-- Step 6: 710 -> 1150 -->
+  <line x1="716" y1="470" x2="1144" y2="470" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="739" cy="459" r="10.5" fill="#0F172A"/>
+  <text x="739" y="463" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">6</text>
+  <rect x="755" y="450" width="36" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="773" y="462" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">SQL</text>
+  <text x="799" y="463" font-size="12" font-weight="700" fill="#0F172A">INSERT INTO existing_portfolios</text>
+  <text x="755" y="485" font-size="10.5" font-weight="500" fill="#64748B">Stores uploaded holdings snapshot &amp; parsed quantities</text>
+  <!-- Step 7: 500 <- 290 -->
+  <line x1="494" y1="530" x2="296" y2="530" stroke="#0D9488" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#arrReply)"/>
+  <circle cx="319" cy="519" r="10.5" fill="#0D9488"/>
+  <text x="319" y="523" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">7</text>
+  <rect x="335" y="510" width="36" height="17" rx="3" fill="#CCFBF1"/>
+  <text x="353" y="522" text-anchor="middle" font-size="9.5" font-weight="800" fill="#0F766E">200</text>
+  <text x="379" y="523" font-size="12" font-weight="700" fill="#047857">Holdings Ingested Successfully</text>
+  <text x="335" y="545" font-size="10.5" font-weight="500" fill="#0D9488">Returns existing_portfolio_id &amp; 24 normalized stocks</text>
+  <!-- Step 8: 90 -> 290 -->
+  <line x1="96" y1="600" x2="284" y2="600" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="119" cy="589" r="10.5" fill="#0F172A"/>
+  <text x="119" y="593" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">8</text>
+  <rect x="135" y="580" width="52" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="161" y="592" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">CLICK</text>
+  <text x="195" y="593" font-size="12" font-weight="700" fill="#0F172A">Click &#x27;Analyze Portfolio Health&#x27;</text>
+  <text x="135" y="615" font-size="10.5" font-weight="500" fill="#64748B">Investor initiates comprehensive diagnostic health check</text>
+  <!-- Step 9: 290 -> 500 -->
+  <line x1="296" y1="680" x2="494" y2="680" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="319" cy="669" r="10.5" fill="#0F172A"/>
+  <text x="319" y="673" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">9</text>
+  <rect x="335" y="660" width="44" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="357" y="672" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">POST</text>
+  <text x="387" y="673" font-size="12" font-weight="700" fill="#0F172A">/api/v1/diagnosis/{id}/analyze</text>
+  <text x="335" y="695" font-size="10.5" font-weight="500" fill="#64748B">Requests quantitative diversification &amp; risk audit</text>
+  <!-- Step 10: 500 -> 710 -->
+  <line x1="506" y1="735" x2="704" y2="735" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="529" cy="724" r="10.5" fill="#0F172A"/>
+  <text x="529" y="728" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">10</text>
+  <rect x="545" y="715" width="52" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="571" y="727" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">AUDIT</text>
+  <text x="605" y="728" font-size="12" font-weight="700" fill="#0F172A">compute_portfolio_diagnoses()</text>
+  <text x="545" y="750" font-size="10.5" font-weight="500" fill="#64748B">Executes mathematical concentration algorithms</text>
+  <!-- Step 11: Self-loop on DiagnosisSvc -->
+  <path d="M 710,800 C 746,788 746,822 716,815" fill="none" stroke="#7C3AED" stroke-width="1.8" marker-end="url(#arr)"/>
+  <circle cx="690" cy="806" r="10.5" fill="#7C3AED"/>
+  <text x="690" y="810" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">11</text>
+  <rect x="760" y="786" width="36" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="778" y="798" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">HHI</text>
+  <text x="804" y="798" font-size="12" font-weight="700" fill="#0F172A">Calculate Herfindahl-Hirschman Index</text>
+  <text x="760" y="816" font-size="10.5" font-weight="500" fill="#64748B">HHI = ∑(w_i·100)²; flags stocks &gt;25%, sectors &gt;40%</text>
+  <!-- Step 12: 710 -> 1150 -->
+  <line x1="716" y1="865" x2="1144" y2="865" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="739" cy="854" r="10.5" fill="#0F172A"/>
+  <text x="739" y="858" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">12</text>
+  <rect x="755" y="845" width="36" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="773" y="857" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">SQL</text>
+  <text x="799" y="858" font-size="12" font-weight="700" fill="#0F172A">INSERT INTO portfolio_diagnoses</text>
+  <text x="755" y="880" font-size="10.5" font-weight="500" fill="#64748B">Persists health score (68/100), HHI, and swap suggestions</text>
+  <!-- Step 13: 500 <- 290 -->
+  <line x1="494" y1="925" x2="296" y2="925" stroke="#0D9488" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#arrReply)"/>
+  <circle cx="319" cy="914" r="10.5" fill="#0D9488"/>
+  <text x="319" y="918" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">13</text>
+  <rect x="335" y="905" width="36" height="17" rx="3" fill="#CCFBF1"/>
+  <text x="353" y="917" text-anchor="middle" font-size="9.5" font-weight="800" fill="#0F766E">200</text>
+  <text x="379" y="918" font-size="12" font-weight="700" fill="#047857">Health Diagnostic Report</text>
+  <text x="335" y="940" font-size="10.5" font-weight="500" fill="#0D9488">Returns grade (MODERATE), HHI (1840), red flags &amp; swaps</text>
+  <!-- Step 14: 90 -> 290 -->
+  <line x1="96" y1="1025" x2="284" y2="1025" stroke="#2563EB" stroke-width="2" marker-end="url(#arrBlue)"/>
+  <circle cx="119" cy="1014" r="10.5" fill="#2563EB"/>
+  <text x="119" y="1018" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">14</text>
+  <rect x="135" y="1005" width="44" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="157" y="1017" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">CHAT</text>
+  <text x="187" y="1018" font-size="12" font-weight="700" fill="#0F172A">Ask: &#x27;Why is IT allocation high risk?&#x27;</text>
+  <text x="135" y="1040" font-size="10.5" font-weight="500" fill="#64748B">Investor asks interactive plain-English diagnostic question</text>
+  <!-- Step 15: 290 -> 1350 -->
+  <line x1="296" y1="1085" x2="1344" y2="1085" stroke="#2563EB" stroke-width="2" marker-end="url(#arrBlue)"/>
+  <circle cx="319" cy="1074" r="10.5" fill="#2563EB"/>
+  <text x="319" y="1078" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">15</text>
+  <rect x="335" y="1065" width="36" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="353" y="1077" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">LLM</text>
+  <text x="379" y="1078" font-size="12" font-weight="700" fill="#0F172A">POST /api/v1/diagnosis/{id}/chat</text>
+  <text x="335" y="1100" font-size="10.5" font-weight="500" fill="#64748B">Gemini Flash explains IT concentration exceeding 35% safe cap</text>
+  <!-- Step 16: 1350 <- 290 -->
+  <line x1="1344" y1="1145" x2="296" y2="1145" stroke="#2563EB" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#arrBlue)"/>
+  <circle cx="319" cy="1134" r="10.5" fill="#2563EB"/>
+  <text x="319" y="1138" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">16</text>
+  <rect x="335" y="1125" width="36" height="17" rx="3" fill="#CCFBF1"/>
+  <text x="353" y="1137" text-anchor="middle" font-size="9.5" font-weight="800" fill="#0F766E">200</text>
+  <text x="379" y="1138" font-size="12" font-weight="700" fill="#047857">Copilot Explanation</text>
+  <text x="335" y="1160" font-size="10.5" font-weight="500" fill="#0D9488">Provides plain-English rationale with HHI evidence &amp; swaps</text>
+</svg>

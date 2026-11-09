@@ -1,0 +1,239 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1460 1160" width="1460px" height="1160px" style="background:#FFFFFF; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arr" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#1E293B"/>
+    </marker>
+    <marker id="arrReply" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0D9488"/>
+    </marker>
+    <marker id="arrWarn" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#B45309"/>
+    </marker>
+    <marker id="arrPurple" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7C3AED"/>
+    </marker>
+    <marker id="arrBlue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563EB"/>
+    </marker>
+  </defs>
+
+  <!-- Top Title Banner -->
+  <g transform="translate(30, 20)">
+    <rect width="1400" height="54" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" filter="url(#shadow)"/>
+    <rect width="8" height="54" rx="4" fill="#2563EB"/>
+    <text x="24" y="25" font-size="16" font-weight="800" fill="#0F172A">MULTI-AGENT PORTFOLIO GENERATION &amp; SOLVER (API_PORTFOLIO_GENERATION_FLOW)</text>
+    <text x="24" y="44" font-size="12" font-weight="500" fill="#64748B">Step-by-step sequence: Mandate Ingestion, LangGraph AI Research, SLSQP Solver &amp; Whole-Share Commit</text>
+    <rect x="1270" y="14" width="120" height="26" rx="4" fill="#DBEAFE"/>
+    <text x="1330" y="31" text-anchor="middle" font-size="11" font-weight="700" fill="#1E40AF">15 API STEPS</text>
+  </g>
+  <line x1="90" y1="140" x2="90" y2="1090" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <line x1="290" y1="140" x2="290" y2="1090" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <line x1="500" y1="140" x2="500" y2="1090" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <line x1="710" y1="140" x2="710" y2="1090" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <line x1="920" y1="140" x2="920" y2="1090" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <line x1="1130" y1="140" x2="1130" y2="1090" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <line x1="1350" y1="140" x2="1350" y2="1090" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <g transform="translate(23, 90)">
+    <rect width="135" height="46" rx="6" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#1E40AF">Investor</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">Retail Client</text>
+  </g>
+  <g transform="translate(223, 90)">
+    <rect width="135" height="46" rx="6" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#4338CA">Next.js UI</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">PortfolioGen.tsx</text>
+  </g>
+  <g transform="translate(433, 90)">
+    <rect width="135" height="46" rx="6" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#0D9488">FastAPI Router</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">/portfolios</text>
+  </g>
+  <g transform="translate(643, 90)">
+    <rect width="135" height="46" rx="6" fill="#FAF5FF" stroke="#DDD6FE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#7C3AED">PortfolioEngine</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">orchestrator.py</text>
+  </g>
+  <g transform="translate(853, 90)">
+    <rect width="135" height="46" rx="6" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#0F766E">LangGraph AI</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">state.py (13 Nodes)</text>
+  </g>
+  <g transform="translate(1063, 90)">
+    <rect width="135" height="46" rx="6" fill="#FFF7ED" stroke="#FED7AA" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#C2410C">SciPy SLSQP</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">math_engine.py</text>
+  </g>
+  <g transform="translate(1283, 90)">
+    <rect width="135" height="46" rx="6" fill="#F0FDF4" stroke="#A7F3D0" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#047857">PostgreSQL 16</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">Domain Tables</text>
+  </g>
+  <g transform="translate(23, 1095)">
+    <rect width="135" height="46" rx="6" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#1E40AF">Investor</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">Retail Client</text>
+  </g>
+  <g transform="translate(223, 1095)">
+    <rect width="135" height="46" rx="6" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#4338CA">Next.js UI</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">PortfolioGen.tsx</text>
+  </g>
+  <g transform="translate(433, 1095)">
+    <rect width="135" height="46" rx="6" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#0D9488">FastAPI Router</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">/portfolios</text>
+  </g>
+  <g transform="translate(643, 1095)">
+    <rect width="135" height="46" rx="6" fill="#FAF5FF" stroke="#DDD6FE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#7C3AED">PortfolioEngine</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">orchestrator.py</text>
+  </g>
+  <g transform="translate(853, 1095)">
+    <rect width="135" height="46" rx="6" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#0F766E">LangGraph AI</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">state.py (13 Nodes)</text>
+  </g>
+  <g transform="translate(1063, 1095)">
+    <rect width="135" height="46" rx="6" fill="#FFF7ED" stroke="#FED7AA" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#C2410C">SciPy SLSQP</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">math_engine.py</text>
+  </g>
+  <g transform="translate(1283, 1095)">
+    <rect width="135" height="46" rx="6" fill="#F0FDF4" stroke="#A7F3D0" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="67" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#047857">PostgreSQL 16</text>
+    <text x="67" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">Domain Tables</text>
+  </g>
+  <!-- Box: QUALITATIVE AI COMMITTEE -->
+  <g transform="translate(820, 445)">
+    <rect width="215" height="130" rx="6" fill="#FAF5FF" stroke="#7C3AED" stroke-width="1.5" stroke-dasharray="6,4"/>
+    <rect x="12" y="6" width="192" height="22" rx="4" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.2"/>
+    <text x="108" y="21" text-anchor="middle" font-size="10" font-weight="800" fill="#7C3AED">QUALITATIVE AI COMMITTEE</text>
+  </g>
+  <!-- Box: DETERMINISTIC MATH -->
+  <g transform="translate(1030, 655)">
+    <rect width="260" height="135" rx="6" fill="#FFF7ED" stroke="#C2410C" stroke-width="1.5" stroke-dasharray="6,4"/>
+    <rect x="12" y="6" width="150" height="22" rx="4" fill="#FFFFFF" stroke="#C2410C" stroke-width="1.2"/>
+    <text x="87" y="21" text-anchor="middle" font-size="10" font-weight="800" fill="#C2410C">DETERMINISTIC MATH</text>
+  </g>
+  <!-- Step 1: 90 -> 290 -->
+  <line x1="96" y1="180" x2="284" y2="180" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="119" cy="169" r="10.5" fill="#0F172A"/>
+  <text x="119" y="173" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">1</text>
+  <text x="135" y="173" font-size="12" font-weight="700" fill="#0F172A">Specify Capital &amp; Horizon Mandate</text>
+  <text x="135" y="195" font-size="10.5" font-weight="500" fill="#64748B">Capital: ₹5,00,000, 36 Months, Risk: BALANCED</text>
+  <!-- Step 2: 290 -> 500 -->
+  <line x1="296" y1="235" x2="494" y2="235" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="319" cy="224" r="10.5" fill="#0F172A"/>
+  <text x="319" y="228" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">2</text>
+  <rect x="335" y="215" width="44" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="357" y="227" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">POST</text>
+  <text x="387" y="228" font-size="12" font-weight="700" fill="#0F172A">/api/v1/portfolio-generation-requests</text>
+  <text x="335" y="250" font-size="10.5" font-weight="500" fill="#64748B">Submits validated PortfolioGenerationRequest DTO</text>
+  <!-- Step 3: 500 -> 1350 -->
+  <line x1="506" y1="290" x2="1344" y2="290" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="529" cy="279" r="10.5" fill="#0F172A"/>
+  <text x="529" y="283" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">3</text>
+  <rect x="545" y="270" width="36" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="563" y="282" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">SQL</text>
+  <text x="589" y="283" font-size="12" font-weight="700" fill="#0F172A">INSERT INTO generation_requests</text>
+  <text x="545" y="305" font-size="10.5" font-weight="500" fill="#64748B">Initial state recorded with status = &#x27;RUNNING&#x27;</text>
+  <!-- Step 4: 500 -> 710 -->
+  <line x1="506" y1="345" x2="704" y2="345" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="529" cy="334" r="10.5" fill="#0F172A"/>
+  <text x="529" y="338" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">4</text>
+  <rect x="545" y="325" width="52" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="571" y="337" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">START</text>
+  <text x="605" y="338" font-size="12" font-weight="700" fill="#0F172A">start_portfolio_generation(request_id)</text>
+  <text x="545" y="360" font-size="10.5" font-weight="500" fill="#64748B">FastAPI delegates async orchestration to PortfolioEngine</text>
+  <!-- Step 5: 710 -> 920 -->
+  <line x1="716" y1="400" x2="914" y2="400" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="739" cy="389" r="10.5" fill="#0F172A"/>
+  <text x="739" y="393" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">5</text>
+  <rect x="755" y="380" width="52" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="781" y="392" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">GRAPH</text>
+  <text x="815" y="393" font-size="12" font-weight="700" fill="#0F172A">create_portfolio_graph().invoke(state)</text>
+  <text x="755" y="415" font-size="10.5" font-weight="500" fill="#64748B">Initializes 35-field PortfolioAgentState payload</text>
+  <!-- Step 6: Self-loop on LangGraph AI -->
+  <path d="M 920,485 C 956,473 956,507 926,500" fill="none" stroke="#7C3AED" stroke-width="1.8" marker-end="url(#arr)"/>
+  <circle cx="900" cy="491" r="10.5" fill="#7C3AED"/>
+  <text x="900" y="495" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">6</text>
+  <rect x="970" y="471" width="28" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="984" y="483" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">AI</text>
+  <text x="1006" y="483" font-size="12" font-weight="700" fill="#0F172A">Chained Specialist Research Pipeline</text>
+  <text x="970" y="501" font-size="10.5" font-weight="500" fill="#64748B">Macro (N3) → Market (N4) → Fund (N5) → News (N6)</text>
+  <!-- Step 7: Self-loop on LangGraph AI -->
+  <path d="M 920,545 C 956,533 956,567 926,560" fill="none" stroke="#7C3AED" stroke-width="1.8" marker-end="url(#arr)"/>
+  <circle cx="900" cy="551" r="10.5" fill="#7C3AED"/>
+  <text x="900" y="555" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">7</text>
+  <rect x="970" y="531" width="44" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="992" y="543" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">LOOP</text>
+  <text x="1022" y="543" font-size="12" font-weight="700" fill="#0F172A">Strategist Allocation ⇄ Critic Review</text>
+  <text x="970" y="561" font-size="10.5" font-weight="500" fill="#64748B">N7 selects 10–16 candidates; N8 enforces bounds</text>
+  <!-- Step 8: 920 -> 1130 -->
+  <line x1="926" y1="615" x2="1124" y2="615" stroke="#C2410C" stroke-width="2" marker-end="url(#arrPurple)"/>
+  <circle cx="949" cy="604" r="10.5" fill="#C2410C"/>
+  <text x="949" y="608" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">8</text>
+  <rect x="965" y="595" width="44" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="987" y="607" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">MATH</text>
+  <text x="1017" y="608" font-size="12" font-weight="700" fill="#0F172A">deterministic_optimizer_node</text>
+  <text x="965" y="630" font-size="10.5" font-weight="500" fill="#64748B">Passes vetted 10-16 candidates &amp; covariance matrix</text>
+  <!-- Step 9: Self-loop on SciPy SLSQP -->
+  <path d="M 1130,700 C 1166,688 1166,722 1136,715" fill="none" stroke="#C2410C" stroke-width="1.8" marker-end="url(#arr)"/>
+  <circle cx="1110" cy="706" r="10.5" fill="#C2410C"/>
+  <text x="1110" y="710" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">9</text>
+  <rect x="1180" y="686" width="52" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="1206" y="698" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">SLSQP</text>
+  <text x="1240" y="698" font-size="12" font-weight="700" fill="#0F172A">Continuous SLSQP Solver</text>
+  <text x="1180" y="716" font-size="10.5" font-weight="500" fill="#64748B">Max Sharpe: max (wᵀμ - Rf)/σ_p</text>
+  <!-- Step 10: Self-loop on SciPy SLSQP -->
+  <path d="M 1130,760 C 1166,748 1166,782 1136,775" fill="none" stroke="#C2410C" stroke-width="1.8" marker-end="url(#arr)"/>
+  <circle cx="1110" cy="766" r="10.5" fill="#C2410C"/>
+  <text x="1110" y="770" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">10</text>
+  <rect x="1180" y="746" width="44" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="1202" y="758" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">LOTS</text>
+  <text x="1232" y="758" font-size="12" font-weight="700" fill="#0F172A">Whole-Share Integer Allocation</text>
+  <text x="1180" y="776" font-size="10.5" font-weight="500" fill="#64748B">Q_i = ⌊(w_i*·V)/P_i⌋ with Greedy Cash Pass</text>
+  <!-- Step 11: 1130 <- 920 -->
+  <line x1="1124" y1="830" x2="926" y2="830" stroke="#0D9488" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#arrPurple)"/>
+  <circle cx="949" cy="819" r="10.5" fill="#0D9488"/>
+  <text x="949" y="823" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">11</text>
+  <rect x="965" y="810" width="44" height="17" rx="3" fill="#CCFBF1"/>
+  <text x="987" y="822" text-anchor="middle" font-size="9.5" font-weight="800" fill="#0F766E">PASS</text>
+  <text x="1017" y="823" font-size="12" font-weight="700" fill="#047857">critic_final_validation (Node 11)</text>
+  <text x="965" y="845" font-size="10.5" font-weight="500" fill="#0D9488">Audits post-rounding invariants; zero-violation gate</text>
+  <!-- Step 12: Self-loop on LangGraph AI -->
+  <path d="M 920,890 C 956,878 956,912 926,905" fill="none" stroke="#7C3AED" stroke-width="1.8" marker-end="url(#arr)"/>
+  <circle cx="900" cy="896" r="10.5" fill="#7C3AED"/>
+  <text x="900" y="900" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">12</text>
+  <rect x="970" y="876" width="36" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="988" y="888" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">WHY</text>
+  <text x="1014" y="888" font-size="12" font-weight="700" fill="#0F172A">Fiduciary Moderator Node (Node 12)</text>
+  <text x="970" y="906" font-size="10.5" font-weight="500" fill="#64748B">Generates Level-1 Thesis &amp; Level-2 Fact Proofs</text>
+  <!-- Step 13: 920 -> 1350 -->
+  <line x1="926" y1="950" x2="1344" y2="950" stroke="#047857" stroke-width="2" marker-end="url(#arrPurple)"/>
+  <circle cx="949" cy="939" r="10.5" fill="#047857"/>
+  <text x="949" y="943" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">13</text>
+  <rect x="965" y="930" width="44" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="987" y="942" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">ACID</text>
+  <text x="1017" y="943" font-size="12" font-weight="700" fill="#0F172A">Atomic Persistence (Node 13)</text>
+  <text x="965" y="965" font-size="10.5" font-weight="500" fill="#64748B">Writes versions, decisions, explanations, and audit runs</text>
+  <!-- Step 14: 500 <- 290 -->
+  <line x1="494" y1="1020" x2="296" y2="1020" stroke="#0D9488" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#arrReply)"/>
+  <circle cx="319" cy="1009" r="10.5" fill="#0D9488"/>
+  <text x="319" y="1013" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">14</text>
+  <rect x="335" y="1000" width="36" height="17" rx="3" fill="#CCFBF1"/>
+  <text x="353" y="1012" text-anchor="middle" font-size="9.5" font-weight="800" fill="#0F766E">201</text>
+  <text x="379" y="1013" font-size="12" font-weight="700" fill="#047857">Validated Portfolio Payload</text>
+  <text x="335" y="1035" font-size="10.5" font-weight="500" fill="#0D9488">Returns positions, integer shares, cash reserve &amp; proofs</text>
+  <!-- Step 15: 290 <- 90 -->
+  <line x1="284" y1="1080" x2="96" y2="1080" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="119" cy="1069" r="10.5" fill="#0F172A"/>
+  <text x="119" y="1073" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">15</text>
+  <rect x="135" y="1060" width="28" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="149" y="1072" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">UI</text>
+  <text x="171" y="1073" font-size="12" font-weight="700" fill="#0F172A">Render Portfolio View &amp; Proofs</text>
+  <text x="135" y="1095" font-size="10.5" font-weight="500" fill="#64748B">Displays donut allocation, risk gauges &amp; explanation modal</text>
+</svg>

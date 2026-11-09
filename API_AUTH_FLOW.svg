@@ -1,0 +1,187 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 980" width="1160px" height="980px" style="background:#FFFFFF; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arr" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#1E293B"/>
+    </marker>
+    <marker id="arrReply" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0D9488"/>
+    </marker>
+    <marker id="arrWarn" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#B45309"/>
+    </marker>
+    <marker id="arrPurple" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7C3AED"/>
+    </marker>
+    <marker id="arrBlue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563EB"/>
+    </marker>
+  </defs>
+
+  <!-- Top Title Banner -->
+  <g transform="translate(30, 20)">
+    <rect width="1100" height="54" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" filter="url(#shadow)"/>
+    <rect width="8" height="54" rx="4" fill="#2563EB"/>
+    <text x="24" y="25" font-size="16" font-weight="800" fill="#0F172A">AUTHENTICATION &amp; SESSION TOKEN LIFECYCLE (API_AUTH_FLOW)</text>
+    <text x="24" y="44" font-size="12" font-weight="500" fill="#64748B">Step-by-step sequence: User Login, Argon2id Verification, Bearer JWT Issuance &amp; Token Revocation</text>
+    <rect x="970" y="14" width="120" height="26" rx="4" fill="#DBEAFE"/>
+    <text x="1030" y="31" text-anchor="middle" font-size="11" font-weight="700" fill="#1E40AF">12 API STEPS</text>
+  </g>
+  <line x1="110" y1="140" x2="110" y2="910" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <line x1="340" y1="140" x2="340" y2="910" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <line x1="580" y1="140" x2="580" y2="910" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <line x1="830" y1="140" x2="830" y2="910" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <line x1="1050" y1="140" x2="1050" y2="910" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,5"/>
+  <g transform="translate(38, 90)">
+    <rect width="145" height="46" rx="6" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="72" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#1E40AF">Investor</text>
+    <text x="72" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">Retail User</text>
+  </g>
+  <g transform="translate(268, 90)">
+    <rect width="145" height="46" rx="6" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="72" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#4338CA">Next.js UI</text>
+    <text x="72" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">AuthView.tsx</text>
+  </g>
+  <g transform="translate(508, 90)">
+    <rect width="145" height="46" rx="6" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="72" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#0D9488">FastAPI Gateway</text>
+    <text x="72" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">/api/v1/auth</text>
+  </g>
+  <g transform="translate(758, 90)">
+    <rect width="145" height="46" rx="6" fill="#FAF5FF" stroke="#DDD6FE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="72" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#7C3AED">AuthService</text>
+    <text x="72" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">Argon2id Hasher</text>
+  </g>
+  <g transform="translate(978, 90)">
+    <rect width="145" height="46" rx="6" fill="#F0FDF4" stroke="#A7F3D0" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="72" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#047857">PostgreSQL 16</text>
+    <text x="72" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">app_users</text>
+  </g>
+  <g transform="translate(38, 915)">
+    <rect width="145" height="46" rx="6" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="72" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#1E40AF">Investor</text>
+    <text x="72" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">Retail User</text>
+  </g>
+  <g transform="translate(268, 915)">
+    <rect width="145" height="46" rx="6" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="72" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#4338CA">Next.js UI</text>
+    <text x="72" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">AuthView.tsx</text>
+  </g>
+  <g transform="translate(508, 915)">
+    <rect width="145" height="46" rx="6" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="72" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#0D9488">FastAPI Gateway</text>
+    <text x="72" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">/api/v1/auth</text>
+  </g>
+  <g transform="translate(758, 915)">
+    <rect width="145" height="46" rx="6" fill="#FAF5FF" stroke="#DDD6FE" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="72" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#7C3AED">AuthService</text>
+    <text x="72" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">Argon2id Hasher</text>
+  </g>
+  <g transform="translate(978, 915)">
+    <rect width="145" height="46" rx="6" fill="#F0FDF4" stroke="#A7F3D0" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="72" y="19" text-anchor="middle" font-size="12.5" font-weight="800" fill="#047857">PostgreSQL 16</text>
+    <text x="72" y="35" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748B">app_users</text>
+  </g>
+  <!-- Box: OPTIONAL: LOGOUT &amp; TOKEN REVOCATION -->
+  <g transform="translate(50, 720)">
+    <rect width="1050" height="185" rx="6" fill="#FFFBEB" stroke="#B45309" stroke-width="1.5" stroke-dasharray="6,4"/>
+    <rect x="12" y="6" width="269" height="22" rx="4" fill="#FFFFFF" stroke="#B45309" stroke-width="1.2"/>
+    <text x="146" y="21" text-anchor="middle" font-size="10" font-weight="800" fill="#B45309">OPTIONAL: LOGOUT &amp; TOKEN REVOCATION</text>
+  </g>
+  <!-- Step 1: 110 -> 340 -->
+  <line x1="116" y1="180" x2="334" y2="180" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="139" cy="169" r="10.5" fill="#0F172A"/>
+  <text x="139" y="173" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">1</text>
+  <text x="155" y="173" font-size="12" font-weight="700" fill="#0F172A">Enter email &amp; password</text>
+  <text x="155" y="195" font-size="10.5" font-weight="500" fill="#64748B">Investor submits credentials on web UI</text>
+  <!-- Step 2: 340 -> 580 -->
+  <line x1="346" y1="240" x2="574" y2="240" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="369" cy="229" r="10.5" fill="#0F172A"/>
+  <text x="369" y="233" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">2</text>
+  <rect x="385" y="220" width="44" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="407" y="232" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">POST</text>
+  <text x="437" y="233" font-size="12" font-weight="700" fill="#0F172A">/api/v1/auth/login</text>
+  <text x="385" y="255" font-size="10.5" font-weight="500" fill="#64748B">Body: { email, password }</text>
+  <!-- Step 3: 580 -> 830 -->
+  <line x1="586" y1="300" x2="824" y2="300" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="609" cy="289" r="10.5" fill="#0F172A"/>
+  <text x="609" y="293" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">3</text>
+  <rect x="625" y="280" width="44" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="647" y="292" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">CALL</text>
+  <text x="677" y="293" font-size="12" font-weight="700" fill="#0F172A">verify_password(password, hash)</text>
+  <text x="625" y="315" font-size="10.5" font-weight="500" fill="#64748B">FastAPI delegates verification to AuthService</text>
+  <!-- Step 4: 830 -> 1050 -->
+  <line x1="836" y1="360" x2="1044" y2="360" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <circle cx="859" cy="349" r="10.5" fill="#0F172A"/>
+  <text x="859" y="353" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">4</text>
+  <rect x="875" y="340" width="36" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="893" y="352" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">SQL</text>
+  <text x="919" y="353" font-size="12" font-weight="700" fill="#0F172A">Query user password hash</text>
+  <text x="875" y="375" font-size="10.5" font-weight="500" fill="#64748B">SELECT password_hash FROM app_users WHERE email</text>
+  <!-- Step 5: Self-loop on AuthService -->
+  <path d="M 830,420 C 866,408 866,442 836,435" fill="none" stroke="#0F172A" stroke-width="1.8" marker-end="url(#arr)"/>
+  <circle cx="810" cy="426" r="10.5" fill="#0F172A"/>
+  <text x="810" y="430" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">5</text>
+  <rect x="880" y="406" width="36" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="898" y="418" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">CPU</text>
+  <text x="924" y="418" font-size="12" font-weight="700" fill="#0F172A">Argon2id Hash Verification</text>
+  <text x="880" y="436" font-size="10.5" font-weight="500" fill="#64748B">Memory: 64 MB (m=65536), t=3 passes, p=4 lanes</text>
+  <!-- Step 6: 830 <- 580 -->
+  <line x1="824" y1="485" x2="586" y2="485" stroke="#0D9488" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#arrReply)"/>
+  <circle cx="609" cy="474" r="10.5" fill="#0D9488"/>
+  <text x="609" y="478" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">6</text>
+  <rect x="625" y="465" width="44" height="17" rx="3" fill="#CCFBF1"/>
+  <text x="647" y="477" text-anchor="middle" font-size="9.5" font-weight="800" fill="#0F766E">PASS</text>
+  <text x="677" y="478" font-size="12" font-weight="700" fill="#047857">Authentication Verified</text>
+  <text x="625" y="500" font-size="10.5" font-weight="500" fill="#0D9488">Returns user UUID, account_status = &#x27;ACTIVE&#x27;</text>
+  <!-- Step 7: Self-loop on FastAPI Gateway -->
+  <path d="M 580,545 C 616,533 616,567 586,560" fill="none" stroke="#0F172A" stroke-width="1.8" marker-end="url(#arr)"/>
+  <circle cx="560" cy="551" r="10.5" fill="#0F172A"/>
+  <text x="560" y="555" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">7</text>
+  <rect x="630" y="531" width="36" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="648" y="543" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">JWT</text>
+  <text x="674" y="543" font-size="12" font-weight="700" fill="#0F172A">create_access_token(user_id, claims)</text>
+  <text x="630" y="561" font-size="10.5" font-weight="500" fill="#64748B">Signs HS256 JWT (expires_in: 86400s / 24 hours)</text>
+  <!-- Step 8: 580 <- 340 -->
+  <line x1="574" y1="610" x2="346" y2="610" stroke="#0D9488" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#arrReply)"/>
+  <circle cx="369" cy="599" r="10.5" fill="#0D9488"/>
+  <text x="369" y="603" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">8</text>
+  <rect x="385" y="590" width="60" height="17" rx="3" fill="#CCFBF1"/>
+  <text x="415" y="602" text-anchor="middle" font-size="9.5" font-weight="800" fill="#0F766E">200 OK</text>
+  <text x="453" y="603" font-size="12" font-weight="700" fill="#047857">Bearer JWT &amp; Session Info</text>
+  <text x="385" y="625" font-size="10.5" font-weight="500" fill="#0D9488">{ access_token, token_type: &#x27;bearer&#x27;, expires_in }</text>
+  <!-- Step 9: Self-loop on Next.js UI -->
+  <path d="M 340,670 C 376,658 376,692 346,685" fill="none" stroke="#0F172A" stroke-width="1.8" marker-end="url(#arr)"/>
+  <circle cx="320" cy="676" r="10.5" fill="#0F172A"/>
+  <text x="320" y="680" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">9</text>
+  <rect x="390" y="656" width="52" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="416" y="668" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">STATE</text>
+  <text x="450" y="668" font-size="12" font-weight="700" fill="#0F172A">Store JWT in LocalStorage &amp; Context</text>
+  <text x="390" y="686" font-size="10.5" font-weight="500" fill="#64748B">Next.js UI updates client session state &amp; navigates</text>
+  <!-- Step 10: 110 -> 340 -->
+  <line x1="116" y1="770" x2="334" y2="770" stroke="#B45309" stroke-width="2" marker-end="url(#arrWarn)"/>
+  <circle cx="139" cy="759" r="10.5" fill="#B45309"/>
+  <text x="139" y="763" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">10</text>
+  <rect x="155" y="750" width="52" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="181" y="762" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">CLICK</text>
+  <text x="215" y="763" font-size="12" font-weight="700" fill="#0F172A">Click Logout Button</text>
+  <text x="155" y="785" font-size="10.5" font-weight="500" fill="#64748B">Investor terminates active web session</text>
+  <!-- Step 11: 340 -> 580 -->
+  <line x1="346" y1="825" x2="574" y2="825" stroke="#B45309" stroke-width="2" marker-end="url(#arrWarn)"/>
+  <circle cx="369" cy="814" r="10.5" fill="#B45309"/>
+  <text x="369" y="818" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">11</text>
+  <rect x="385" y="805" width="44" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="407" y="817" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">POST</text>
+  <text x="437" y="818" font-size="12" font-weight="700" fill="#0F172A">/api/v1/auth/logout</text>
+  <text x="385" y="840" font-size="10.5" font-weight="500" fill="#64748B">Headers: Authorization Bearer &lt;token&gt;</text>
+  <!-- Step 12: 580 -> 1050 -->
+  <line x1="586" y1="880" x2="1044" y2="880" stroke="#B45309" stroke-width="2" marker-end="url(#arrWarn)"/>
+  <circle cx="609" cy="869" r="10.5" fill="#B45309"/>
+  <text x="609" y="873" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF">12</text>
+  <rect x="625" y="860" width="36" height="17" rx="3" fill="#E2E8F0"/>
+  <text x="643" y="872" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">SQL</text>
+  <text x="669" y="873" font-size="12" font-weight="700" fill="#0F172A">INSERT INTO revoked_tokens</text>
+  <text x="625" y="895" font-size="10.5" font-weight="500" fill="#64748B">Blacklists token hash; future requests rejected with 401</text>
+</svg>

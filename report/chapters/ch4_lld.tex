@@ -163,31 +163,34 @@ Figures~\ref{fig:seq_auth} through \ref{fig:seq_diag} show the step-by-step inte
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.90\textwidth, height=0.38\textheight, keepaspectratio]{API_AUTH_FLOW.pdf}
+    \includegraphics[width=\textwidth, height=0.68\textheight, keepaspectratio]{API_AUTH_FLOW.pdf}
     \caption{Sequence Flow: User Registration, Authentication, and Secure Token Creation}
     \label{fig:seq_auth}
 \end{figure}
 Figure~\ref{fig:seq_auth} shows how an investor signs up. The user types their email and password into the frontend. The backend validates the inputs, hashes the password using Argon2id so it can never be viewed by anyone, stores the record in PostgreSQL, and returns an encrypted session token (JWT) to keep the user safely logged in.
 
+\clearpage
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.90\textwidth, height=0.38\textheight, keepaspectratio]{API_PORTFOLIO_GENERATION_FLOW.pdf}
+    \includegraphics[width=\textwidth, height=0.68\textheight, keepaspectratio]{API_PORTFOLIO_GENERATION_FLOW.pdf}
     \caption{Sequence Flow: Goal-Driven Portfolio Generation and Mathematical Optimization}
     \label{fig:seq_generation}
 \end{figure}
 Figure~\ref{fig:seq_generation} traces the complete portfolio creation request. The user specifies their savings amount and financial goal. The backend queries the database for healthy stocks, runs the LangGraph AI agents to evaluate balance sheets and news, calls the SciPy solver to calculate optimal weights, converts percentages into whole share quantities, and saves the new portfolio version with complete explanations for display on the screen.
 
+\clearpage
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.90\textwidth, height=0.38\textheight, keepaspectratio]{API_MONITORING_REBALANCE_FLOW.pdf}
+    \includegraphics[width=\textwidth, height=0.68\textheight, keepaspectratio]{API_MONITORING_REBALANCE_FLOW.pdf}
     \caption{Sequence Flow: 5-Minute Drift Radar and Rebalance Order Preview}
     \label{fig:seq_monitoring}
 \end{figure}
 Figure~\ref{fig:seq_monitoring} shows the background monitoring radar. During market hours, the scheduler wakes up, obtains the advisory lock, revalues active portfolios against live stock prices, and calculates drift. If a stock drifts by 5\% or more, it generates a notification. When the user clicks the notification, Lucid displays a complete before-and-after rebalancing preview with statutory tax breakdowns.
 
+\clearpage
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.90\textwidth, height=0.38\textheight, keepaspectratio]{API_DIAGNOSIS_FLOW.pdf}
+    \includegraphics[width=\textwidth, height=0.68\textheight, keepaspectratio]{API_DIAGNOSIS_FLOW.pdf}
     \caption{Sequence Flow: Demat Statement (CAS PDF) Upload and Health Diagnosis}
     \label{fig:seq_diag}
 \end{figure}
