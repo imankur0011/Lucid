@@ -11,14 +11,7 @@ To make sure the application is fast, reliable, and safe, Lucid follows an impor
 \end{itemize}
 
 \section{The Six Core Architectural Subsystems}
-Figure~\ref{fig:hld_architecture} shows the six decoupled functional tiers that make up the Lucid platform and how information moves between them:
-
-\begin{figure}[!htbp]
-    \centering
-    \includegraphics[width=\textwidth, height=0.48\textheight, keepaspectratio]{SYSTEM_ARCHITECTURE.pdf}
-    \caption{Lucid High-Level System Architecture and Tier Decomposition}
-    \label{fig:hld_architecture}
-\end{figure}
+Lucid is structured around six decoupled functional tiers that separate user interaction, API routing, multi-agent qualitative research, deterministic mathematics, persistent storage, and external market data (the complete visual system architecture diagram is presented in Chapter~\ref{ch:system_arch}, Figure~\ref{fig:sys_arch_diagram}).
 
 Here is what each major subsystem does in simple, clear language:
 \begin{enumerate}
@@ -30,15 +23,8 @@ Here is what each major subsystem does in simple, clear language:
     \item \textbf{Tier 6: External Market Data and Cloud Feeds Subsystem}: This component connects Lucid to outside financial data sources. It downloads official stock lists from the National Stock Exchange of India (NSE) and Bombay Stock Exchange (BSE), fetches daily historical price bars and balance sheet metrics from Yahoo Finance, tracks monetary indicators from the Reserve Bank of India (RBI), and communicates with Google Gemini cloud models.
 \end{enumerate}
 
-\begin{figure}[!htbp]
-    \centering
-    \includegraphics[width=\textwidth, height=0.55\textheight, keepaspectratio]{COMPLETE_DATA_FLOW.pdf}
-    \caption{Lucid End-to-End Data Pipeline and Lifecycle Workflow}
-    \label{fig:hld_data_flow}
-\end{figure}
-
 \section{How Information Moves Through the System}
-Figure~\ref{fig:hld_data_flow} illustrates the end-to-end journey of information inside Lucid, from the moment an investor enters their details to the moment a complete portfolio is displayed:
+The movement of information inside Lucid follows a structured, step-by-step pipeline from the moment an investor enters their financial details to the moment a complete, balanced portfolio is displayed on the screen (the complete end-to-end methodology workflow is visually detailed in Chapter~\ref{ch:methodology}, Figure~\ref{fig:methodology_flow}):
 \begin{enumerate}
     \item \textbf{Step 1: Ingestion and Cleaning}: Lucid automatically downloads the official list of 2,639 listed Indian companies and their daily prices from the stock exchanges. It cleans the data and stores it in the database.
     \item \textbf{Step 2: Understanding the Investor}: The investor fills out a simple questionnaire on the website, entering their savings amount (for example, Rs.~2,50,000), their time horizon (for example, 5 years), and answering five basic questions about their attitude toward risk.
