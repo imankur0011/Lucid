@@ -291,9 +291,9 @@ def main():
             table_count = conn.execute(
                 text("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'")
             ).scalar()
-            print(f"\n🎉 Database is ready! Total public tables: {table_count} (Expected: 62+1)")
+            print(f"\n🎉 Database is ready! Total public tables: {table_count} (Expected: 60: 59 application tables + 1 alembic_version)")
             if table_count < 60:
-                print(f"⚠️ Warning: Detected {table_count} tables, expected at least 62.")
+                print(f"⚠️ Warning: Detected {table_count} tables, expected 60.")
                 sys.exit(1)
     except Exception as e:
         print(f"❌ Error verifying database tables: {e}")

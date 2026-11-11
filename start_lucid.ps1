@@ -352,14 +352,32 @@ Write-Host "   [OK] Ports 8000 and 3000 are clear." -ForegroundColor Green
 Write-Host "`n[9/10] Starting Lucid Backend (FastAPI on Port 8000)..." -ForegroundColor White
 $BackendLog = Join-Path $LogDir "backend.log"
 $BackendErrLog = Join-Path $LogDir "backend_err.log"
-$BackendProcess = Start-Process -FilePath $VenvPy -ArgumentList "-m uvicorn backend.main:app --host 0.0.0.0 --port 8000" -WorkingDirectory $RootDir -RedirectStandardOutput $BackendLog -RedirectStandardError $BackendErrLog -PassThru
+
+$UvicornExe = Join-Path $VenvDir "Scripts\uvicorn.exe"
+if (Test-Path $UvicornExe) {
+    $BackendProcess = Start-Process -FilePath $UvicornExe -ArgumentList @("backend.main:app", "--host", "0.0.0.0", "--port", "8000") -WorkingDirectory $RootDir -RedirectStandardOutput $BackendLog -RedirectStandardError $BackendErrLog -PassThru
+} else {
+    $BackendProcess = Start-Process -FilePath $VenvPy -ArgumentList @("-m", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000") -WorkingDirectory $RootDir -RedirectStandardOutput $BackendLog -RedirectStandardError $BackendErrLog -PassThru
+}
+
 if ($BackendProcess -and $BackendProcess.Id) {
     $BackendProcess.Id | Out-File -FilePath $BackendPidFile -Encoding ascii
 }
 
 Write-Host "   Waiting for Backend API readiness (http://localhost:8000/api/health)..."
 $BackendReady = $false
-for ($i = 0; $i -lt 30; $i++) {
+for ($i = 0; $i -lt 40; $i++) {
+    if ($BackendProcess.HasExited) {
+        Write-Host "   [FAIL] Backend process exited unexpectedly (Exit Code: $($BackendProcess.ExitCode))." -ForegroundColor Red
+        break
+    }
+    try {
+        $resp = Invoke-RestMethod -Uri "http://127.0.0.1:8000/api/health" -TimeoutSec 2 -ErrorAction SilentlyContinue
+        if ($resp) {
+            $BackendReady = $true
+            break
+        }
+    } catch {}
     try {
         $resp = Invoke-RestMethod -Uri "http://localhost:8000/api/health" -TimeoutSec 2 -ErrorAction SilentlyContinue
         if ($resp) {
@@ -373,8 +391,24 @@ for ($i = 0; $i -lt 30; $i++) {
 if ($BackendReady) {
     Write-Host "   [OK] Backend API is healthy and listening on http://localhost:8000." -ForegroundColor Green
 } else {
-    Write-Host "   [FAIL] Backend failed to pass health check. View logs\backend.log and logs\backend_err.log." -ForegroundColor Red
-    if ($BackendProcess -and $BackendProcess.Id) {
+    Write-Host "   [FAIL] Backend failed to pass health check." -ForegroundColor Red
+    if (Test-Path $BackendErrLog) {
+        $errContent = Get-Content $BackendErrLog -Raw -ErrorAction SilentlyContinue
+        if ($errContent -and $errContent.Trim()) {
+            Write-Host "`n--- Backend Error Log (logs\backend_err.log) ---" -ForegroundColor Yellow
+            Write-Host $errContent.Trim() -ForegroundColor Yellow
+            Write-Host "------------------------------------------------`n" -ForegroundColor Yellow
+        }
+    }
+    if (Test-Path $BackendLog) {
+        $outContent = Get-Content $BackendLog -Tail 25 -ErrorAction SilentlyContinue
+        if ($outContent) {
+            Write-Host "`n--- Backend Output Log (logs\backend.log) ---" -ForegroundColor Gray
+            $outContent | ForEach-Object { Write-Host $_ -ForegroundColor Gray }
+            Write-Host "--------------------------------------------`n" -ForegroundColor Gray
+        }
+    }
+    if ($BackendProcess -and -not $BackendProcess.HasExited) {
         Stop-Process -Id $BackendProcess.Id -Force -ErrorAction SilentlyContinue
     }
     exit 1
@@ -385,14 +419,25 @@ Write-Host "`n[10/10] Starting Lucid Frontend (Next.js on Port 3000)..." -Foregr
 $FrontendLog = Join-Path $LogDir "frontend.log"
 $FrontendErrLog = Join-Path $LogDir "frontend_err.log"
 $npmCmd = if (Get-Command npm.cmd -ErrorAction SilentlyContinue) { (Get-Command npm.cmd).Source } elseif (Get-Command npm -ErrorAction SilentlyContinue) { (Get-Command npm).Source } else { "npm.cmd" }
-$FrontendProcess = Start-Process -FilePath $npmCmd -ArgumentList "run dev" -WorkingDirectory $FrontendDir -RedirectStandardOutput $FrontendLog -RedirectStandardError $FrontendErrLog -PassThru
+$FrontendProcess = Start-Process -FilePath $npmCmd -ArgumentList @("run", "dev") -WorkingDirectory $FrontendDir -RedirectStandardOutput $FrontendLog -RedirectStandardError $FrontendErrLog -PassThru
 if ($FrontendProcess -and $FrontendProcess.Id) {
     $FrontendProcess.Id | Out-File -FilePath $FrontendPidFile -Encoding ascii
 }
 
 Write-Host "   Waiting for Frontend readiness (http://localhost:3000)..."
 $FrontendReady = $false
-for ($i = 0; $i -lt 30; $i++) {
+for ($i = 0; $i -lt 40; $i++) {
+    if ($FrontendProcess.HasExited) {
+        Write-Host "   [FAIL] Frontend process exited unexpectedly (Exit Code: $($FrontendProcess.ExitCode))." -ForegroundColor Red
+        break
+    }
+    try {
+        $resp = Invoke-WebRequest -Uri "http://127.0.0.1:3000" -TimeoutSec 2 -ErrorAction SilentlyContinue
+        if ($resp.StatusCode -eq 200 -or $resp.StatusCode -eq 304) {
+            $FrontendReady = $true
+            break
+        }
+    } catch {}
     try {
         $resp = Invoke-WebRequest -Uri "http://localhost:3000" -TimeoutSec 2 -ErrorAction SilentlyContinue
         if ($resp.StatusCode -eq 200 -or $resp.StatusCode -eq 304) {
@@ -406,11 +451,27 @@ for ($i = 0; $i -lt 30; $i++) {
 if ($FrontendReady) {
     Write-Host "   [OK] Frontend is ready and listening on http://localhost:3000." -ForegroundColor Green
 } else {
-    Write-Host "   [FAIL] Frontend failed to pass readiness check. View logs\frontend.log and logs\frontend_err.log." -ForegroundColor Red
-    if ($FrontendProcess -and $FrontendProcess.Id) {
+    Write-Host "   [FAIL] Frontend failed to pass readiness check." -ForegroundColor Red
+    if (Test-Path $FrontendErrLog) {
+        $fErr = Get-Content $FrontendErrLog -Raw -ErrorAction SilentlyContinue
+        if ($fErr -and $fErr.Trim()) {
+            Write-Host "`n--- Frontend Error Log (logs\frontend_err.log) ---" -ForegroundColor Yellow
+            Write-Host $fErr.Trim() -ForegroundColor Yellow
+            Write-Host "-------------------------------------------------`n" -ForegroundColor Yellow
+        }
+    }
+    if (Test-Path $FrontendLog) {
+        $fOut = Get-Content $FrontendLog -Tail 25 -ErrorAction SilentlyContinue
+        if ($fOut) {
+            Write-Host "`n--- Frontend Output Log (logs\frontend.log) ---" -ForegroundColor Gray
+            $fOut | ForEach-Object { Write-Host $_ -ForegroundColor Gray }
+            Write-Host "---------------------------------------------`n" -ForegroundColor Gray
+        }
+    }
+    if ($FrontendProcess -and -not $FrontendProcess.HasExited) {
         Stop-Process -Id $FrontendProcess.Id -Force -ErrorAction SilentlyContinue
     }
-    if ($BackendProcess -and $BackendProcess.Id) {
+    if ($BackendProcess -and -not $BackendProcess.HasExited) {
         Stop-Process -Id $BackendProcess.Id -Force -ErrorAction SilentlyContinue
     }
     exit 1
