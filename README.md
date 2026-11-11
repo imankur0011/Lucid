@@ -146,8 +146,86 @@ chmod +x start_lucid.sh
 10. **Starts Next.js Frontend & Opens Browser**: Launches web app on port `3000` and opens `http://localhost:3000` and VS Code.
 
 > [!TIP]
-> **Prefer manual installation from scratch?**  
-> See [SETUP_AND_INSTALLATION.md](SETUP_AND_INSTALLATION.md) for complete step-by-step instructions across all platforms.
+> **Prefer automated setup?** You can launch everything in one command with `./start_lucid.sh` (macOS/Linux) or `powershell -ExecutionPolicy Bypass -File .\start_lucid.ps1` (Windows).
+
+---
+
+## Option B: Manual Setup from Scratch (For Developers)
+
+If you prefer building and configuring the entire environment manually step by step without the automated launcher scripts:
+
+### Step 1: Install System Prerequisites
+Ensure the following tools are installed on your machine:
+- **Python 3.11+** ([python.org](https://www.python.org/downloads/)) — Verify: `python3 --version`
+- **Node.js 18+ & npm** ([nodejs.org](https://nodejs.org/)) — Verify: `node --version` and `npm --version`
+- **PostgreSQL 16+** ([postgresql.org](https://www.postgresql.org/download/)) — Verify: `psql --version`
+- **Git** ([git-scm.com](https://git-scm.com/)) — Verify: `git --version`
+
+### Step 2: Clone Repository & Create Virtual Environment
+```bash
+# 1. Clone repository and enter directory
+git clone https://github.com/imankur0011/Lucid.git
+cd Lucid
+
+# 2. Create isolated Python virtual environment
+python3 -m venv .venv             # On Windows: python -m venv .venv
+
+# 3. Activate the virtual environment
+source .venv/bin/activate          # macOS / Linux
+# On Windows PowerShell: .\.venv\Scripts\Activate.ps1
+# On Windows CMD:        .venv\Scripts\activate.bat
+
+# 4. Install backend dependencies
+pip install --upgrade pip
+pip install -r backend/requirements.txt
+```
+
+### Step 3: Configure Environment Variables (`.env`)
+```bash
+# 1. Copy the configuration template
+cp .env.example .env               # On Windows: Copy-Item .env.example .env
+
+# 2. Generate secure 32-character cryptographic keys (run twice)
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+Open `.env` in any text editor and update:
+- `APP_SECRET_KEY`: Paste first generated 32-char key.
+- `JWT_SECRET_KEY`: Paste second generated 32-char key.
+- `POSTGRES_USER`: Your local PostgreSQL username (e.g. `postgres` or macOS username).
+- `POSTGRES_PASSWORD`: Your local PostgreSQL password (leave empty if none).
+- `GEMINI_API_KEY`: *(Optional)* Your free key from [Google AI Studio](https://aistudio.google.com/).
+
+### Step 4: Provision PostgreSQL Database & Seed Equities
+Ensure PostgreSQL service is running (`brew services start postgresql@16` on macOS, or Windows Service):
+```bash
+# Run database initializer (creates portfolio_dev, extensions, 62 tables & seeds universe)
+python scripts/init_database.py
+```
+*Expected: Creates `portfolio_dev`, applies Alembic migration `429fa263363c`, seeds 5 SEBI questions, and syncs ~2,639 NSE/BSE equities.*
+
+### Step 5: Install Frontend Dependencies
+```bash
+cd frontend
+npm install
+cd ..
+```
+
+### Step 6: Start Applications (Two Terminals)
+- **Terminal 1 — Backend API (FastAPI)**:
+  ```bash
+  # Inside Lucid root directory with (.venv) active:
+  python -m uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+  ```
+  *Verify backend health: `curl http://localhost:8000/api/health` or open [http://localhost:8000/docs](http://localhost:8000/docs)*
+
+- **Terminal 2 — Frontend UI (Next.js)**:
+  ```bash
+  cd frontend
+  npm run dev
+  ```
+  *Open [http://localhost:3000](http://localhost:3000) in your browser.*
+
+> 📖 **Comprehensive Manual Guide**: For full database architectural diagrams, SQL commands, table schemas, Alembic rollbacks, VS Code debugging, and test suites, see **[SETUP_AND_INSTALLATION.md](SETUP_AND_INSTALLATION.md)**.
 
 ---
 
