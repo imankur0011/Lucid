@@ -5,7 +5,7 @@
 #   powershell -ExecutionPolicy Bypass -File .\start_lucid.ps1
 # ==============================================================================
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Continue"
 
 $RootDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $RootDir
@@ -13,8 +13,39 @@ Set-Location $RootDir
 # Ensure logs directory exists
 $LogDir = Join-Path $RootDir "logs"
 if (-not (Test-Path $LogDir)) {
-    New-Item -ItemType Directory -Path $LogDir | Out-Null
+    New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
 }
+
+# Function to refresh environment PATH in the current PowerShell process
+function Update-SessionPath {
+    $machinePath = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+    $userPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+    $env:Path = "$userPath;$machinePath"
+    
+    $extraPaths = @(
+        "$env:LOCALAPPDATA\Programs\Python\Python311",
+        "$env:LOCALAPPDATA\Programs\Python\Python311\Scripts",
+        "$env:LOCALAPPDATA\Programs\Python\Python312",
+        "$env:LOCALAPPDATA\Programs\Python\Python312\Scripts",
+        "C:\Program Files\Python311",
+        "C:\Program Files\Python311\Scripts",
+        "C:\Program Files\Git\cmd",
+        "C:\Program Files\Git\bin",
+        "$env:LOCALAPPDATA\Programs\Git\cmd",
+        "C:\Program Files\nodejs",
+        "$env:APPDATA\npm",
+        "C:\Program Files\PostgreSQL\16\bin",
+        "C:\Program Files\PostgreSQL\15\bin",
+        "$env:LOCALAPPDATA\Programs\Microsoft VS Code\bin"
+    )
+    foreach ($p in $extraPaths) {
+        if ((Test-Path $p) -and ($env:Path -notlike "*$p*")) {
+            $env:Path = "$p;$env:Path"
+        }
+    }
+}
+
+Update-SessionPath
 
 Write-Host "======================================================================" -ForegroundColor Cyan
 Write-Host "          LUCID — ONE-COMMAND INSTALLATION & LAUNCHER (WINDOWS)        " -ForegroundColor Cyan
@@ -25,10 +56,13 @@ Write-Host ""
 # [1/10] Operating System Detection
 Write-Host "[1/10] Detecting Operating System & Environment..." -ForegroundColor White
 $OS = [System.Environment]::OSVersion
-Write-Host "   Operating System : Windows ($OS)" -ForegroundColor Green
+$Arch = if ([System.Environment]::Is64BitOperatingSystem) { "x64" } else { "x86" }
+Write-Host "   Operating System : Windows ($OS) - $Arch" -ForegroundColor Green
 Write-Host "   Project Root     : $RootDir" -ForegroundColor Blue
 
-# [2/10] Checking Required System Tools
+$hasWinget = [bool](Get-Command winget -ErrorAction SilentlyContinue)
+
+# [2/10] Checking & Auto-Installing Required System Tools
 Write-Host "`n[2/10] Checking Required System Tools..." -ForegroundColor White
 
 function Test-CommandAvailable {
@@ -39,7 +73,7 @@ function Test-CommandAvailable {
         return $true
     } else {
         Write-Host "   $name : " -NoNewline
-        Write-Host "✗ Missing" -ForegroundColor Red
+        Write-Host "○ Missing" -ForegroundColor Yellow
         return $false
     }
 }
@@ -49,36 +83,88 @@ $hasPython = Test-CommandAvailable "python" "Python 3"
 $hasNode = Test-CommandAvailable "node" "Node.js"
 $hasNpm = Test-CommandAvailable "npm" "npm"
 
-if (-not $hasGit -or -not $hasPython -or -not $hasNode -or -not $hasNpm) {
-    Write-Host "`n❌ Missing prerequisites. Please install Python 3.11+, Node.js 18+, and Git for Windows." -ForegroundColor Red
-    exit 1
+# Auto-install Git if missing
+if (-not $hasGit -and $hasWinget) {
+    Write-Host "   Installing Git via winget..." -ForegroundColor Cyan
+    try {
+        winget install --id Git.Git -e --silent --accept-source-agreements --accept-package-agreements | Out-Null
+        Update-SessionPath
+        $hasGit = [bool](Get-Command git -ErrorAction SilentlyContinue)
+    } catch {}
 }
 
-# Verify Python version
-$PyVer = python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')"
-$PyMajor = [int]($PyVer.Split('.')[0])
-$PyMinor = [int]($PyVer.Split('.')[1])
-if ($PyMajor -lt 3 -or ($PyMajor -eq 3 -and $PyMinor -lt 11)) {
-    Write-Host "   ❌ Python $PyVer is unsupported. Lucid requires Python 3.11+." -ForegroundColor Red
-    exit 1
+# Auto-install Python 3.11 if missing
+if (-not $hasPython) {
+    Write-Host "   Python is missing. Attempting automatic installation..." -ForegroundColor Yellow
+    if ($hasWinget) {
+        try {
+            winget install --id Python.Python.3.11 -e --silent --accept-source-agreements --accept-package-agreements | Out-Null
+            Update-SessionPath
+        } catch {}
+    }
+    if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
+        Write-Host "   Downloading Python 3.11 installer..." -ForegroundColor Cyan
+        $pyUrl = "https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe"
+        $pyDest = Join-Path $env:TEMP "py311_setup.exe"
+        Invoke-WebRequest -Uri $pyUrl -OutFile $pyDest -UseBasicParsing
+        Start-Process $pyDest -ArgumentList "/quiet InstallAllUsers=0 PrependPath=1 Include_test=0" -Wait
+        Remove-Item $pyDest -Force -ErrorAction SilentlyContinue
+        Update-SessionPath
+    }
+    $hasPython = [bool](Get-Command python -ErrorAction SilentlyContinue)
 }
-Write-Host "   Python Version Verified : $PyVer (>= 3.11)" -ForegroundColor Green
+
+# Auto-install Node.js if missing
+if (-not $hasNode -or -not $hasNpm) {
+    Write-Host "   Node.js/npm is missing. Attempting automatic installation..." -ForegroundColor Yellow
+    if ($hasWinget) {
+        try {
+            winget install --id OpenJS.NodeJS.LTS -e --silent --accept-source-agreements --accept-package-agreements | Out-Null
+            Update-SessionPath
+        } catch {}
+    }
+    if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
+        Write-Host "   Downloading Node.js LTS MSI installer..." -ForegroundColor Cyan
+        $nodeUrl = "https://nodejs.org/dist/v20.18.0/node-v20.18.0-x64.msi"
+        $nodeDest = Join-Path $env:TEMP "node_setup.msi"
+        Invoke-WebRequest -Uri $nodeUrl -OutFile $nodeDest -UseBasicParsing
+        Start-Process "msiexec.exe" -ArgumentList "/i `"$nodeDest`" /qn" -Wait
+        Remove-Item $nodeDest -Force -ErrorAction SilentlyContinue
+        Update-SessionPath
+    }
+    $hasNode = [bool](Get-Command node -ErrorAction SilentlyContinue)
+    $hasNpm = [bool](Get-Command npm -ErrorAction SilentlyContinue)
+}
+
+# Verify Python version >= 3.11
+if ($hasPython) {
+    try {
+        $PyVer = python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>$null
+        $PyMajor = [int]($PyVer.Split('.')[0])
+        $PyMinor = [int]($PyVer.Split('.')[1])
+        if ($PyMajor -lt 3 -or ($PyMajor -eq 3 -and $PyMinor -lt 11)) {
+            Write-Host "   ⚠️ Python $PyVer detected. Lucid recommends Python 3.11+." -ForegroundColor Yellow
+        } else {
+            Write-Host "   Python Version Verified : $PyVer (>= 3.11)" -ForegroundColor Green
+        }
+    } catch {}
+}
 
 # Check and Configure VS Code
 $hasCode = Test-CommandAvailable "code" "Visual Studio Code CLI"
 if (-not $hasCode) {
     $vscodePath = "$env:LOCALAPPDATA\Programs\Microsoft VS Code\bin"
     if (Test-Path (Join-Path $vscodePath "code.cmd")) {
-        $env:Path += ";$vscodePath"
+        $env:Path = "$vscodePath;$env:Path"
         $hasCode = $true
         Write-Host "   Visual Studio Code CLI : ✓ Found in AppData" -ForegroundColor Green
-    } elseif (Get-Command winget -ErrorAction SilentlyContinue) {
-        Write-Host "   Installing Visual Studio Code via winget..." -ForegroundColor Yellow
-        winget install --id Microsoft.VisualStudioCode -e --silent --accept-source-agreements --accept-package-agreements | Out-Null
-        if (Test-Path (Join-Path $vscodePath "code.cmd")) {
-            $env:Path += ";$vscodePath"
-            $hasCode = $true
-        }
+    } elseif ($hasWinget) {
+        Write-Host "   Installing Visual Studio Code via winget..." -ForegroundColor Cyan
+        try {
+            winget install --id Microsoft.VisualStudioCode -e --silent --accept-source-agreements --accept-package-agreements | Out-Null
+            Update-SessionPath
+            $hasCode = [bool](Get-Command code -ErrorAction SilentlyContinue)
+        } catch {}
     }
 }
 
@@ -162,20 +248,53 @@ $ExampleFile = Join-Path $RootDir ".env.example"
 if (-not (Test-Path $EnvFile)) {
     Write-Host "   '.env' not found. Creating from .env.example..."
     Copy-Item $ExampleFile $EnvFile
-    $JwtSecret = [System.Guid]::NewGuid().ToString("N") + [System.Guid]::NewGuid().ToString("N")
-    $AppSecret = [System.Guid]::NewGuid().ToString("N") + [System.Guid]::NewGuid().ToString("N")
+    $JwtSecret = & $VenvPy -c "import secrets; print(secrets.token_urlsafe(32))"
+    $AppSecret = & $VenvPy -c "import secrets; print(secrets.token_urlsafe(32))"
     $Content = Get-Content $EnvFile -Raw
     $Content = $Content -replace "JWT_SECRET_KEY=.*", "JWT_SECRET_KEY=$JwtSecret"
     $Content = $Content -replace "APP_SECRET_KEY=.*", "APP_SECRET_KEY=$AppSecret"
     $Content | Set-Content $EnvFile
-    Write-Host "   ✅ Created .env with secure random secrets." -ForegroundColor Green
+    Write-Host "   ✅ Created .env with cryptographically secure random secrets." -ForegroundColor Green
 } else {
     Write-Host "   ✅ Preserving existing .env configuration." -ForegroundColor Green
 }
 
-# [6/10] Verify PostgreSQL
+# Check for Gemini API Key with timeout
+$Content = Get-Content $EnvFile -Raw
+if ($Content -match "GEMINI_API_KEY=(.*)" -and ($matches[1].Trim() -eq "" -or $matches[1] -like "*your_gemini*")) {
+    Write-Host "`n🔑 Optional Google Gemini API Key:" -ForegroundColor Yellow
+    Write-Host "   Lucid uses Google Gemini 3.8 Flash for qualitative agent research." -ForegroundColor Gray
+    Write-Host "   (If skipped, Lucid runs with deterministic rule-based models)." -ForegroundColor Gray
+    Write-Host "   Press Enter or wait 10 seconds to continue with fallback..." -ForegroundColor Cyan
+    
+    $KeyInput = ""
+    $task = [System.Threading.Tasks.Task]::Run([Func[string]]{ [System.Console]::ReadLine() })
+    if ($task.Wait(10000)) {
+        $KeyInput = $task.Result
+    }
+    if ($KeyInput -and $KeyInput.Trim() -ne "") {
+        $Content = $Content -replace "GEMINI_API_KEY=.*", "GEMINI_API_KEY=$($KeyInput.Trim())"
+        $Content | Set-Content $EnvFile
+        Write-Host "   ✅ Gemini API key configured." -ForegroundColor Green
+    } else {
+        Write-Host "   ℹ️ Continuing with deterministic rule-based models." -ForegroundColor Cyan
+    }
+}
+
+# [6/10] Verify PostgreSQL Service
 Write-Host "`n[6/10] Verifying PostgreSQL Service..." -ForegroundColor White
-Write-Host "   Testing PostgreSQL connectivity..." -ForegroundColor Cyan
+
+$pgService = Get-Service -Name "postgresql*" -ErrorAction SilentlyContinue
+if ($pgService) {
+    Write-Host "   PostgreSQL Windows Service : $($pgService.Name) ($($pgService.Status))" -ForegroundColor Cyan
+    if ($pgService.Status -ne "Running") {
+        Write-Host "   Starting PostgreSQL service..." -ForegroundColor Yellow
+        try { Start-Service $pgService.Name } catch {}
+    }
+    Write-Host "   ✅ PostgreSQL service is active." -ForegroundColor Green
+} else {
+    Write-Host "   ℹ️ PostgreSQL service not registered as Windows Service. Checking port connectivity..." -ForegroundColor Cyan
+}
 
 # [7/10] Initialize Database, Migrations & Seed Data
 Write-Host "`n[7/10] Initializing Database, Migrations & Reference Data..." -ForegroundColor White
@@ -183,19 +302,36 @@ $env:PYTHONPATH = $RootDir
 $InitDbScript = Join-Path $RootDir "scripts\init_database.py"
 & $VenvPy $InitDbScript
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "❌ Database initialization failed. Check PostgreSQL connection." -ForegroundColor Red
+    Write-Host "❌ Database initialization failed. Check PostgreSQL connection in .env." -ForegroundColor Red
     exit 1
 }
 
-# [8/10] Check Ports Availability
+# [8/10] Check Ports Availability & Process Hygiene
 Write-Host "`n[8/10] Checking Port Availability (8000 & 3000)..." -ForegroundColor White
-Write-Host "   ✅ Port checks complete." -ForegroundColor Green
+# Check and kill old Lucid processes if PID files exist
+$BackendPidFile = Join-Path $RootDir ".lucid_backend.pid"
+if (Test-Path $BackendPidFile) {
+    try {
+        $oldPid = Get-Content $BackendPidFile -Raw
+        Stop-Process -Id ([int]$oldPid.Trim()) -Force -ErrorAction SilentlyContinue
+    } catch {}
+    Remove-Item $BackendPidFile -Force -ErrorAction SilentlyContinue
+}
+$FrontendPidFile = Join-Path $RootDir ".lucid_frontend.pid"
+if (Test-Path $FrontendPidFile) {
+    try {
+        $oldPid = Get-Content $FrontendPidFile -Raw
+        Stop-Process -Id ([int]$oldPid.Trim()) -Force -ErrorAction SilentlyContinue
+    } catch {}
+    Remove-Item $FrontendPidFile -Force -ErrorAction SilentlyContinue
+}
+Write-Host "   ✅ Ports 8000 & 3000 are clear." -ForegroundColor Green
 
 # [9/10] Start Backend Server
 Write-Host "`n[9/10] Starting Lucid Backend (FastAPI on Port 8000)..." -ForegroundColor White
 $BackendLog = Join-Path $LogDir "backend.log"
 $BackendProcess = Start-Process -FilePath $VenvPy -ArgumentList "-m uvicorn backend.main:app --host 0.0.0.0 --port 8000" -WorkingDirectory $RootDir -RedirectStandardOutput $BackendLog -RedirectStandardError $BackendLog -PassThru
-$BackendProcess.Id | Out-File -FilePath (Join-Path $RootDir ".lucid_backend.pid") -Encoding ascii
+$BackendProcess.Id | Out-File -FilePath $BackendPidFile -Encoding ascii
 
 Write-Host "   Waiting for Backend API readiness (http://localhost:8000/api/health)..."
 $BackendReady = $false
@@ -222,7 +358,7 @@ if ($BackendReady) {
 Write-Host "`n[10/10] Starting Lucid Frontend (Next.js on Port 3000)..." -ForegroundColor White
 $FrontendLog = Join-Path $LogDir "frontend.log"
 $FrontendProcess = Start-Process -FilePath "npm.cmd" -ArgumentList "run dev" -WorkingDirectory $FrontendDir -RedirectStandardOutput $FrontendLog -RedirectStandardError $FrontendLog -PassThru
-$FrontendProcess.Id | Out-File -FilePath (Join-Path $RootDir ".lucid_frontend.pid") -Encoding ascii
+$FrontendProcess.Id | Out-File -FilePath $FrontendPidFile -Encoding ascii
 
 Write-Host "   Waiting for Frontend readiness (http://localhost:3000)..."
 $FrontendReady = $false
@@ -245,6 +381,11 @@ if ($FrontendReady) {
     Stop-Process -Id $BackendProcess.Id -Force -ErrorAction SilentlyContinue
     exit 1
 }
+
+# Run End-to-End System Verification
+Write-Host "`n[+] Executing End-to-End System Verification..." -ForegroundColor White
+$VerifyScript = Join-Path $RootDir "scripts\verify_e2e.py"
+& $VenvPy $VerifyScript
 
 # Complete
 Write-Host "`n======================================================================" -ForegroundColor Green

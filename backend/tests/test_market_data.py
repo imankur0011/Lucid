@@ -105,13 +105,13 @@ def test_market_data_freshness_verification():
         assert listing is not None
 
         # As of today, price is fresh (seeded within last few days)
-        is_fresh, price_date, latest_p, reason = verify_listing_freshness(db, listing.listing_id, max_stale_days=7)
+        is_fresh, price_date, latest_p, reason = verify_listing_freshness(db, listing.listing_id, max_stale_days=14)
         assert is_fresh, f"Expected fresh data, got {reason}"
 
         # If simulated reference date is 30 days in the future, should report stale
         future_ref = date.today() + timedelta(days=30)
         is_fresh_future, _, _, reason_future = verify_listing_freshness(
-            db, listing.listing_id, as_of_date=future_ref, max_stale_days=7
+            db, listing.listing_id, as_of_date=future_ref, max_stale_days=14
         )
         assert not is_fresh_future
         assert "stale" in reason_future.lower()

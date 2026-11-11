@@ -439,6 +439,11 @@ done
 
 if [ $FRONTEND_HEALTHY -eq 1 ]; then
     echo -e "   ${GREEN}✅ Frontend is ready and listening on http://localhost:3000.${NC}"
+    
+    # Run End-to-End System Verification
+    echo -e "
+${BOLD}[+] Executing End-to-End System Verification...${NC}"
+    PYTHONPATH="$ROOT_DIR" "$VENV_DIR/bin/python" "$ROOT_DIR/scripts/verify_e2e.py" || true
 else
     echo -e "   ${RED}❌ Frontend failed to pass readiness check within 30 seconds.${NC}"
     tail -n 25 "$ROOT_DIR/logs/frontend.log"

@@ -104,28 +104,53 @@ Before setting up Lucid, verify that your machine satisfies the minimum software
 
 ## Section 3: Option A — One-Command Setup
 
-The automated launcher script sets up the full stack in one step.
+Lucid provides two automated launch pathways depending on whether you already have the repository on your machine:
 
-### Step 1: Clone Repository
-Open your terminal and clone the Lucid repository:
+### 3.1 Pathway 1: Fresh Machine Bootstrap (Zero Prerequisites — No Git Needed!)
+Use this command if you are on a fresh computer where Git, Python, Node.js, or PostgreSQL have not yet been installed.
+
+#### Windows 10 / 11 (PowerShell)
+Open PowerShell (press Windows Key, type `PowerShell`, press Enter) and run:
+```powershell
+irm https://raw.githubusercontent.com/imankur0011/Lucid/main/bootstrap_lucid.ps1 | iex
+```
+*(If PowerShell execution policy is restricted, run: `powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/imankur0011/Lucid/main/bootstrap_lucid.ps1 | iex"`)*
+
+**How the Windows Bootstrap works under the hood:**
+1. Tests internet connectivity to GitHub.
+2. Checks for Git. If Git is missing, installs it via `winget`, OR natively downloads the repository ZIP archive from `https://github.com/imankur0011/Lucid/archive/refs/heads/main.zip` using PowerShell's built-in `Invoke-WebRequest` and extracts it via `Expand-Archive`.
+3. Checks Python 3.11+. If missing, installs Python quietly via `winget` or downloads the official `python-3.11.9-amd64.exe` installer.
+4. Checks Node.js 18+. If missing, installs Node.js LTS quietly via `winget` or MSI installer.
+5. Dynamically refreshes the session `$env:Path` so newly installed binaries are immediately usable without restarting PowerShell.
+6. Transfers control to `start_lucid.ps1` inside the installed directory (`$HOME\Lucid`).
+
+#### macOS & Linux (Terminal)
+Open Terminal and run:
 ```bash
-git clone https://github.com/imankur0011/Lucid.git
-cd Lucid
+curl -fsSL https://raw.githubusercontent.com/imankur0011/Lucid/main/bootstrap_lucid.sh | bash
 ```
 
-### Step 2: Run Launcher
+**How the Unix Bootstrap works under the hood:**
+1. Detects OS and CPU architecture (Apple Silicon `arm64`, Intel `x86_64`, or Linux distribution).
+2. Verifies or installs Homebrew (macOS) or updates `apt`/`dnf` package indices (Linux).
+3. Installs missing prerequisites: Git, Python 3.11+, Node.js 18+, and PostgreSQL 16.
+4. Clones the repository to `$HOME/Lucid` (or extracts archive if Git is absent).
+5. Transfers control to `./start_lucid.sh` for full environment setup.
 
-#### macOS & Linux
-```bash
-# Make script executable and launch
-chmod +x start_lucid.sh
-./start_lucid.sh
-```
+---
+
+### 3.2 Pathway 2: Cloned Repository Launcher (If Repo Already Present)
+If you have already cloned the repository on your machine:
 
 #### Windows 10 / 11 (PowerShell)
 ```powershell
-# Run PowerShell script with bypass execution policy
 powershell -ExecutionPolicy Bypass -File .\start_lucid.ps1
+```
+
+#### macOS & Linux
+```bash
+chmod +x start_lucid.sh
+./start_lucid.sh
 ```
 
 ### What Each of the 10 Stages Does
@@ -797,30 +822,33 @@ PYTHONPATH=. python scripts/init_database.py
 
 | Setup Step | Automated Script | Manual Docs | Tested | Location in this Guide |
 |---|---|---|---|---|
-| Python installation | ✅ macOS only | ✅ All OSes | ✅ | Section 4.1 |
-| Repository clone | ✅ | ✅ | ✅ | Section 4.2 |
-| Virtual environment creation | ✅ | ✅ | ✅ | Section 4.3 |
-| Virtual environment activation | ✅ | ✅ | ✅ | Section 4.4 |
-| Python requirements install | ✅ | ✅ | ✅ | Section 4.5 |
-| `.env` configuration | ✅ auto-generate | ✅ manual table | ✅ | Section 4.6, 5.5 |
-| PostgreSQL installation | ✅ macOS only | ✅ All OSes | ✅ | Section 5.2 |
-| Database creation | ✅ via `init_database.py` | ✅ SQL commands | ✅ | Section 5.4 |
-| PostgreSQL extensions | ✅ via `init_database.py` | ✅ SQL commands | ✅ | Section 5.4 |
-| Alembic migrations | ✅ | ✅ | ✅ | Section 5.6 |
-| Reference data seeding | ✅ | ✅ | ✅ | Section 5.7 |
-| NSE/BSE universe sync | ✅ | ✅ | ✅ | Section 5.7 |
-| Gemini API key setup | ⚠️ Prompts only | ✅ Full guide | ✅ | Section 6.1 |
-| Yahoo Finance | ✅ built-in | ✅ no key needed | ✅ | Section 6.2 |
-| FRED API key | ⚠️ Optional | ✅ Full guide | ✅ | Section 6.3 |
-| NewsAPI key | ⚠️ Optional | ✅ Full guide | ✅ | Section 6.4 |
-| Node.js installation | ✅ macOS only | ✅ All OSes | ✅ | Section 7.1 |
-| Frontend dependencies | ✅ | ✅ | ✅ | Section 7.3 |
-| VS Code installation | ✅ macOS only | ✅ | ✅ | Section 8.1 |
-| VS Code extensions | ✅ | ✅ with IDs | ✅ | Section 8.4 |
-| Backend startup | ✅ | ✅ | ✅ | Section 4.7, 9 |
-| Frontend startup | ✅ | ✅ | ✅ | Section 7.4, 9 |
-| Test execution | ⚠️ Not automated | ✅ | ✅ | Section 10 |
-| DB schema changes | ❌ | ✅ | ✅ | Section 11.3 |
+| Bootstrap without Git | ✅ Windows (`.ps1`) & Unix (`.sh`) | ✅ ZIP download & Git | ✅ | Section 3.1 |
+| Git installation | ✅ Windows (winget) & Unix (brew/apt) | ✅ All OSes | ✅ | Section 3.1, 4.2 |
+| Python 3.11+ installation | ✅ Windows (winget/EXE) & Unix (brew/apt) | ✅ All OSes | ✅ | Section 3.1, 4.1 |
+| Repository acquisition | ✅ Git clone or direct ZIP extraction | ✅ Git clone | ✅ | Section 3.1, 4.2 |
+| Virtual environment creation | ✅ Auto-created at `.venv` | ✅ All OSes | ✅ | Section 4.3 |
+| Virtual environment activation | ✅ Used internally by launcher | ✅ All OSes | ✅ | Section 4.4 |
+| Python requirements install | ✅ With MD5 hash caching | ✅ All OSes | ✅ | Section 4.5 |
+| `.env` configuration | ✅ Auto-generates random 32-char keys | ✅ Manual reference table | ✅ | Section 4.6, 5.5 |
+| PostgreSQL 16+ installation | ✅ Windows (winget) & Unix (brew/apt) | ✅ All OSes | ✅ | Section 5.2 |
+| PostgreSQL service start | ✅ Auto-started if stopped | ✅ Service commands | ✅ | Section 5.2 |
+| Database creation | ✅ Auto-created via `init_database.py` | ✅ SQL `CREATE DATABASE` | ✅ | Section 5.4 |
+| PostgreSQL extensions | ✅ `pgcrypto` & `uuid-ossp` auto-added | ✅ SQL `CREATE EXTENSION` | ✅ | Section 5.4 |
+| Alembic migrations | ✅ Auto-applied to head revision | ✅ `alembic upgrade head` | ✅ | Section 5.6 |
+| Reference data seeding | ✅ Risk questionnaire & macro indicators | ✅ `init_database.py` | ✅ | Section 5.7 |
+| NSE/BSE universe sync | ✅ ~2,639 active equities synced | ✅ `init_database.py` | ✅ | Section 5.7 |
+| Gemini API key setup | ⚠️ Prompts with 10s timeout (fallback active) | ✅ Step-by-step guide | ✅ | Section 6.1 |
+| Yahoo Finance | ✅ Built-in keyless ingestion | ✅ No key needed | ✅ | Section 6.2 |
+| FRED API key | ⚠️ Optional | ✅ Step-by-step guide | ✅ | Section 6.3 |
+| NewsAPI key | ⚠️ Optional | ✅ Step-by-step guide | ✅ | Section 6.4 |
+| Node.js 18+ installation | ✅ Windows (winget/MSI) & Unix (brew/apt) | ✅ All OSes | ✅ | Section 7.1 |
+| Frontend dependencies | ✅ `npm install` with cache check | ✅ `npm ci` reproducible | ✅ | Section 7.3 |
+| VS Code installation | ✅ Windows (winget) & macOS (cask) | ✅ Manual installer | ✅ | Section 8.1 |
+| VS Code extensions | ✅ 10 recommended extensions auto-installed | ✅ Full IDs table | ✅ | Section 8.4 |
+| Backend startup | ✅ Uvicorn on 8000 with health polling | ✅ Manual uvicorn | ✅ | Section 4.7, 9 |
+| Frontend startup | ✅ Next.js on 3000 with HTTP 200 polling | ✅ Manual npm run dev | ✅ | Section 7.4, 9 |
+| Automated E2E verification | ✅ 12-point health audit (`verify_e2e.py`) | ✅ Manual script run | ✅ | Section 10 |
+| DB schema changes | ❌ (Manual developer action) | ✅ Full Alembic guide | ✅ | Section 11.3 |
 
 ---
 

@@ -101,21 +101,36 @@ Visualizes sector distribution, Sharpe ratio, Value-at-Risk (95%), whole-share q
 
 ## One-Command Automated Setup
 
-The fastest way to get Lucid running. A single script sets up your environment, configures `.env`, provisions the database, applies migrations, seeds reference data, and launches both services.
+The fastest way to get Lucid running. Choose the command matching your situation:
 
-### macOS & Linux
+### Option 1: Fresh Computer Setup (Zero Prerequisites — No Git Needed!)
+Run this single command in your terminal. It automatically downloads the repository (even without Git), installs any missing prerequisites (Git, Python 3.11+, Node.js 18+, PostgreSQL 16, VS Code), provisions the database, and launches Lucid in your browser.
+
+**Windows 10 / 11 (PowerShell):**
+```powershell
+irm https://raw.githubusercontent.com/imankur0011/Lucid/main/bootstrap_lucid.ps1 | iex
+```
+*(If PowerShell execution policy is restricted, run: `powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/imankur0011/Lucid/main/bootstrap_lucid.ps1 | iex"`)*
+
+**macOS & Linux (Terminal):**
 ```bash
-git clone https://github.com/imankur0011/Lucid.git
-cd Lucid
-chmod +x start_lucid.sh
-./start_lucid.sh
+curl -fsSL https://raw.githubusercontent.com/imankur0011/Lucid/main/bootstrap_lucid.sh | bash
 ```
 
-### Windows 10 / 11 (PowerShell)
+---
+
+### Option 2: Standard Setup (If Repository Is Already Cloned)
+If you have already cloned the repository on your machine:
+
+**Windows 10 / 11 (PowerShell):**
 ```powershell
-git clone https://github.com/imankur0011/Lucid.git
-cd Lucid
 powershell -ExecutionPolicy Bypass -File .\start_lucid.ps1
+```
+
+**macOS & Linux:**
+```bash
+chmod +x start_lucid.sh
+./start_lucid.sh
 ```
 
 ### What the Automated Script Does (10 Stages)
