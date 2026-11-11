@@ -188,17 +188,28 @@ def run_migrations():
         alembic_cfg.set_main_option("sqlalchemy.url", str(settings.postgres_url))
         command.upgrade(alembic_cfg, "head")
         print("   ✅ Alembic migrations applied successfully.")
-        return True
     except Exception as e:
         print(f"   ⚠️ Alembic migration warning: {e}")
         # Fallback to create_all if migrations fail
         try:
             Base.metadata.create_all(bind=engine)
             print("   ✅ Fallback SQLAlchemy create_all completed.")
-            return True
         except Exception as e2:
             print(f"   ❌ Schema creation failed: {e2}")
             return False
+
+    # Ensure all required columns exist on app_users (idempotent patch for existing databases)
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255);"))
+            conn.execute(text("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT false;"))
+            conn.execute(text("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS mobile_number VARCHAR(20);"))
+            conn.execute(text("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS mobile_verified BOOLEAN NOT NULL DEFAULT false;"))
+            conn.commit()
+    except Exception as e:
+        print(f"   ⚠️ Column patch warning: {e}")
+
+    return True
 
 
 def seed_data_if_needed():

@@ -15,6 +15,10 @@ CREATE TABLE app_users (
     identity_provider VARCHAR(40) NOT NULL DEFAULT 'cognito',
     identity_subject VARCHAR(255) NOT NULL,
     email VARCHAR(320),
+    password_hash VARCHAR(255),
+    email_verified BOOLEAN NOT NULL DEFAULT false,
+    mobile_number VARCHAR(20),
+    mobile_verified BOOLEAN NOT NULL DEFAULT false,
     account_status VARCHAR(20) NOT NULL DEFAULT 'active'
         CHECK (account_status IN ('pending', 'active', 'suspended', 'closed')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
