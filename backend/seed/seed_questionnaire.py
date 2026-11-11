@@ -144,6 +144,6 @@ if __name__ == "__main__":
     db = SessionLocal()
     try:
         count = seed_risk_questions(db)
-        print(f"✅ Successfully seeded {count} risk questions with options.")
+        print(f"[OK] Successfully seeded {count} risk questions with options.")
     finally:
         db.close()

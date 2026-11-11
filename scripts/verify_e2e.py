@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Lucid — Comprehensive End-to-End System & Architecture Verification Suite.
+Lucid - Comprehensive End-to-End System & Architecture Verification Suite.
 Validates Database, Migrations, Master Universe, Quantitative Optimization,
 Authentication, OpenAPI Routes, and System Readiness across all 14 lifecycle dimensions.
 """
@@ -9,6 +9,18 @@ import sys
 import os
 import time
 from pathlib import Path
+
+# Ensure UTF-8 output encoding across Windows cp1252 / redirected file streams
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 # Add project root to path
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -22,11 +34,11 @@ from backend.portfolio_engine import optimize_portfolio_allocations, PortfolioCo
 from backend.main import app
 
 def check_mark(status):
-    return "✅ PASS" if status else "❌ FAIL"
+    return "[PASS]" if status else "[FAIL]"
 
 def run_verification():
     print("=" * 78)
-    print("  LUCID — COMPREHENSIVE END-TO-END VERIFICATION & HEALTH AUDIT")
+    print("  LUCID -- COMPREHENSIVE END-TO-END VERIFICATION & HEALTH AUDIT")
     print("=" * 78)
     print(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"Environment: {settings.app_env.upper()} | Python: {sys.version.split()[0]}")
@@ -173,9 +185,9 @@ def run_verification():
 
     print("=" * 78)
     if all_pass:
-        print("🎉 100% END-TO-END VERIFICATION PASSED: Lucid is fully operational.")
+        print("[SUCCESS] 100% END-TO-END VERIFICATION PASSED: Lucid is fully operational.")
     else:
-        print("⚠️ SOME VERIFICATION CHECKS FAILED: Review the diagnostics above.")
+        print("[WARN] SOME VERIFICATION CHECKS FAILED: Review the diagnostics above.")
     print("=" * 78)
     return all_pass
 

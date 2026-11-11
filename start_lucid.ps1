@@ -7,6 +7,14 @@
 
 $ErrorActionPreference = "Continue"
 
+# Force UTF-8 encoding across Windows PowerShell and child Python runtimes
+$env:PYTHONUTF8 = "1"
+$env:PYTHONIOENCODING = "utf-8"
+try {
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+    [Console]::InputEncoding = [System.Text.Encoding]::UTF8
+} catch {}
+
 $RootDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $RootDir
 

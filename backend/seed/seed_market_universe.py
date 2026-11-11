@@ -876,6 +876,6 @@ if __name__ == "__main__":
     db = SessionLocal()
     try:
         cnt = seed_market_universe(db)
-        print(f"✅ Successfully seeded market universe ({cnt} new securities added).")
+        print(f"[OK] Successfully seeded market universe ({cnt} new securities added).")
     finally:
         db.close()

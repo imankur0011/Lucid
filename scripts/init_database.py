@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Lucid — Automated Database Provisioning, Migration & Seeding Utility.
+Lucid -- Automated Database Provisioning, Migration & Seeding Utility.
 Idempotent script to verify, create, migrate, and seed the PostgreSQL database.
 """
 
@@ -8,6 +8,18 @@ import sys
 import os
 import uuid
 from pathlib import Path
+
+# Ensure UTF-8 output encoding across Windows cp1252 / redirected file streams
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT_DIR))
@@ -60,12 +72,12 @@ def ensure_database_exists():
             connect_timeout=3
         )
         conn.close()
-        print(f"   ✅ Database '{db_name}' exists and is accessible.")
+        print(f"   [OK] Database '{db_name}' exists and is accessible.")
         return True
     except psycopg2.OperationalError as e:
         err_msg = str(e)
         if f'database "{db_name}" does not exist' in err_msg:
-            print(f"   ℹ️ Database '{db_name}' does not exist. Creating now...")
+            print(f"   [INFO] Database '{db_name}' does not exist. Creating now...")
             # Connect to maintenance database with configured credentials
             maintenance_db = "postgres" if db_name != "postgres" else "template1"
             try:
@@ -82,13 +94,13 @@ def ensure_database_exists():
                 cur.execute(f'CREATE DATABASE "{db_name}";')
                 cur.close()
                 m_conn.close()
-                print(f"   ✅ Successfully created database '{db_name}'.")
+                print(f"   [OK] Successfully created database '{db_name}'.")
                 return True
             except Exception as m_err:
-                print(f"   ⚠️ Could not create via maintenance db: {m_err}")
+                print(f"   [WARN] Could not create via maintenance db: {m_err}")
 
     # 2. Intelligent Fallback Probing for Port/User/Password Mismatches
-    print("   ℹ️ Probing local PostgreSQL server for working connection parameters...")
+    print("   [INFO] Probing local PostgreSQL server for working connection parameters...")
     candidate_ports = [port]
     for p in [5432, 5433]:
         if p not in candidate_ports:
@@ -122,9 +134,9 @@ def ensure_database_exists():
                         exists = p_cur.fetchone()
                         if not exists:
                             p_cur.execute(f'CREATE DATABASE "{db_name}";')
-                            print(f"   ✅ Auto-created database '{db_name}' on port {c_port} (User: '{c_user}').")
+                            print(f"   [OK] Auto-created database '{db_name}' on port {c_port} (User: '{c_user}').")
                         else:
-                            print(f"   ✅ Connected to database '{db_name}' on port {c_port} (User: '{c_user}').")
+                            print(f"   [OK] Connected to database '{db_name}' on port {c_port} (User: '{c_user}').")
                         p_cur.close()
                         probe_conn.close()
 
@@ -160,7 +172,7 @@ def ensure_database_exists():
                     except Exception:
                         continue
 
-    print(f"   ❌ PostgreSQL connection failed. Ensure PostgreSQL service is started and check credentials in .env.")
+    print(f"   [FAIL] PostgreSQL connection failed. Ensure PostgreSQL service is started and check credentials in .env.")
     return False
 
 
@@ -171,10 +183,10 @@ def ensure_extensions():
             conn.execute(text('CREATE EXTENSION IF NOT EXISTS "pgcrypto";'))
             conn.execute(text('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'))
             conn.commit()
-        print("   ✅ PostgreSQL extensions (pgcrypto, uuid-ossp) verified.")
+        print("   [OK] PostgreSQL extensions (pgcrypto, uuid-ossp) verified.")
         return True
     except Exception as e:
-        print(f"   ⚠️ Could not install extensions: {e}")
+        print(f"   [WARN] Could not install extensions: {e}")
         return True  # Non-fatal if UUIDs are generated in Python
 
 
@@ -187,15 +199,15 @@ def run_migrations():
         alembic_cfg.set_main_option("script_location", str(ROOT_DIR / "backend" / "alembic"))
         alembic_cfg.set_main_option("sqlalchemy.url", str(settings.postgres_url))
         command.upgrade(alembic_cfg, "head")
-        print("   ✅ Alembic migrations applied successfully.")
+        print("   [OK] Alembic migrations applied successfully.")
     except Exception as e:
-        print(f"   ⚠️ Alembic migration warning: {e}")
+        print(f"   [WARN] Alembic migration warning: {e}")
         # Fallback to create_all if migrations fail
         try:
             Base.metadata.create_all(bind=engine)
-            print("   ✅ Fallback SQLAlchemy create_all completed.")
+            print("   [OK] Fallback SQLAlchemy create_all completed.")
         except Exception as e2:
-            print(f"   ❌ Schema creation failed: {e2}")
+            print(f"   [FAIL] Schema creation failed: {e2}")
             return False
 
     # Ensure all required columns exist on app_users (idempotent patch for existing databases)
@@ -207,7 +219,7 @@ def run_migrations():
             conn.execute(text("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS mobile_verified BOOLEAN NOT NULL DEFAULT false;"))
             conn.commit()
     except Exception as e:
-        print(f"   ⚠️ Column patch warning: {e}")
+        print(f"   [WARN] Column patch warning: {e}")
 
     return True
 
@@ -221,14 +233,14 @@ def seed_data_if_needed():
         if q_count == 0:
             print("   Seeding SEBI psychometric risk questionnaire...")
             seed_risk_questions(db)
-            print("   ✅ Risk questionnaire seeded.")
+            print("   [OK] Risk questionnaire seeded.")
         else:
-            print(f"   ℹ️ Risk questionnaire already populated ({q_count} questions).")
+            print(f"   [INFO] Risk questionnaire already populated ({q_count} questions).")
 
         # 2. Macro Indicators & News
         print("   Verifying macro indicators baseline...")
         seed_macro_and_news_data(db)
-        print("   ✅ Macro indicators baseline verified.")
+        print("   [OK] Macro indicators baseline verified.")
 
         # 3. Security Master Universe
         sec_count = db.query(Security).count()
@@ -236,9 +248,9 @@ def seed_data_if_needed():
             print(f"   Populating exchange security universe (current: {sec_count} equities)...")
             sync_res = sync_full_exchange_universe(db)
             sec_count = db.query(Security).count()
-            print(f"   ✅ Security universe synchronized: {sec_count} equities active.")
+            print(f"   [OK] Security universe synchronized: {sec_count} equities active.")
         else:
-            print(f"   ℹ️ Security universe already populated ({sec_count} equities). Skipping full re-download.")
+            print(f"   [INFO] Security universe already populated ({sec_count} equities). Skipping full re-download.")
 
         # 4. Local Development User
         email = "developer@lucid.local"
@@ -256,13 +268,13 @@ def seed_data_if_needed():
             )
             db.add(user)
             db.commit()
-            print(f"   ✅ Created development user: {email} (Password: LucidDevPass123!)")
+            print(f"   [OK] Created development user: {email} (Password: LucidDevPass123!)")
         else:
-            print(f"   ℹ️ Development user exists: {email}")
+            print(f"   [INFO] Development user exists: {email}")
 
         return True
     except Exception as e:
-        print(f"   ❌ Seeding failed: {e}")
+        print(f"   [FAIL] Seeding failed: {e}")
         return False
     finally:
         db.close()
@@ -270,7 +282,7 @@ def seed_data_if_needed():
 
 def main():
     print("=" * 70)
-    print("  LUCID — DATABASE PROVISIONING & MIGRATION")
+    print("  LUCID -- DATABASE PROVISIONING & MIGRATION")
     print("=" * 70)
 
     if not ensure_database_exists():
@@ -291,12 +303,12 @@ def main():
             table_count = conn.execute(
                 text("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'")
             ).scalar()
-            print(f"\n🎉 Database is ready! Total public tables: {table_count} (Expected: 60: 59 application tables + 1 alembic_version)")
+            print(f"\n[SUCCESS] Database is ready! Total public tables: {table_count} (Expected: 60: 59 application tables + 1 alembic_version)")
             if table_count < 60:
-                print(f"⚠️ Warning: Detected {table_count} tables, expected 60.")
+                print(f"[WARN] Warning: Detected {table_count} tables, expected 60.")
                 sys.exit(1)
     except Exception as e:
-        print(f"❌ Error verifying database tables: {e}")
+        print(f"[FAIL] Error verifying database tables: {e}")
         sys.exit(1)
 
     print("=" * 70)

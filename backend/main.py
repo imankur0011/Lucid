@@ -3,6 +3,20 @@ FastAPI Application Entry Point.
 Integrates SQLAlchemy database, LangGraph orchestrator, and agent pipeline.
 """
 
+import sys
+
+# Ensure UTF-8 output encoding across Windows cp1252 / redirected file streams
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -43,7 +57,7 @@ except ImportError:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application startup and shutdown events."""
-    print(f"🚀 Starting Lucid Backend ({settings.app_env})")
+    print(f"[+] Starting Lucid Backend ({settings.app_env})")
     print(f"   LLM Provider: {settings.llm_provider} ({settings.llm_model})")
     print(f"   PostgreSQL: {settings.postgres_host}:{settings.postgres_port}/{settings.postgres_db}")
 
@@ -56,9 +70,9 @@ async def lifespan(app: FastAPI):
             table_count = conn.execute(
                 text("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'")
             ).scalar()
-            print(f"   ✅ PostgreSQL Connected: {table_count} tables active")
+            print(f"   [OK] PostgreSQL Connected: {table_count} tables active")
     except Exception as exc:
-        print(f"   ⚠️ PostgreSQL Connection warning: {exc}")
+        print(f"   [WARN] PostgreSQL Connection warning: {exc}")
 
     # Launch Unattended Background Portfolio Monitoring Scheduler
     scheduler = None
@@ -66,15 +80,15 @@ async def lifespan(app: FastAPI):
         from backend.services.monitoring_scheduler import BackgroundMonitoringScheduler
         scheduler = BackgroundMonitoringScheduler(interval_seconds=300)
         scheduler.start()
-        print("   ✅ Background Monitoring Scheduler Active (300s cycle, IST 09:15-15:30 window)")
+        print("   [OK] Background Monitoring Scheduler Active (300s cycle, IST 09:15-15:30 window)")
     except Exception as exc:
-        print(f"   ⚠️ Background Monitoring Scheduler failed to start: {exc}")
+        print(f"   [WARN] Background Monitoring Scheduler failed to start: {exc}")
 
     yield
 
     if scheduler:
         scheduler.stop()
-    print("👋 Shutting down...")
+    print("[-] Shutting down...")
 
 
 app = FastAPI(
