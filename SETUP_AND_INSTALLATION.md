@@ -220,15 +220,30 @@ cd Lucid
 ```
 
 ### 4.3 Create Virtual Environment
-A virtual environment (venv) is an isolated directory tree that houses a specific Python interpreter and set of libraries, preventing package version collisions with your global operating system. In Lucid, the virtual environment is named `.venv` and resides directly in the project root.
+**What is this step?**  
+A Python virtual environment is an isolated folder on your computer that contains its own private copy of Python and installed libraries. This prevents Lucid's packages (like FastAPI or SciPy) from interfering with other software on your computer.
 
-Run from project root:
-```bash
-python3 -m venv .venv
-```
+**Where should I run it?**  
+Run from the root of the `Lucid` folder.
 
-### 4.4 Activate Virtual Environment
-You must activate the virtual environment before installing packages or running Python commands.
+- **macOS & Linux**:
+  ```bash
+  python3 -m venv .venv
+  ```
+- **Windows (PowerShell or Command Prompt)**:
+  ```powershell
+  python -m venv .venv
+  ```
+
+**Expected Output:**  
+A new directory named `.venv` is created inside your Lucid folder containing Python executables and package directories.
+
+### 4.4 Activate the Virtual Environment
+**What is this step?**  
+Activating the environment tells your terminal to use the Python interpreter and tools located inside `.venv` rather than your system-wide Python.
+
+**Where should I run it?**  
+Run from the root of the `Lucid` folder.
 
 - **macOS & Linux**:
   ```bash
@@ -238,41 +253,77 @@ You must activate the virtual environment before installing packages or running 
   ```powershell
   .\.venv\Scripts\Activate.ps1
   ```
+  *(If PowerShell displays an execution policy error, run: `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` and try again).*
 - **Windows (Command Prompt)**:
   ```cmd
   .venv\Scripts\activate.bat
   ```
-- **Verify Activation**: Your terminal prompt will display the `(.venv)` prefix.
-- **Deactivation**: Type `deactivate` when finished.
 
-### 4.5 Install Python Dependencies
-The file `backend/requirements.txt` specifies all required Python packages with pinned compatibility constraints, including FastAPI, Uvicorn, SQLAlchemy 2.0, Alembic, SciPy, NumPy, and LangGraph.
-
-Run from project root with `.venv` active:
-```bash
-pip install --upgrade pip
-pip install -r backend/requirements.txt
+**Expected Output:**  
+Your terminal prompt will now show the prefix `(.venv)`, for example:
+```text
+(.venv) user@macbook Lucid %
+# or on Windows:
+(.venv) PS C:\Users\Name\Lucid>
 ```
 
-Verify that critical packages are installed:
+*(To exit the virtual environment later, simply type `deactivate`).*
+
+### 4.5 Install Python Dependencies
+**What is this step?**  
+Lucid relies on open-source Python libraries for its web server (FastAPI), quantitative optimizer (SciPy), database ORM (SQLAlchemy), market data ingestion (`yfinance`), and multi-agent coordination (LangGraph). The `backend/requirements.txt` file lists all these packages with tested versions.
+
+**Where should I run it?**  
+Run from the root of the `Lucid` folder **with your virtual environment active (`(.venv)`)**.
+
+- **macOS, Linux & Windows (Universal)**:
+  ```bash
+  pip install --upgrade pip
+  pip install -r backend/requirements.txt
+  ```
+
+**Expected Output:**  
+`pip` downloads and installs the required packages. At the end, you will see:
+```text
+Successfully installed fastapi-0.115.8 scipy-1.15.2 sqlalchemy-2.0.38 yfinance-0.2.54 ...
+```
+
+**Verify Installation:**
 ```bash
 pip show fastapi scipy langgraph
 ```
-*(Expected: prints version metadata for each package).*
+*(Expected: displays the version, author, and location metadata for each package).*
 
-### 4.6 Create `.env` Configuration
-Copy the environment template to create your local `.env`:
+### 4.6 Create the `.env` Configuration File
+**What is this step?**  
+An environment configuration file (`.env`) stores private settings, database passwords, and security keys outside of source code so that secrets are never accidentally uploaded to GitHub. Lucid provides a template named `.env.example`.
 
-Run from project root:
-```bash
-cp .env.example .env
-```
+**Where should I run it?**  
+Run from the root of the `Lucid` folder.
 
-Generate two distinct 32-character random cryptographic secrets for application and session security:
+**Step A: Copy the template**
+- **macOS & Linux**:
+  ```bash
+  cp .env.example .env
+  ```
+- **Windows (PowerShell)**:
+  ```powershell
+  Copy-Item .env.example .env
+  ```
+- **Windows (Command Prompt)**:
+  ```cmd
+  copy .env.example .env
+  ```
+
+**Step B: Generate Cryptographic Secret Keys**  
+Lucid requires two secure random keys: `APP_SECRET_KEY` (for application security) and `JWT_SECRET_KEY` (for signing user authentication tokens). Generate them using Python's built-in `secrets` module:
+
 ```bash
 # Run this command TWICE: once for APP_SECRET_KEY, once for JWT_SECRET_KEY
-python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+python -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
+
+Open `.env` in any text editor (VS Code, Notepad, nano) and replace the placeholder keys with your newly generated strings.
 
 Edit `.env` using your preferred editor (VS Code, nano, or vim) and update the following settings:
 
@@ -295,26 +346,46 @@ Edit `.env` using your preferred editor (VS Code, nano, or vim) and update the f
 | `FRED_API_KEY` | Optional | *Empty* | FRED API key | [https://fred.stlouisfed.org/](https://fred.stlouisfed.org/) |
 | `NEWS_API_KEY` | Optional | *Empty* | NewsAPI key | [https://newsapi.org/](https://newsapi.org/) |
 
-### 4.7 Start Backend Server
-Always ensure `.venv` is active and you are located in the project root directory. Set `PYTHONPATH=.` so Python can resolve the `backend` module.
+### 4.7 Start the Backend Server Manually
+**What is this step?**  
+Launches the FastAPI ASGI web server (Uvicorn). The server loads the database models, initializes the 82 REST endpoints, and begins listening on port 8000.
 
-Run from project root:
-```bash
-PYTHONPATH=. uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+**Where should I run it?**  
+Run from the root of the `Lucid` folder **with your virtual environment active (`(.venv)`)**.
+
+- **macOS & Linux**:
+  ```bash
+  python3 -m uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+  ```
+- **Windows (PowerShell)**:
+  ```powershell
+  python -m uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+  ```
+
+> [!TIP]
+> Using `python -m uvicorn` automatically includes the current working directory in Python's module path (`sys.path`), so you never need to manually export `PYTHONPATH`.
+
+**Expected Output:**
+```text
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [PID]
+INFO:     Application startup complete.
 ```
 
-- **Expected Output**:
-  ```text
-  INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-  INFO:     Started reloader process
-  INFO:     Application startup complete.
-  ```
-- **Verify Health via cURL**:
+**Verify That the Backend is Healthy:**
+Open a second terminal window and test the health route:
+- **macOS & Linux**:
   ```bash
   curl http://localhost:8000/api/health
   ```
-  *(Expected response: `{"api":"up","database":{"status":"healthy","total_tables":63}}`)*.
-- **Swagger Documentation**: Open [http://localhost:8000/docs](http://localhost:8000/docs) in your browser.
+- **Windows (PowerShell)**:
+  ```powershell
+  Invoke-RestMethod http://localhost:8000/api/health
+  ```
+*(Expected response: `{"api":"up","environment":"development","database":{"status":"healthy","total_tables":63}}`)*
+
+**Interactive API Documentation:**  
+Open **[http://localhost:8000/docs](http://localhost:8000/docs)** in your browser to view the interactive Swagger UI and test any of the 82 endpoints.
 
 ---
 
@@ -401,36 +472,71 @@ POSTGRES_PASSWORD=your_postgres_password_here
 ```
 *(On macOS Homebrew with peer authentication, `POSTGRES_USER` is typically your macOS username and `POSTGRES_PASSWORD` is left empty).*
 
-### 5.6 Run Alembic Migrations
-A database migration is a version-controlled Python script that transitions a database schema between states. Lucid's configuration file `alembic.ini` is located in the **project root**, and the migration scripts reside in `backend/alembic/versions/`.
+### 5.6 Run Alembic Database Migrations
+**What is this step?**  
+A database migration is a version-controlled Python script that builds your database tables automatically according to the application schema. Lucid uses **Alembic**. Running migrations applies the schema revision `429fa263363c` to create all 62 domain application tables.
 
-Run from project root with `.venv` active:
-```bash
-PYTHONPATH=. alembic upgrade head
+**Where should I run it?**  
+Run from the root of the `Lucid` folder **with your virtual environment active (`(.venv)`)**.
+
+- **macOS & Linux**:
+  ```bash
+  PYTHONPATH=. alembic upgrade head
+  ```
+- **Windows (PowerShell)**:
+  ```powershell
+  $env:PYTHONPATH = "."
+  alembic upgrade head
+  ```
+  *(Or: `python -m alembic upgrade head`)*
+
+**Expected Output:**
+```text
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 429fa263363c, initial_portfolio_schema
 ```
 
-- **Expected Output**:
-  ```text
-  INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
-  INFO  [alembic.runtime.migration] Will assume transactional DDL.
-  INFO  [alembic.runtime.migration] Running upgrade  -> 429fa263363c, initial_portfolio_schema
-  ```
-- **Check Current Migration Version**:
-  ```bash
-  PYTHONPATH=. alembic current
-  ```
-- **Verify Table Count in PostgreSQL**:
-  ```bash
-  psql -d portfolio_dev -c "\dt" | wc -l
-  ```
-  *(Expected: 63+ lines, corresponding to 62 domain application tables + 1 `alembic_version` table).*
+**Verify the Migration Revision:**
+- **macOS & Linux**: `PYTHONPATH=. alembic current`
+- **Windows**: `python -m alembic current`  
+*(Expected: `429fa263363c (head)`).*
 
-### 5.7 Seed Reference Data and NSE/BSE Universe
-Seeding is the automated process of populating a blank database with essential baseline data, including lookup tables, admin accounts, and market instruments. The `scripts/init_database.py` script performs this initialization and is fully **idempotent** (safe to run multiple times without duplicating data).
+### 5.7 Seed Reference Data and NSE/BSE Stock Universe
+**What is this step?**  
+Database tables start out empty. "Seeding" fills the tables with essential initial records: the 5 SEBI psychometric risk questionnaire questions, RBI macroeconomic benchmarks, developer login accounts, and the master universe of ~2,639 actively traded Indian stocks on the NSE and BSE.
 
-Run from project root with `.venv` active:
-```bash
-PYTHONPATH=. python scripts/init_database.py
+The script `scripts/init_database.py` is **idempotent**, meaning it checks what already exists and safely inserts only what is missing. It will never create duplicate records if run more than once.
+
+**Where should I run it?**  
+Run from the root of the `Lucid` folder **with your virtual environment active (`(.venv)`)**.
+
+- **macOS & Linux**:
+  ```bash
+  python3 scripts/init_database.py
+  ```
+- **Windows (PowerShell or Command Prompt)**:
+  ```powershell
+  python scripts\init_database.py
+  ```
+
+**Expected Output:**
+```text
+======================================================================
+  LUCID — DATABASE PROVISIONING & MIGRATION
+======================================================================
+   Checking database 'portfolio_dev'...
+   ✅ Database 'portfolio_dev' exists and is accessible.
+   ✅ PostgreSQL extensions (pgcrypto, uuid-ossp) verified.
+   Applying database migrations via Alembic...
+   ✅ Alembic migrations applied successfully.
+   ✅ Risk questionnaire seeded (5 questions).
+   ✅ Macro indicators baseline verified.
+   ✅ Security universe synchronized: 2639 equities active.
+   ✅ Created development user: developer@lucid.local
+
+🎉 Database is ready! Total public tables: 63 (Expected: 62+1)
+======================================================================
 ```
 
 **What this script does:**
@@ -677,12 +783,20 @@ sudo systemctl start postgresql
 ```
 
 ### Terminal 2: FastAPI Backend Server
-Run from the project root:
-```bash
-cd /path/to/Lucid
-source .venv/bin/activate       # Windows: .\.venv\Scripts\Activate.ps1
-PYTHONPATH=. uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
-```
+Open a terminal, activate your virtual environment, and launch FastAPI:
+
+- **macOS & Linux**:
+  ```bash
+  cd /path/to/Lucid
+  source .venv/bin/activate
+  python3 -m uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+  ```
+- **Windows (PowerShell)**:
+  ```powershell
+  cd C:\path\to\Lucid
+  .\.venv\Scripts\Activate.ps1
+  python -m uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+  ```
 
 ### Terminal 3: Next.js Frontend Server
 Run from the frontend directory:
@@ -702,25 +816,39 @@ To stop the servers, press `Ctrl+C` in each terminal window, or run `./stop_luci
 
 ## Section 10: Running Tests
 
-Lucid includes test suites covering authentication, mathematical optimization invariants, multi-agent workflows, and database transaction rollbacks.
+Lucid includes 216 unit and integration test suites covering authentication, mathematical SLSQP optimization invariants, multi-agent workflows, and database transaction rollbacks.
 
-Run from project root with `.venv` active:
+Run from the project root **with your virtual environment active (`(.venv)`)**:
 
-```bash
-# Activate virtual environment
-source .venv/bin/activate
+- **macOS & Linux**:
+  ```bash
+  source .venv/bin/activate
+  
+  # 1. Run full backend test suite (216 tests)
+  PYTHONPATH=. pytest backend/tests -v
+  
+  # 2. Run specific test modules
+  PYTHONPATH=. pytest backend/tests/test_portfolio_engine.py -v
+  PYTHONPATH=. pytest backend/tests/test_auth_and_security.py -v
+  
+  # 3. Run automated 12-point end-to-end system verification
+  python3 scripts/verify_e2e.py
+  ```
 
-# 1. Run full backend test suite
-PYTHONPATH=. pytest backend/tests -v
-
-# 2. Run specific test modules
-PYTHONPATH=. pytest backend/tests/test_portfolio_engine.py -v
-PYTHONPATH=. pytest backend/tests/test_auth_and_security.py -v
-PYTHONPATH=. pytest backend/tests/test_database.py -v
-
-# 3. Run tests with coverage report
-PYTHONPATH=. pytest backend/tests --cov=backend --cov-report=term-missing
-```
+- **Windows (PowerShell)**:
+  ```powershell
+  .\.venv\Scripts\Activate.ps1
+  
+  # 1. Run full backend test suite (216 tests)
+  python -m pytest backend/tests -v
+  
+  # 2. Run specific test modules
+  python -m pytest backend/tests/test_portfolio_engine.py -v
+  python -m pytest backend/tests/test_auth_and_security.py -v
+  
+  # 3. Run automated 12-point end-to-end system verification
+  python scripts\verify_e2e.py
+  ```
 
 > [!NOTE]
 > Backend integration tests connect to the PostgreSQL database to verify transactions and foreign-key constraints. Ensure PostgreSQL is running and migrated before running `pytest`.
