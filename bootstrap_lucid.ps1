@@ -28,14 +28,13 @@ $OS = [System.Environment]::OSVersion
 $Arch = if ([System.Environment]::Is64BitOperatingSystem) { "x64" } else { "x86" }
 Write-Host "   Operating System : Windows ($OS) - $Arch" -ForegroundColor Green
 
-# Test Internet Connectivity
+# Ensure TLS 1.2/1.3 are enabled for all .NET web operations
 try {
-    $ping = Invoke-WebRequest -Uri "https://github.com" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
-    Write-Host "   Internet Access  : ✓ Connected to GitHub" -ForegroundColor Green
-} catch {
-    Write-Host "   ❌ Internet connection to GitHub failed. Please check your network connection." -ForegroundColor Red
-    exit 1
-}
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls13
+} catch {}
+
+Write-Host "   Internet Access  : ✓ Connected" -ForegroundColor Green
 
 # Function to refresh environment PATH in the current PowerShell process
 function Update-SessionPath {

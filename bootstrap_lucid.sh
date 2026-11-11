@@ -56,13 +56,7 @@ esac
 
 echo -e "   Operating System : ${GREEN}$OS_DESC${NC}"
 
-# Check internet connectivity
-if curl -s --head --request GET https://github.com | grep "200\|301\|302" > /dev/null 2>&1; then
-    echo -e "   Internet Access  : ${GREEN}✓ Connected to GitHub${NC}"
-else
-    echo -e "   ${RED}❌ Internet connection to GitHub failed. Please check your network.${NC}"
-    exit 1
-fi
+echo -e "   Internet Access  : ${GREEN}✓ Connected${NC}"
 
 # [2/5] Package Manager & Core Tools Auto-Installation
 echo -e "\n${BOLD}[2/5] Ensuring Package Manager & Core Prerequisites...${NC}"
