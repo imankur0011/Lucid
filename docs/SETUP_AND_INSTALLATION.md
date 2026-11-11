@@ -135,15 +135,7 @@ pip install --upgrade pip setuptools wheel
 pip install -r backend/requirements.txt
 ```
 
-### Step 4.3: Configure Frontend Dependencies
-
-```bash
-cd frontend
-npm install
-cd ..
-```
-
-### Step 4.4: Configure Environment Variables
+### Step 4.3: Configure Environment Variables
 
 ```bash
 cp .env.example .env
@@ -161,18 +153,21 @@ APP_SECRET_KEY=generate_random_secret_here
 GEMINI_API_KEY=your_gemini_api_key_or_leave_empty
 ```
 
-### Step 4.5: Initialize Database & Run Migrations
+### Step 4.4: Initialize Database & Run Migrations
 
-Run the automated Python provisioning script:
+Ensure your PostgreSQL service is running (`brew services start postgresql@16` on macOS, or Windows Service). Then run the automated database provisioning script:
 ```bash
 PYTHONPATH=. .venv/bin/python scripts/init_database.py
 ```
 
-Or manually using Alembic CLI:
+*This creates the `portfolio_dev` database, verifies `pgcrypto`/`uuid-ossp` extensions, executes Alembic migrations up to head, seeds SEBI psychometric questions, macroeconomic indicators, developer user, and synchronizes the ~2,639 NSE/BSE stock universe.*
+
+### Step 4.5: Configure Frontend Dependencies
+
 ```bash
-source .venv/bin/activate
-alembic upgrade head
-python database/seed_reference_data.py
+cd frontend
+npm install
+cd ..
 ```
 
 ### Step 4.6: Start Services in Two Terminals
@@ -182,12 +177,23 @@ python database/seed_reference_data.py
 cd Lucid
 source .venv/bin/activate
 uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+# On Windows PowerShell:
+# $env:PYTHONUTF8 = "1"
+# python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 **Terminal 2 — Frontend Application:**
 ```bash
 cd Lucid/frontend
 npm run dev
+```
+
+### Step 4.7: Verify System Readiness
+
+```bash
+# In your root terminal with (.venv) active:
+python scripts/verify_e2e.py
+```
 ```
 
 ---

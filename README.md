@@ -230,6 +230,13 @@ cd ..
   ```
   *Open [http://localhost:3000](http://localhost:3000) in your browser.*
 
+### Step 7: Run End-to-End System Verification (Optional)
+```bash
+# In your root terminal with (.venv) active:
+python scripts/verify_e2e.py
+```
+*Expected: All 14 system verification checks pass (`[SUCCESS] 100% END-TO-END VERIFICATION PASSED: Lucid is fully operational`).*
+
 > 📖 **Comprehensive Manual Guide**: For full database architectural diagrams, SQL commands, table schemas, Alembic rollbacks, VS Code debugging, and test suites, see **[SETUP_AND_INSTALLATION.md](SETUP_AND_INSTALLATION.md)**.
 
 ---
