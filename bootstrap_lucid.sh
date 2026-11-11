@@ -106,8 +106,12 @@ TARGET_DIR="$HOME/Lucid"
 if [ -f "backend/requirements.txt" ] && [ -f "start_lucid.sh" ]; then
     TARGET_DIR="$(pwd)"
     echo -e "   Running inside existing Lucid repository: ${GREEN}$TARGET_DIR${NC}"
-elif [ -d "$TARGET_DIR" ] && [ -f "$TARGET_DIR/start_lucid.sh" ]; then
+elif [ -d "$TARGET_DIR" ] && [ -f "$TARGET_DIR/backend/requirements.txt" ]; then
     echo -e "   Found existing Lucid installation at: ${CYAN}$TARGET_DIR${NC}"
+    if [ -d "$TARGET_DIR/.git" ] && command -v git >/dev/null 2>&1; then
+        echo "   Updating repository via git pull..."
+        git -C "$TARGET_DIR" pull origin main 2>/dev/null || true
+    fi
 else
     echo -e "   Target Installation Directory: ${CYAN}$TARGET_DIR${NC}"
     if command -v git >/dev/null 2>&1; then

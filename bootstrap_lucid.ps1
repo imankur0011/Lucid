@@ -84,36 +84,21 @@ Write-Host "`n[2/6] Acquiring Lucid Application Repository..." -ForegroundColor 
 $TargetDir = Join-Path $HOME "Lucid"
 
 # Check if current directory is already the Lucid repository
-if ((Test-Path (Join-Path (Get-Location) "backend\requirements.txt")) -and (Test-Path (Join-Path (Get-Location) "start_lucid.ps1"))) {
+if ((Test-Path (Join-Path (Get-Location) "backend\requirements.txt")) -and (Test-Path (Join-Path (Get-Location) "scripts\init_database.py"))) {
     $TargetDir = (Get-Location).Path
     Write-Host "   Running inside existing Lucid repository: $TargetDir" -ForegroundColor Green
-} elseif (Test-Path $TargetDir) {
+} elseif (Test-Path (Join-Path $TargetDir "backend\requirements.txt")) {
     Write-Host "   Found existing Lucid installation at: $TargetDir" -ForegroundColor Cyan
 } else {
     Write-Host "   Target Installation Directory: $TargetDir" -ForegroundColor Cyan
-    New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
-}
-
-# Always synchronize launcher scripts to ensure latest fixes are present
-if (Test-Path $TargetDir) {
-    Write-Host "   Synchronizing latest launcher scripts from GitHub..." -ForegroundColor Cyan
-    try {
-        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/imankur0011/Lucid/main/start_lucid.ps1" -OutFile (Join-Path $TargetDir "start_lucid.ps1") -UseBasicParsing
-        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/imankur0011/Lucid/main/status_lucid.ps1" -OutFile (Join-Path $TargetDir "status_lucid.ps1") -UseBasicParsing
-        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/imankur0011/Lucid/main/stop_lucid.ps1" -OutFile (Join-Path $TargetDir "stop_lucid.ps1") -UseBasicParsing
-        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/imankur0011/Lucid/main/logs_lucid.ps1" -OutFile (Join-Path $TargetDir "logs_lucid.ps1") -UseBasicParsing
-    } catch {}
-    if (Test-Path (Join-Path $TargetDir ".git")) {
-        try { git -C $TargetDir pull origin main | Out-Null } catch {}
-    }
 }
 
 $hasGit = [bool](Get-Command git -ErrorAction SilentlyContinue)
+$repoPresent = (Test-Path (Join-Path $TargetDir "backend\requirements.txt")) -and (Test-Path (Join-Path $TargetDir "scripts\init_database.py"))
 
-# If Git is missing, try to install Git via winget OR download ZIP
-if (-not $hasGit -and (-not (Test-Path (Join-Path $TargetDir "start_lucid.ps1")))) {
-    Write-Host "   [INFO] Git is not installed on this system." -ForegroundColor Yellow
-    if ($hasWinget) {
+# If repository files are not present, clone via Git or download ZIP archive
+if (-not $repoPresent) {
+    if (-not $hasGit -and $hasWinget) {
         Write-Host "   Installing Git for Windows via winget..." -ForegroundColor Cyan
         try {
             winget install --id Git.Git -e --accept-source-agreements --accept-package-agreements
@@ -122,8 +107,22 @@ if (-not $hasGit -and (-not (Test-Path (Join-Path $TargetDir "start_lucid.ps1"))
         } catch {}
     }
     
-    # If still no Git, download repository ZIP directly from GitHub!
-    if (-not $hasGit) {
+    if ($hasGit) {
+        Write-Host "   Cloning Lucid repository via Git into $TargetDir..." -ForegroundColor Cyan
+        if (Test-Path $TargetDir) {
+            Remove-Item -Path $TargetDir -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        try {
+            git clone https://github.com/imankur0011/Lucid.git "$TargetDir"
+            if (Test-Path (Join-Path $TargetDir "backend\requirements.txt")) {
+                Write-Host "   [OK] Repository cloned successfully." -ForegroundColor Green
+                $repoPresent = $true
+            }
+        } catch {}
+    }
+    
+    # If still no repository, download ZIP directly from GitHub
+    if (-not $repoPresent) {
         Write-Host "   Downloading Lucid repository as ZIP directly from GitHub..." -ForegroundColor Cyan
         $zipUrl = "https://github.com/imankur0011/Lucid/archive/refs/heads/main.zip"
         $zipDest = Join-Path $env:TEMP "Lucid-main.zip"
@@ -132,9 +131,10 @@ if (-not $hasGit -and (-not (Test-Path (Join-Path $TargetDir "start_lucid.ps1"))
         Invoke-WebRequest -Uri $zipUrl -OutFile $zipDest -UseBasicParsing
         Write-Host "   Extracting archive to $TargetDir..." -ForegroundColor Cyan
         
-        if (Test-Path $extractDir) { Remove-Item -Path $extractDir -Recurse -Force | Out-Null }
+        if (Test-Path $extractDir) { Remove-Item -Path $extractDir -Recurse -Force -ErrorAction SilentlyContinue }
         Expand-Archive -Path $zipDest -DestinationPath $extractDir -Force
         
+        if (-not (Test-Path $TargetDir)) { New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null }
         $innerFolder = Join-Path $extractDir "Lucid-main"
         if (Test-Path $innerFolder) {
             Get-ChildItem -Path $innerFolder -Force | Copy-Item -Destination $TargetDir -Recurse -Force
@@ -142,15 +142,23 @@ if (-not $hasGit -and (-not (Test-Path (Join-Path $TargetDir "start_lucid.ps1"))
         Remove-Item -Path $zipDest -Force -ErrorAction SilentlyContinue
         Remove-Item -Path $extractDir -Recurse -Force -ErrorAction SilentlyContinue
         Write-Host "   [OK] Lucid repository downloaded and extracted successfully." -ForegroundColor Green
+        $repoPresent = $true
+    }
+} else {
+    # If already cloned via Git, pull latest updates
+    if (Test-Path (Join-Path $TargetDir ".git")) {
+        Write-Host "   Updating repository via git pull..." -ForegroundColor Cyan
+        try { git -C $TargetDir pull origin main | Out-Null } catch {}
     }
 }
 
-# If Git is available and repo not yet cloned, use git clone
-if ($hasGit -and (-not (Test-Path (Join-Path $TargetDir "start_lucid.ps1")))) {
-    Write-Host "   Cloning Lucid repository via Git..." -ForegroundColor Cyan
-    git clone https://github.com/imankur0011/Lucid.git "$TargetDir"
-    Write-Host "   [OK] Repository cloned successfully." -ForegroundColor Green
-}
+# Ensure launcher scripts are up to date with pure ASCII versions
+try {
+    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/imankur0011/Lucid/main/start_lucid.ps1" -OutFile (Join-Path $TargetDir "start_lucid.ps1") -UseBasicParsing
+    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/imankur0011/Lucid/main/status_lucid.ps1" -OutFile (Join-Path $TargetDir "status_lucid.ps1") -UseBasicParsing
+    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/imankur0011/Lucid/main/stop_lucid.ps1" -OutFile (Join-Path $TargetDir "stop_lucid.ps1") -UseBasicParsing
+    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/imankur0011/Lucid/main/logs_lucid.ps1" -OutFile (Join-Path $TargetDir "logs_lucid.ps1") -UseBasicParsing
+} catch {}
 
 # [3/6] Check and Auto-Install Python 3.11+
 Write-Host "`n[3/6] Verifying Python Runtime..." -ForegroundColor White

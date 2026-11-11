@@ -204,10 +204,15 @@ $HashFile = Join-Path $VenvDir ".requirements.hash"
 if (-not (Test-Path $VenvPy)) {
     Write-Host "   Creating new virtual environment at .venv..."
     python -m venv $VenvDir
-    & $VenvPip install --upgrade pip setuptools wheel | Out-Null
+    & $VenvPy -m pip install --upgrade pip setuptools wheel | Out-Null
     Write-Host "   [OK] Virtual environment created." -ForegroundColor Green
 } else {
     Write-Host "   [OK] Reusing existing virtual environment at .venv." -ForegroundColor Green
+}
+
+if (-not (Test-Path $ReqFile)) {
+    Write-Host "[FAIL] Missing backend\requirements.txt. Repository files appear incomplete." -ForegroundColor Red
+    exit 1
 }
 
 $CurrentHash = (Get-FileHash -Path $ReqFile -Algorithm MD5).Hash
@@ -230,6 +235,11 @@ Write-Host "`n[4/10] Preparing Frontend Dependencies..." -ForegroundColor White
 $FrontendDir = Join-Path $RootDir "frontend"
 $NodeModules = Join-Path $FrontendDir "node_modules"
 
+if (-not (Test-Path $FrontendDir)) {
+    Write-Host "[FAIL] Missing frontend directory. Repository files appear incomplete." -ForegroundColor Red
+    exit 1
+}
+
 if (-not (Test-Path $NodeModules)) {
     Write-Host "   Installing frontend dependencies (Next.js and React 19) (streaming live logs)..."
     Push-Location $FrontendDir
@@ -246,8 +256,13 @@ $EnvFile = Join-Path $RootDir ".env"
 $ExampleFile = Join-Path $RootDir ".env.example"
 
 if (-not (Test-Path $EnvFile)) {
-    Write-Host "   '.env' not found. Creating from .env.example..."
-    Copy-Item $ExampleFile $EnvFile
+    if (Test-Path $ExampleFile) {
+        Write-Host "   '.env' not found. Creating from .env.example..."
+        Copy-Item $ExampleFile $EnvFile
+    } else {
+        Write-Host "   Generating default .env configuration..."
+        "POSTGRES_HOST=localhost`nPOSTGRES_PORT=5432`nPOSTGRES_DB=portfolio_dev`nPOSTGRES_USER=postgres`nPOSTGRES_PASSWORD=`nAPP_ENV=development`nAPP_PORT=8000`nCORS_ORIGINS=http://localhost:3000`nLLM_PROVIDER=gemini`nLLM_MODEL=gemini-3.8-flash`nGEMINI_API_KEY=" | Set-Content $EnvFile
+    }
     $JwtSecret = & $VenvPy -c "import secrets; print(secrets.token_urlsafe(32))"
     $AppSecret = & $VenvPy -c "import secrets; print(secrets.token_urlsafe(32))"
     $Content = Get-Content $EnvFile -Raw
@@ -300,6 +315,10 @@ if ($pgService) {
 Write-Host "`n[7/10] Initializing Database, Migrations and Reference Data..." -ForegroundColor White
 $env:PYTHONPATH = $RootDir
 $InitDbScript = Join-Path $RootDir "scripts\init_database.py"
+if (-not (Test-Path $InitDbScript)) {
+    Write-Host "[FAIL] Missing scripts\init_database.py. Repository files appear incomplete." -ForegroundColor Red
+    exit 1
+}
 & $VenvPy $InitDbScript
 if ($LASTEXITCODE -ne 0) {
     Write-Host "[FAIL] Database initialization failed. Check PostgreSQL connection in .env." -ForegroundColor Red
