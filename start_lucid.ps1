@@ -283,10 +283,12 @@ if ($Content -match "GEMINI_API_KEY=(.*)" -and ($matches[1].Trim() -eq "" -or $m
     Write-Host "   Press Enter or wait 30 seconds to continue with fallback..." -ForegroundColor Cyan
     
     $KeyInput = ""
-    $task = [System.Threading.Tasks.Task]::Run([Func[string]]{ [System.Console]::ReadLine() })
-    if ($task.Wait(30000)) {
-        $KeyInput = $task.Result
-    }
+    try {
+        $task = [System.Threading.Tasks.Task]::Run([Func[string]]{ [System.Console]::ReadLine() })
+        if ($task.Wait(30000)) {
+            $KeyInput = $task.Result
+        }
+    } catch {}
     if ($KeyInput -and $KeyInput.Trim() -ne "") {
         $Content = $Content -replace "GEMINI_API_KEY=.*", "GEMINI_API_KEY=$($KeyInput.Trim())"
         $Content | Set-Content $EnvFile
