@@ -409,6 +409,7 @@ def seed_macro_and_news_data(db: Session) -> Dict[str, int]:
         {
             "headline": "RBI MPC Maintains Status Quo on Repo Rate at 6.5%, Emphasizes Price Stability",
             "summary": "The Monetary Policy Committee unanimously decided to keep the benchmark policy repo rate unchanged at 6.5%, retaining a balanced stance while supporting steady growth in domestic capex and consumption.",
+            "url": "https://www.financialexpress.com/market/rbi-mpc-maintains-status-quo-repo-rate-6-5-percent/",
             "sentiment_score": 0.35,
             "sentiment_label": "positive",
             "symbols": ["HDFCBANK", "ICICIBANK"],
@@ -416,6 +417,7 @@ def seed_macro_and_news_data(db: Session) -> Dict[str, int]:
         {
             "headline": "Indian IT Services Companies Report Expanding AI Deal Pipelines and Margin Resilience",
             "summary": "Large-cap Indian technology services providers highlighted sustained multi-year enterprise transformation bookings in cloud architecture and enterprise agentic AI workflows.",
+            "url": "https://www.financialexpress.com/market/indian-it-services-companies-report-expanding-ai-pipelines/",
             "sentiment_score": 0.45,
             "sentiment_label": "positive",
             "symbols": ["TCS", "INFY"],
@@ -423,6 +425,7 @@ def seed_macro_and_news_data(db: Session) -> Dict[str, int]:
         {
             "headline": "Domestic Energy & Manufacturing Leaders Accelerate Green Transition Capital Expenditure",
             "summary": "Conglomerates expand investment in renewable power, domestic solar value chains, and next-generation refining integration to lower input costs and broaden EBITDA margins.",
+            "url": "https://www.financialexpress.com/market/energy-manufacturing-leaders-accelerate-green-transition-capex/",
             "sentiment_score": 0.28,
             "sentiment_label": "positive",
             "symbols": ["RELIANCE"],
@@ -430,6 +433,7 @@ def seed_macro_and_news_data(db: Session) -> Dict[str, int]:
         {
             "headline": "Pharma & FMCG Sectors Provide Steady Earnings Visibility Amid Global Macro Crosswinds",
             "summary": "Defensive consumer goods and healthcare leaders show pricing power and volume recovery, offering portfolio stabilization for retail wealth portfolios.",
+            "url": "https://www.financialexpress.com/market/pharma-fmcg-sectors-provide-steady-earnings-visibility/",
             "sentiment_score": 0.22,
             "sentiment_label": "neutral",
             "symbols": ["SUNPHARMA", "HINDUNILVR"],
@@ -438,17 +442,24 @@ def seed_macro_and_news_data(db: Session) -> Dict[str, int]:
 
     seeded_news = 0
     for n in news_items:
+        art_url = n.get("url", f"https://www.financialexpress.com/market/{abs(hash(n['headline'])) % 1000000}/")
         existing_art = (
             db.query(MarketNewsArticle)
-            .filter(MarketNewsArticle.headline == n["headline"])
+            .filter(
+                (MarketNewsArticle.headline == n["headline"])
+                | (
+                    (MarketNewsArticle.data_source_id == news_ds.data_source_id)
+                    & (MarketNewsArticle.article_url == art_url)
+                )
+            )
             .first()
         )
         if not existing_art:
             art = MarketNewsArticle(
                 news_article_id=uuid.uuid4(),
                 data_source_id=news_ds.data_source_id,
-                provider_article_id=f"art-{hash(n['headline']) % 1000000}",
-                article_url="https://www.financialexpress.com/market/",
+                provider_article_id=f"art-{abs(hash(n['headline'])) % 1000000}",
+                article_url=art_url,
                 headline=n["headline"],
                 summary=n["summary"],
                 language_code="en-IN",
@@ -457,26 +468,31 @@ def seed_macro_and_news_data(db: Session) -> Dict[str, int]:
                 sentiment_score=Decimal(str(n["sentiment_score"])),
                 sentiment_label=n["sentiment_label"],
             )
-            db.add(art)
-            db.flush()
-            seeded_news += 1
+            try:
+                db.add(art)
+                db.flush()
+                seeded_news += 1
 
-            # Link to securities
-            for sym in n.get("symbols", []):
-                sec = (
-                    db.query(Security)
-                    .join(InstrumentListing, Security.security_id == InstrumentListing.security_id)
-                    .filter(InstrumentListing.symbol == sym)
-                    .first()
-                )
-                if sec:
-                    link = NewsArticleSecurity(
-                        news_article_id=art.news_article_id,
-                        security_id=sec.security_id,
-                        relevance_score=Decimal("0.85"),
-                        link_method="symbol_match",
+                # Link to securities
+                for sym in n.get("symbols", []):
+                    sec = (
+                        db.query(Security)
+                        .join(InstrumentListing, Security.security_id == InstrumentListing.security_id)
+                        .filter(InstrumentListing.symbol == sym)
+                        .first()
                     )
-                    db.add(link)
+                    if sec:
+                        link = NewsArticleSecurity(
+                            news_article_id=art.news_article_id,
+                            security_id=sec.security_id,
+                            relevance_score=Decimal("0.85"),
+                            link_method="symbol_match",
+                        )
+                        db.add(link)
+                db.flush()
+            except Exception:
+                db.rollback()
+                continue
 
     db.commit()
     return {"seeded_indicators": seeded_indicators, "seeded_news": seeded_news}
