@@ -357,7 +357,8 @@ if ($BackendReady) {
 # [10/10] Start Frontend Server
 Write-Host "`n[10/10] Starting Lucid Frontend (Next.js on Port 3000)..." -ForegroundColor White
 $FrontendLog = Join-Path $LogDir "frontend.log"
-$FrontendProcess = Start-Process -FilePath "npm.cmd" -ArgumentList "run dev" -WorkingDirectory $FrontendDir -RedirectStandardOutput $FrontendLog -RedirectStandardError $FrontendLog -PassThru
+$npmCmd = if (Get-Command npm.cmd -ErrorAction SilentlyContinue) { (Get-Command npm.cmd).Source } elseif (Get-Command npm -ErrorAction SilentlyContinue) { (Get-Command npm).Source } else { "npm.cmd" }
+$FrontendProcess = Start-Process -FilePath $npmCmd -ArgumentList "run dev" -WorkingDirectory $FrontendDir -RedirectStandardOutput $FrontendLog -RedirectStandardError $FrontendLog -PassThru
 $FrontendProcess.Id | Out-File -FilePath $FrontendPidFile -Encoding ascii
 
 Write-Host "   Waiting for Frontend readiness (http://localhost:3000)..."

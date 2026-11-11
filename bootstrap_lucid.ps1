@@ -124,7 +124,7 @@ if (-not $hasGit -and (-not (Test-Path (Join-Path $TargetDir "start_lucid.ps1"))
         
         $innerFolder = Join-Path $extractDir "Lucid-main"
         if (Test-Path $innerFolder) {
-            Copy-Item -Path "$innerFolder\*" -Destination $TargetDir -Recurse -Force
+            Get-ChildItem -Path $innerFolder -Force | Copy-Item -Destination $TargetDir -Recurse -Force
         }
         Remove-Item -Path $zipDest -Force -ErrorAction SilentlyContinue
         Remove-Item -Path $extractDir -Recurse -Force -ErrorAction SilentlyContinue
