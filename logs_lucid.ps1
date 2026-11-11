@@ -36,6 +36,8 @@ switch ($Target.ToLower()) {
     "clear" {
         Clear-Content -Path $BackendLog -ErrorAction SilentlyContinue
         Clear-Content -Path $FrontendLog -ErrorAction SilentlyContinue
+        Clear-Content -Path (Join-Path $LogDir "backend_err.log") -ErrorAction SilentlyContinue
+        Clear-Content -Path (Join-Path $LogDir "frontend_err.log") -ErrorAction SilentlyContinue
         Write-Host "[OK] All log files cleared." -ForegroundColor Green
     }
     default {

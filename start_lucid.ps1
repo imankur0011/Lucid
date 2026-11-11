@@ -351,7 +351,8 @@ Write-Host "   [OK] Ports 8000 and 3000 are clear." -ForegroundColor Green
 # [9/10] Start Backend Server
 Write-Host "`n[9/10] Starting Lucid Backend (FastAPI on Port 8000)..." -ForegroundColor White
 $BackendLog = Join-Path $LogDir "backend.log"
-$BackendProcess = Start-Process -FilePath $VenvPy -ArgumentList "-m uvicorn backend.main:app --host 0.0.0.0 --port 8000" -WorkingDirectory $RootDir -RedirectStandardOutput $BackendLog -RedirectStandardError $BackendLog -PassThru
+$BackendErrLog = Join-Path $LogDir "backend_err.log"
+$BackendProcess = Start-Process -FilePath $VenvPy -ArgumentList "-m uvicorn backend.main:app --host 0.0.0.0 --port 8000" -WorkingDirectory $RootDir -RedirectStandardOutput $BackendLog -RedirectStandardError $BackendErrLog -PassThru
 $BackendProcess.Id | Out-File -FilePath $BackendPidFile -Encoding ascii
 
 Write-Host "   Waiting for Backend API readiness (http://localhost:8000/api/health)..."
@@ -378,8 +379,9 @@ if ($BackendReady) {
 # [10/10] Start Frontend Server
 Write-Host "`n[10/10] Starting Lucid Frontend (Next.js on Port 3000)..." -ForegroundColor White
 $FrontendLog = Join-Path $LogDir "frontend.log"
+$FrontendErrLog = Join-Path $LogDir "frontend_err.log"
 $npmCmd = if (Get-Command npm.cmd -ErrorAction SilentlyContinue) { (Get-Command npm.cmd).Source } elseif (Get-Command npm -ErrorAction SilentlyContinue) { (Get-Command npm).Source } else { "npm.cmd" }
-$FrontendProcess = Start-Process -FilePath $npmCmd -ArgumentList "run dev" -WorkingDirectory $FrontendDir -RedirectStandardOutput $FrontendLog -RedirectStandardError $FrontendLog -PassThru
+$FrontendProcess = Start-Process -FilePath $npmCmd -ArgumentList "run dev" -WorkingDirectory $FrontendDir -RedirectStandardOutput $FrontendLog -RedirectStandardError $FrontendErrLog -PassThru
 $FrontendProcess.Id | Out-File -FilePath $FrontendPidFile -Encoding ascii
 
 Write-Host "   Waiting for Frontend readiness (http://localhost:3000)..."
