@@ -353,7 +353,9 @@ Write-Host "`n[9/10] Starting Lucid Backend (FastAPI on Port 8000)..." -Foregrou
 $BackendLog = Join-Path $LogDir "backend.log"
 $BackendErrLog = Join-Path $LogDir "backend_err.log"
 $BackendProcess = Start-Process -FilePath $VenvPy -ArgumentList "-m uvicorn backend.main:app --host 0.0.0.0 --port 8000" -WorkingDirectory $RootDir -RedirectStandardOutput $BackendLog -RedirectStandardError $BackendErrLog -PassThru
-$BackendProcess.Id | Out-File -FilePath $BackendPidFile -Encoding ascii
+if ($BackendProcess -and $BackendProcess.Id) {
+    $BackendProcess.Id | Out-File -FilePath $BackendPidFile -Encoding ascii
+}
 
 Write-Host "   Waiting for Backend API readiness (http://localhost:8000/api/health)..."
 $BackendReady = $false
@@ -371,8 +373,10 @@ for ($i = 0; $i -lt 30; $i++) {
 if ($BackendReady) {
     Write-Host "   [OK] Backend API is healthy and listening on http://localhost:8000." -ForegroundColor Green
 } else {
-    Write-Host "   [FAIL] Backend failed to pass health check. View logs\backend.log." -ForegroundColor Red
-    Stop-Process -Id $BackendProcess.Id -Force -ErrorAction SilentlyContinue
+    Write-Host "   [FAIL] Backend failed to pass health check. View logs\backend.log and logs\backend_err.log." -ForegroundColor Red
+    if ($BackendProcess -and $BackendProcess.Id) {
+        Stop-Process -Id $BackendProcess.Id -Force -ErrorAction SilentlyContinue
+    }
     exit 1
 }
 
@@ -382,7 +386,9 @@ $FrontendLog = Join-Path $LogDir "frontend.log"
 $FrontendErrLog = Join-Path $LogDir "frontend_err.log"
 $npmCmd = if (Get-Command npm.cmd -ErrorAction SilentlyContinue) { (Get-Command npm.cmd).Source } elseif (Get-Command npm -ErrorAction SilentlyContinue) { (Get-Command npm).Source } else { "npm.cmd" }
 $FrontendProcess = Start-Process -FilePath $npmCmd -ArgumentList "run dev" -WorkingDirectory $FrontendDir -RedirectStandardOutput $FrontendLog -RedirectStandardError $FrontendErrLog -PassThru
-$FrontendProcess.Id | Out-File -FilePath $FrontendPidFile -Encoding ascii
+if ($FrontendProcess -and $FrontendProcess.Id) {
+    $FrontendProcess.Id | Out-File -FilePath $FrontendPidFile -Encoding ascii
+}
 
 Write-Host "   Waiting for Frontend readiness (http://localhost:3000)..."
 $FrontendReady = $false
@@ -400,9 +406,13 @@ for ($i = 0; $i -lt 30; $i++) {
 if ($FrontendReady) {
     Write-Host "   [OK] Frontend is ready and listening on http://localhost:3000." -ForegroundColor Green
 } else {
-    Write-Host "   [FAIL] Frontend failed to pass readiness check. View logs\frontend.log." -ForegroundColor Red
-    Stop-Process -Id $FrontendProcess.Id -Force -ErrorAction SilentlyContinue
-    Stop-Process -Id $BackendProcess.Id -Force -ErrorAction SilentlyContinue
+    Write-Host "   [FAIL] Frontend failed to pass readiness check. View logs\frontend.log and logs\frontend_err.log." -ForegroundColor Red
+    if ($FrontendProcess -and $FrontendProcess.Id) {
+        Stop-Process -Id $FrontendProcess.Id -Force -ErrorAction SilentlyContinue
+    }
+    if ($BackendProcess -and $BackendProcess.Id) {
+        Stop-Process -Id $BackendProcess.Id -Force -ErrorAction SilentlyContinue
+    }
     exit 1
 }
 
