@@ -1,5 +1,5 @@
 # ==============================================================================
-# Lucid — Zero-Prerequisite One-Command Bootstrap Installer (Windows PowerShell)
+# Lucid - Zero-Prerequisite One-Command Bootstrap Installer (Windows PowerShell)
 # ==============================================================================
 # Run this SINGLE command in Windows PowerShell (even if Git is NOT installed):
 #
@@ -17,13 +17,13 @@ $ErrorActionPreference = "Continue"
 
 Write-Host ""
 Write-Host "======================================================================" -ForegroundColor Cyan
-Write-Host "        🌟 LUCID — ONE-COMMAND BOOTSTRAP INSTALLER (WINDOWS)          " -ForegroundColor Cyan
+Write-Host "        * LUCID - ONE-COMMAND BOOTSTRAP INSTALLER (WINDOWS)          " -ForegroundColor Cyan
 Write-Host "  Automated Zero-Prerequisite Setup for Indian Retail Equities Platform" -ForegroundColor Cyan
 Write-Host "======================================================================" -ForegroundColor Cyan
 Write-Host ""
 
-# [1/6] System & Connectivity Inspection
-Write-Host "[1/6] Inspecting System & Internet Connectivity..." -ForegroundColor White
+# [1/6] System and Connectivity Inspection
+Write-Host "[1/6] Inspecting System and Internet Connectivity..." -ForegroundColor White
 $OS = [System.Environment]::OSVersion
 $Arch = if ([System.Environment]::Is64BitOperatingSystem) { "x64" } else { "x86" }
 Write-Host "   Operating System : Windows ($OS) - $Arch" -ForegroundColor Green
@@ -34,7 +34,7 @@ try {
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls13
 } catch {}
 
-Write-Host "   Internet Access  : ✓ Connected" -ForegroundColor Green
+Write-Host "   Internet Access  : [OK] Connected" -ForegroundColor Green
 
 # Function to refresh environment PATH in the current PowerShell process
 function Update-SessionPath {
@@ -72,12 +72,12 @@ Update-SessionPath
 # Check if winget is available
 $hasWinget = [bool](Get-Command winget -ErrorAction SilentlyContinue)
 if ($hasWinget) {
-    Write-Host "   Windows Package Manager (winget) : ✓ Available" -ForegroundColor Green
+    Write-Host "   Windows Package Manager (winget) : [OK] Available" -ForegroundColor Green
 } else {
-    Write-Host "   Windows Package Manager (winget) : ○ Not Available (Falling back to direct HTTPS downloads)" -ForegroundColor Yellow
+    Write-Host "   Windows Package Manager (winget) : [-] Not Available (Falling back to direct HTTPS downloads)" -ForegroundColor Yellow
 }
 
-# [2/6] Ensure Target Directory & Obtain Lucid Repository
+# [2/6] Ensure Target Directory and Obtain Lucid Repository
 Write-Host "`n[2/6] Acquiring Lucid Application Repository..." -ForegroundColor White
 
 # Determine target directory
@@ -89,6 +89,17 @@ if ((Test-Path (Join-Path (Get-Location) "backend\requirements.txt")) -and (Test
     Write-Host "   Running inside existing Lucid repository: $TargetDir" -ForegroundColor Green
 } elseif (Test-Path $TargetDir) {
     Write-Host "   Found existing Lucid installation at: $TargetDir" -ForegroundColor Cyan
+    if (Test-Path (Join-Path $TargetDir ".git")) {
+        Write-Host "   Updating repository via git pull..." -ForegroundColor Cyan
+        try { git -C $TargetDir pull origin main | Out-Null } catch {}
+    }
+    Write-Host "   Updating launcher scripts from GitHub..." -ForegroundColor Cyan
+    try {
+        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/imankur0011/Lucid/main/start_lucid.ps1" -OutFile (Join-Path $TargetDir "start_lucid.ps1") -UseBasicParsing
+        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/imankur0011/Lucid/main/status_lucid.ps1" -OutFile (Join-Path $TargetDir "status_lucid.ps1") -UseBasicParsing
+        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/imankur0011/Lucid/main/stop_lucid.ps1" -OutFile (Join-Path $TargetDir "stop_lucid.ps1") -UseBasicParsing
+        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/imankur0011/Lucid/main/logs_lucid.ps1" -OutFile (Join-Path $TargetDir "logs_lucid.ps1") -UseBasicParsing
+    } catch {}
 } else {
     Write-Host "   Target Installation Directory: $TargetDir" -ForegroundColor Cyan
     New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
@@ -98,7 +109,7 @@ $hasGit = [bool](Get-Command git -ErrorAction SilentlyContinue)
 
 # If Git is missing, try to install Git via winget OR download ZIP
 if (-not $hasGit -and (-not (Test-Path (Join-Path $TargetDir "start_lucid.ps1")))) {
-    Write-Host "   ℹ️ Git is not installed on this system." -ForegroundColor Yellow
+    Write-Host "   [INFO] Git is not installed on this system." -ForegroundColor Yellow
     if ($hasWinget) {
         Write-Host "   Installing Git for Windows via winget..." -ForegroundColor Cyan
         try {
@@ -127,7 +138,7 @@ if (-not $hasGit -and (-not (Test-Path (Join-Path $TargetDir "start_lucid.ps1"))
         }
         Remove-Item -Path $zipDest -Force -ErrorAction SilentlyContinue
         Remove-Item -Path $extractDir -Recurse -Force -ErrorAction SilentlyContinue
-        Write-Host "   ✅ Lucid repository downloaded and extracted successfully." -ForegroundColor Green
+        Write-Host "   [OK] Lucid repository downloaded and extracted successfully." -ForegroundColor Green
     }
 }
 
@@ -135,10 +146,10 @@ if (-not $hasGit -and (-not (Test-Path (Join-Path $TargetDir "start_lucid.ps1"))
 if ($hasGit -and (-not (Test-Path (Join-Path $TargetDir "start_lucid.ps1")))) {
     Write-Host "   Cloning Lucid repository via Git..." -ForegroundColor Cyan
     git clone https://github.com/imankur0011/Lucid.git "$TargetDir"
-    Write-Host "   ✅ Repository cloned successfully." -ForegroundColor Green
+    Write-Host "   [OK] Repository cloned successfully." -ForegroundColor Green
 }
 
-# [3/6] Check & Auto-Install Python 3.11+
+# [3/6] Check and Auto-Install Python 3.11+
 Write-Host "`n[3/6] Verifying Python Runtime..." -ForegroundColor White
 Update-SessionPath
 
@@ -183,16 +194,16 @@ if (-not $pyVer) {
     
     $pyVer = Test-PythonVersion
     if ($pyVer) {
-        Write-Host "   ✅ Python $pyVer installed and verified." -ForegroundColor Green
+        Write-Host "   [OK] Python $pyVer installed and verified." -ForegroundColor Green
     } else {
-        Write-Host "   ⚠️ Could not automatically verify Python in PATH. Please install Python 3.11 from python.org with 'Add to PATH' checked." -ForegroundColor Yellow
+        Write-Host "   [WARN] Could not automatically verify Python in PATH. Please install Python 3.11 from python.org with 'Add to PATH' checked." -ForegroundColor Yellow
     }
 } else {
-    Write-Host "   Python Runtime : ✓ Installed (Python $pyVer)" -ForegroundColor Green
+    Write-Host "   Python Runtime : [OK] Installed (Python $pyVer)" -ForegroundColor Green
 }
 
-# [4/6] Check & Auto-Install Node.js & npm
-Write-Host "`n[4/6] Verifying Node.js & npm..." -ForegroundColor White
+# [4/6] Check and Auto-Install Node.js and npm
+Write-Host "`n[4/6] Verifying Node.js and npm..." -ForegroundColor White
 Update-SessionPath
 
 function Test-NodeVersion {
@@ -235,15 +246,15 @@ if (-not $nodeVer) {
     
     $nodeVer = Test-NodeVersion
     if ($nodeVer) {
-        Write-Host "   ✅ Node.js $nodeVer installed and verified." -ForegroundColor Green
+        Write-Host "   [OK] Node.js $nodeVer installed and verified." -ForegroundColor Green
     } else {
-        Write-Host "   ⚠️ Could not automatically verify Node.js in PATH. Please install Node.js from nodejs.org." -ForegroundColor Yellow
+        Write-Host "   [WARN] Could not automatically verify Node.js in PATH. Please install Node.js from nodejs.org." -ForegroundColor Yellow
     }
 } else {
-    Write-Host "   Node.js Runtime : ✓ Installed (Node $nodeVer)" -ForegroundColor Green
+    Write-Host "   Node.js Runtime : [OK] Installed (Node $nodeVer)" -ForegroundColor Green
 }
 
-# [5/6] Check & Auto-Install PostgreSQL 16
+# [5/6] Check and Auto-Install PostgreSQL 16
 Write-Host "`n[5/6] Verifying PostgreSQL 16..." -ForegroundColor White
 Update-SessionPath
 
@@ -251,7 +262,7 @@ $pgService = Get-Service -Name "postgresql*" -ErrorAction SilentlyContinue
 $hasPsql = [bool](Get-Command psql -ErrorAction SilentlyContinue)
 
 if ($pgService) {
-    Write-Host "   PostgreSQL Service : ✓ Detected ($($pgService.Name) - Status: $($pgService.Status))" -ForegroundColor Green
+    Write-Host "   PostgreSQL Service : [OK] Detected ($($pgService.Name) - Status: $($pgService.Status))" -ForegroundColor Green
     if ($pgService.Status -ne "Running") {
         Write-Host "   Starting PostgreSQL service..." -ForegroundColor Cyan
         try { Start-Service $pgService.Name } catch {}
@@ -275,6 +286,6 @@ if (Test-Path $LauncherScript) {
     Write-Host "   Executing: $LauncherScript`n" -ForegroundColor Green
     powershell -ExecutionPolicy Bypass -File $LauncherScript
 } else {
-    Write-Host "❌ Launcher script not found at $LauncherScript." -ForegroundColor Red
+    Write-Host "[FAIL] Launcher script not found at $LauncherScript." -ForegroundColor Red
     exit 1
 }

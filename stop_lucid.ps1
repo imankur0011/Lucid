@@ -1,5 +1,5 @@
 # ==============================================================================
-# Lucid — Service Stop Script (Windows PowerShell)
+# Lucid - Service Stop Script (Windows PowerShell)
 # Gracefully terminates Lucid Backend and Frontend services on Windows.
 # ==============================================================================
 # Usage:
@@ -26,7 +26,7 @@ function Stop-ByPidFile {
                 if ($proc) {
                     Write-Host "   Stopping $serviceName (PID: $procId)..."
                     Stop-Process -Id [int]$procId -Force -ErrorAction SilentlyContinue
-                    Write-Host "   ✓ $serviceName stopped." -ForegroundColor Green
+                    Write-Host "   [OK] $serviceName stopped." -ForegroundColor Green
                     $script:stoppedAnything = $true
                 }
             } catch {}
@@ -44,7 +44,7 @@ function Stop-ByPort {
             if ($pId -gt 0) {
                 Write-Host "   Releasing port $port (PID: $pId - $serviceName)..."
                 Stop-Process -Id $pId -Force -ErrorAction SilentlyContinue
-                Write-Host "   ✓ Port $port released." -ForegroundColor Green
+                Write-Host "   [OK] Port $port released." -ForegroundColor Green
                 $script:stoppedAnything = $true
             }
         }
@@ -61,9 +61,9 @@ Stop-ByPort "Next.js Frontend" 3000
 
 Write-Host ""
 if ($stoppedAnything) {
-    Write-Host "✅ All Lucid application services have been stopped successfully." -ForegroundColor Green
+    Write-Host "[OK] All Lucid application services have been stopped successfully." -ForegroundColor Green
 } else {
-    Write-Host "ℹ️ No running Lucid services were found on ports 8000 or 3000." -ForegroundColor Yellow
+    Write-Host "[INFO] No running Lucid services were found on ports 8000 or 3000." -ForegroundColor Yellow
 }
 
 Write-Host "Note: PostgreSQL database server remains untouched and running." -ForegroundColor Cyan

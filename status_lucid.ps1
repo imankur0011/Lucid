@@ -1,5 +1,5 @@
 # ==============================================================================
-# Lucid — System & Service Status Inspector (Windows PowerShell)
+# Lucid - System and Service Status Inspector (Windows PowerShell)
 # ==============================================================================
 # Usage:
 #   powershell -ExecutionPolicy Bypass -File .\status_lucid.ps1
@@ -13,7 +13,7 @@ Write-Host "                    LUCID SYSTEM STATUS INSPECTOR                   
 Write-Host "======================================================================" -ForegroundColor Cyan
 
 # 1. System Environment
-Write-Host "`n[1] System & Runtime Environment:" -ForegroundColor White
+Write-Host "`n[1] System and Runtime Environment:" -ForegroundColor White
 $OS = [System.Environment]::OSVersion
 Write-Host "   OS / Arch        : Windows ($OS)"
 
@@ -52,14 +52,14 @@ try {
     $healthResp = Invoke-RestMethod -Uri "http://localhost:8000/api/health" -TimeoutSec 2 -ErrorAction SilentlyContinue
     if ($healthResp) {
         $backendRunning = $true
-        Write-Host "   Status           : ● RUNNING & HEALTHY" -ForegroundColor Green
+        Write-Host "   Status           : [*] RUNNING and HEALTHY" -ForegroundColor Green
         Write-Host "   URL              : http://localhost:8000"
         Write-Host "   API Status       : $($healthResp.api)" -ForegroundColor Cyan
     }
 } catch {}
 
 if (-not $backendRunning) {
-    Write-Host "   Status           : ○ STOPPED (Port 8000 is free)" -ForegroundColor Red
+    Write-Host "   Status           : [-] STOPPED (Port 8000 is free)" -ForegroundColor Red
 }
 
 # 3. Frontend Web Application Status
@@ -69,18 +69,18 @@ try {
     $webResp = Invoke-WebRequest -Uri "http://localhost:3000" -TimeoutSec 2 -ErrorAction SilentlyContinue
     if ($webResp.StatusCode -eq 200 -or $webResp.StatusCode -eq 304) {
         $frontendRunning = $true
-        Write-Host "   Status           : ● RUNNING & READY" -ForegroundColor Green
+        Write-Host "   Status           : [*] RUNNING and READY" -ForegroundColor Green
         Write-Host "   URL              : http://localhost:3000"
         Write-Host "   HTTP Status      : $($webResp.StatusCode) OK" -ForegroundColor Green
     }
 } catch {}
 
 if (-not $frontendRunning) {
-    Write-Host "   Status           : ○ STOPPED (Port 3000 is free)" -ForegroundColor Red
+    Write-Host "   Status           : [-] STOPPED (Port 3000 is free)" -ForegroundColor Red
 }
 
 # 4. PostgreSQL Database Inspection
-Write-Host "`n[4] PostgreSQL Database Status & Record Counts:" -ForegroundColor White
+Write-Host "`n[4] PostgreSQL Database Status and Record Counts:" -ForegroundColor White
 $dbOk = $false
 if (Test-Path (Join-Path $RootDir ".env")) {
     $pyCmd = if (Test-Path $venvPy) { $venvPy } else { "python" }
@@ -104,26 +104,26 @@ except Exception as e:
     if ($dbOutput -like "OK*") {
         $dbOk = $true
         $parts = $dbOutput.Split('|')
-        Write-Host "   Connection       : ✓ CONNECTED" -ForegroundColor Green
+        Write-Host "   Connection       : [OK] CONNECTED" -ForegroundColor Green
         Write-Host "   Schema Tables    : $($parts[1]) tables registered" -ForegroundColor Green
         Write-Host "   Exchange Stocks  : $($parts[2]) securities stored" -ForegroundColor Green
         Write-Host "   User Accounts    : $($parts[3]) user account(s)" -ForegroundColor Green
     } else {
-        Write-Host "   Connection       : ✗ FAILED" -ForegroundColor Red
+        Write-Host "   Connection       : [FAIL] FAILED" -ForegroundColor Red
     }
 } else {
-    Write-Host "   Configuration    : ✗ .env file missing" -ForegroundColor Red
+    Write-Host "   Configuration    : [FAIL] .env file missing" -ForegroundColor Red
 }
 
 # 5. Overall Status
 Write-Host "`n======================================================================" -ForegroundColor White
 if ($backendRunning -and $frontendRunning -and $dbOk) {
-    Write-Host "🟢 OVERALL STATUS: ALL SYSTEMS OPERATIONAL" -ForegroundColor Green
+    Write-Host "[OK] OVERALL STATUS: ALL SYSTEMS OPERATIONAL" -ForegroundColor Green
     Write-Host "   Lucid is fully running at http://localhost:3000" -ForegroundColor Cyan
 } elseif ($backendRunning -or $frontendRunning) {
-    Write-Host "🟡 OVERALL STATUS: PARTIALLY RUNNING" -ForegroundColor Yellow
+    Write-Host "[WARN] OVERALL STATUS: PARTIALLY RUNNING" -ForegroundColor Yellow
 } else {
-    Write-Host "🔴 OVERALL STATUS: ALL SERVICES STOPPED" -ForegroundColor Red
+    Write-Host "[STOPPED] OVERALL STATUS: ALL SERVICES STOPPED" -ForegroundColor Red
     Write-Host "   Start Lucid using: powershell .\start_lucid.ps1"
 }
 Write-Host "======================================================================" -ForegroundColor White

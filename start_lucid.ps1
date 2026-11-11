@@ -1,5 +1,5 @@
 # ==============================================================================
-# Lucid — One-Command Installation & Application Launcher (Windows PowerShell)
+# Lucid - One-Command Installation and Application Launcher (Windows PowerShell)
 # ==============================================================================
 # Usage:
 #   powershell -ExecutionPolicy Bypass -File .\start_lucid.ps1
@@ -48,13 +48,13 @@ function Update-SessionPath {
 Update-SessionPath
 
 Write-Host "======================================================================" -ForegroundColor Cyan
-Write-Host "          LUCID — ONE-COMMAND INSTALLATION & LAUNCHER (WINDOWS)        " -ForegroundColor Cyan
+Write-Host "          LUCID - ONE-COMMAND INSTALLATION and LAUNCHER (WINDOWS)        " -ForegroundColor Cyan
 Write-Host "  Capturing Indian Mutual Fund Expertise via Agentic Multi-Agent AI    " -ForegroundColor Cyan
 Write-Host "======================================================================" -ForegroundColor Cyan
 Write-Host ""
 
 # [1/10] Operating System Detection
-Write-Host "[1/10] Detecting Operating System & Environment..." -ForegroundColor White
+Write-Host "[1/10] Detecting Operating System and Environment..." -ForegroundColor White
 $OS = [System.Environment]::OSVersion
 $Arch = if ([System.Environment]::Is64BitOperatingSystem) { "x64" } else { "x86" }
 Write-Host "   Operating System : Windows ($OS) - $Arch" -ForegroundColor Green
@@ -62,18 +62,18 @@ Write-Host "   Project Root     : $RootDir" -ForegroundColor Blue
 
 $hasWinget = [bool](Get-Command winget -ErrorAction SilentlyContinue)
 
-# [2/10] Checking & Auto-Installing Required System Tools
+# [2/10] Checking and Auto-Installing Required System Tools
 Write-Host "`n[2/10] Checking Required System Tools..." -ForegroundColor White
 
 function Test-CommandAvailable {
     param([string]$cmd, [string]$name)
     if (Get-Command $cmd -ErrorAction SilentlyContinue) {
         Write-Host "   $name : " -NoNewline
-        Write-Host "✓ Installed" -ForegroundColor Green
+        Write-Host "[OK] Installed" -ForegroundColor Green
         return $true
     } else {
         Write-Host "   $name : " -NoNewline
-        Write-Host "○ Missing" -ForegroundColor Yellow
+        Write-Host "[-] Missing" -ForegroundColor Yellow
         return $false
     }
 }
@@ -143,7 +143,7 @@ if ($hasPython) {
         $PyMajor = [int]($PyVer.Split('.')[0])
         $PyMinor = [int]($PyVer.Split('.')[1])
         if ($PyMajor -lt 3 -or ($PyMajor -eq 3 -and $PyMinor -lt 11)) {
-            Write-Host "   ⚠️ Python $PyVer detected. Lucid recommends Python 3.11+." -ForegroundColor Yellow
+            Write-Host "   [WARN] Python $PyVer detected. Lucid recommends Python 3.11+." -ForegroundColor Yellow
         } else {
             Write-Host "   Python Version Verified : $PyVer (>= 3.11)" -ForegroundColor Green
         }
@@ -157,7 +157,7 @@ if (-not $hasCode) {
     if (Test-Path (Join-Path $vscodePath "code.cmd")) {
         $env:Path = "$vscodePath;$env:Path"
         $hasCode = $true
-        Write-Host "   Visual Studio Code CLI : ✓ Found in AppData" -ForegroundColor Green
+        Write-Host "   Visual Studio Code CLI : [OK] Found in AppData" -ForegroundColor Green
     } elseif ($hasWinget) {
         Write-Host "   Installing Visual Studio Code via winget..." -ForegroundColor Cyan
         try {
@@ -205,9 +205,9 @@ if (-not (Test-Path $VenvPy)) {
     Write-Host "   Creating new virtual environment at .venv..."
     python -m venv $VenvDir
     & $VenvPip install --upgrade pip setuptools wheel | Out-Null
-    Write-Host "   ✅ Virtual environment created." -ForegroundColor Green
+    Write-Host "   [OK] Virtual environment created." -ForegroundColor Green
 } else {
-    Write-Host "   ✅ Reusing existing virtual environment at .venv." -ForegroundColor Green
+    Write-Host "   [OK] Reusing existing virtual environment at .venv." -ForegroundColor Green
 }
 
 $CurrentHash = (Get-FileHash -Path $ReqFile -Algorithm MD5).Hash
@@ -220,9 +220,9 @@ if ($CurrentHash.Trim() -ne $PrevHash.Trim()) {
     Write-Host "   Installing backend dependencies from backend\requirements.txt..."
     & $VenvPip install -r $ReqFile > (Join-Path $LogDir "pip_install.log") 2>&1
     $CurrentHash | Out-File -FilePath $HashFile -Encoding utf8
-    Write-Host "   ✅ Backend dependencies installed." -ForegroundColor Green
+    Write-Host "   [OK] Backend dependencies installed." -ForegroundColor Green
 } else {
-    Write-Host "   ✅ Backend dependencies up to date." -ForegroundColor Green
+    Write-Host "   [OK] Backend dependencies up to date." -ForegroundColor Green
 }
 
 # [4/10] Prepare Frontend Dependencies
@@ -231,13 +231,13 @@ $FrontendDir = Join-Path $RootDir "frontend"
 $NodeModules = Join-Path $FrontendDir "node_modules"
 
 if (-not (Test-Path $NodeModules)) {
-    Write-Host "   Installing frontend dependencies (Next.js & React 19)..."
+    Write-Host "   Installing frontend dependencies (Next.js and React 19)..."
     Push-Location $FrontendDir
     npm install --silent > (Join-Path $LogDir "npm_install.log") 2>&1
     Pop-Location
-    Write-Host "   ✅ Frontend dependencies installed." -ForegroundColor Green
+    Write-Host "   [OK] Frontend dependencies installed." -ForegroundColor Green
 } else {
-    Write-Host "   ✅ Frontend dependencies up to date." -ForegroundColor Green
+    Write-Host "   [OK] Frontend dependencies up to date." -ForegroundColor Green
 }
 
 # [5/10] Configure Environment Variables (.env)
@@ -254,15 +254,15 @@ if (-not (Test-Path $EnvFile)) {
     $Content = $Content -replace "JWT_SECRET_KEY=.*", "JWT_SECRET_KEY=$JwtSecret"
     $Content = $Content -replace "APP_SECRET_KEY=.*", "APP_SECRET_KEY=$AppSecret"
     $Content | Set-Content $EnvFile
-    Write-Host "   ✅ Created .env with cryptographically secure random secrets." -ForegroundColor Green
+    Write-Host "   [OK] Created .env with cryptographically secure random secrets." -ForegroundColor Green
 } else {
-    Write-Host "   ✅ Preserving existing .env configuration." -ForegroundColor Green
+    Write-Host "   [OK] Preserving existing .env configuration." -ForegroundColor Green
 }
 
 # Check for Gemini API Key with timeout
 $Content = Get-Content $EnvFile -Raw
 if ($Content -match "GEMINI_API_KEY=(.*)" -and ($matches[1].Trim() -eq "" -or $matches[1] -like "*your_gemini*")) {
-    Write-Host "`n🔑 Optional Google Gemini API Key:" -ForegroundColor Yellow
+    Write-Host "`n[KEY] Optional Google Gemini API Key:" -ForegroundColor Yellow
     Write-Host "   Lucid uses Google Gemini 3.8 Flash for qualitative agent research." -ForegroundColor Gray
     Write-Host "   (If skipped, Lucid runs with deterministic rule-based models)." -ForegroundColor Gray
     Write-Host "   Press Enter or wait 30 seconds to continue with fallback..." -ForegroundColor Cyan
@@ -275,9 +275,9 @@ if ($Content -match "GEMINI_API_KEY=(.*)" -and ($matches[1].Trim() -eq "" -or $m
     if ($KeyInput -and $KeyInput.Trim() -ne "") {
         $Content = $Content -replace "GEMINI_API_KEY=.*", "GEMINI_API_KEY=$($KeyInput.Trim())"
         $Content | Set-Content $EnvFile
-        Write-Host "   ✅ Gemini API key configured." -ForegroundColor Green
+        Write-Host "   [OK] Gemini API key configured." -ForegroundColor Green
     } else {
-        Write-Host "   ℹ️ Continuing with deterministic rule-based models." -ForegroundColor Cyan
+        Write-Host "   [INFO] Continuing with deterministic rule-based models." -ForegroundColor Cyan
     }
 }
 
@@ -291,23 +291,23 @@ if ($pgService) {
         Write-Host "   Starting PostgreSQL service..." -ForegroundColor Yellow
         try { Start-Service $pgService.Name } catch {}
     }
-    Write-Host "   ✅ PostgreSQL service is active." -ForegroundColor Green
+    Write-Host "   [OK] PostgreSQL service is active." -ForegroundColor Green
 } else {
-    Write-Host "   ℹ️ PostgreSQL service not registered as Windows Service. Checking port connectivity..." -ForegroundColor Cyan
+    Write-Host "   [INFO] PostgreSQL service not registered as Windows Service. Checking port connectivity..." -ForegroundColor Cyan
 }
 
-# [7/10] Initialize Database, Migrations & Seed Data
-Write-Host "`n[7/10] Initializing Database, Migrations & Reference Data..." -ForegroundColor White
+# [7/10] Initialize Database, Migrations and Seed Data
+Write-Host "`n[7/10] Initializing Database, Migrations and Reference Data..." -ForegroundColor White
 $env:PYTHONPATH = $RootDir
 $InitDbScript = Join-Path $RootDir "scripts\init_database.py"
 & $VenvPy $InitDbScript
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "❌ Database initialization failed. Check PostgreSQL connection in .env." -ForegroundColor Red
+    Write-Host "[FAIL] Database initialization failed. Check PostgreSQL connection in .env." -ForegroundColor Red
     exit 1
 }
 
-# [8/10] Check Ports Availability & Process Hygiene
-Write-Host "`n[8/10] Checking Port Availability (8000 & 3000)..." -ForegroundColor White
+# [8/10] Check Ports Availability and Process Hygiene
+Write-Host "`n[8/10] Checking Port Availability (8000 and 3000)..." -ForegroundColor White
 # Check and kill old Lucid processes if PID files exist
 $BackendPidFile = Join-Path $RootDir ".lucid_backend.pid"
 if (Test-Path $BackendPidFile) {
@@ -325,7 +325,7 @@ if (Test-Path $FrontendPidFile) {
     } catch {}
     Remove-Item $FrontendPidFile -Force -ErrorAction SilentlyContinue
 }
-Write-Host "   ✅ Ports 8000 & 3000 are clear." -ForegroundColor Green
+Write-Host "   [OK] Ports 8000 and 3000 are clear." -ForegroundColor Green
 
 # [9/10] Start Backend Server
 Write-Host "`n[9/10] Starting Lucid Backend (FastAPI on Port 8000)..." -ForegroundColor White
@@ -347,9 +347,9 @@ for ($i = 0; $i -lt 30; $i++) {
 }
 
 if ($BackendReady) {
-    Write-Host "   ✅ Backend API is healthy and listening on http://localhost:8000." -ForegroundColor Green
+    Write-Host "   [OK] Backend API is healthy and listening on http://localhost:8000." -ForegroundColor Green
 } else {
-    Write-Host "   ❌ Backend failed to pass health check. View logs\backend.log." -ForegroundColor Red
+    Write-Host "   [FAIL] Backend failed to pass health check. View logs\backend.log." -ForegroundColor Red
     Stop-Process -Id $BackendProcess.Id -Force -ErrorAction SilentlyContinue
     exit 1
 }
@@ -375,9 +375,9 @@ for ($i = 0; $i -lt 30; $i++) {
 }
 
 if ($FrontendReady) {
-    Write-Host "   ✅ Frontend is ready and listening on http://localhost:3000." -ForegroundColor Green
+    Write-Host "   [OK] Frontend is ready and listening on http://localhost:3000." -ForegroundColor Green
 } else {
-    Write-Host "   ❌ Frontend failed to pass readiness check. View logs\frontend.log." -ForegroundColor Red
+    Write-Host "   [FAIL] Frontend failed to pass readiness check. View logs\frontend.log." -ForegroundColor Red
     Stop-Process -Id $FrontendProcess.Id -Force -ErrorAction SilentlyContinue
     Stop-Process -Id $BackendProcess.Id -Force -ErrorAction SilentlyContinue
     exit 1
@@ -390,7 +390,7 @@ $VerifyScript = Join-Path $RootDir "scripts\verify_e2e.py"
 
 # Complete
 Write-Host "`n======================================================================" -ForegroundColor Green
-Write-Host "                    🎉 LUCID IS RUNNING & READY!                     " -ForegroundColor Green
+Write-Host "                    [SUCCESS] LUCID IS RUNNING and READY!                     " -ForegroundColor Green
 Write-Host "======================================================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "  Investor Frontend:        http://localhost:3000" -ForegroundColor Cyan

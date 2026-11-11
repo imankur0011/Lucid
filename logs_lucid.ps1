@@ -1,5 +1,5 @@
 # ==============================================================================
-# Lucid — Log Streaming Utility (Windows PowerShell)
+# Lucid - Log Streaming Utility (Windows PowerShell)
 # ==============================================================================
 # Usage:
 #   powershell -ExecutionPolicy Bypass -File .\logs_lucid.ps1 [backend|frontend|all|clear]
@@ -36,7 +36,7 @@ switch ($Target.ToLower()) {
     "clear" {
         Clear-Content -Path $BackendLog -ErrorAction SilentlyContinue
         Clear-Content -Path $FrontendLog -ErrorAction SilentlyContinue
-        Write-Host "✓ All log files cleared." -ForegroundColor Green
+        Write-Host "[OK] All log files cleared." -ForegroundColor Green
     }
     default {
         Write-Host "==> Streaming Lucid Backend Logs (logs\backend.log)..." -ForegroundColor Cyan
