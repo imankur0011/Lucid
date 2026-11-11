@@ -1,399 +1,832 @@
-# Lucid — Complete Setup, Installation & Application Launcher Guide
+# Lucid — Complete Setup & Installation Guide
 
-This document provides complete instructions for installing, configuring, running, and managing **Lucid — Intelligent Investment Portfolio Platform for Indian Retail Equities** on macOS, Windows 10/11, and Linux.
+This document is the authoritative setup manual for **Lucid — Intelligent Investment Portfolio Platform for Indian Retail Equities**. It provides step-by-step instructions for both automated one-command installation and manual developer setup from scratch on macOS, Linux, and Windows.
 
 ---
 
 ## Table of Contents
 
-1. [Quick Start: One-Command Automated Setup](#1-quick-start-one-command-automated-setup)
-2. [Supported Operating Systems & Requirements](#2-supported-operating-systems--requirements)
-3. [The 10-Step Automated Setup Pipeline](#3-the-10-step-automated-setup-pipeline)
-4. [Visual Studio Code Automatic Setup & Extensions](#4-visual-studio-code-automatic-setup--extensions)
-5. [Operational Lifecycle Scripts](#5-operational-lifecycle-scripts)
-6. [Environment Variables & Configuration (`.env`)](#6-environment-variables--configuration-env)
-7. [PostgreSQL Database Architecture & Initialization](#7-postgresql-database-architecture--initialization)
-8. [Manual Step-by-Step Developer Setup](#8-manual-step-by-step-developer-setup)
-9. [Postman API Collection Verification](#9-postman-api-collection-verification)
-10. [Automated Test Suites & Health Audits](#10-automated-test-suites--health-audits)
-11. [Troubleshooting & Common Questions](#11-troubleshooting--common-questions)
-12. [Safe Service Stop, Reset & Data Hygiene](#12-safe-service-stop-reset--data-hygiene)
+- [Section 1: Overview — Two Setup Paths](#section-1-overview--two-setup-paths)
+- [Section 2: Prerequisites](#section-2-prerequisites)
+- [Section 3: Option A — One-Command Automated Setup](#section-3-option-a--one-command-automated-setup)
+- [Section 4: Manual Backend Setup](#section-4-manual-backend-setup)
+  - [4.1 Install Python 3.11+](#41-install-python-311)
+  - [4.2 Clone Repository](#42-clone-repository)
+  - [4.3 Create Virtual Environment](#43-create-virtual-environment)
+  - [4.4 Activate Virtual Environment](#44-activate-virtual-environment)
+  - [4.5 Install Python Dependencies](#45-install-python-dependencies)
+  - [4.6 Create `.env` Configuration](#46-create-env-configuration)
+  - [4.7 Start Backend Server](#47-start-backend-server)
+- [Section 5: PostgreSQL Database Setup](#section-5-postgresql-database-setup)
+  - [5.1 What is PostgreSQL & Why Lucid Uses It](#51-what-is-postgresql--why-lucid-uses-it)
+  - [5.2 Install PostgreSQL 16+](#52-install-postgresql-16)
+  - [5.3 Connect as PostgreSQL Administrator](#53-connect-as-postgresql-administrator)
+  - [5.4 Create Database and Extensions](#54-create-database-and-extensions)
+  - [5.5 Configure `.env` for PostgreSQL](#55-configure-env-for-postgresql)
+  - [5.6 Run Alembic Migrations](#56-run-alembic-migrations)
+  - [5.7 Seed Reference Data and NSE/BSE Universe](#57-seed-reference-data-and-nsebse-universe)
+  - [5.8 Verify Database Readiness](#58-verify-database-readiness)
+- [Section 6: External API Configuration](#section-6-external-api-configuration)
+  - [6.1 Google Gemini (LLM — Optional but Recommended)](#61-google-gemini-llm--optional-but-recommended)
+  - [6.2 Yahoo Finance (`yfinance` — No Key Required)](#62-yahoo-finance-yfinance--no-key-required)
+  - [6.3 FRED — Federal Reserve Economic Data (Optional)](#63-fred--federal-reserve-economic-data-optional)
+  - [6.4 NewsAPI (Optional)](#64-newsapi-optional)
+  - [6.5 Auto-Generated Secrets (Local Security)](#65-auto-generated-secrets-local-security)
+- [Section 7: Manual Frontend Setup](#section-7-manual-frontend-setup)
+  - [7.1 Install Node.js 18+ and npm](#71-install-nodejs-18-and-npm)
+  - [7.2 Navigate to Frontend Directory](#72-navigate-to-frontend-directory)
+  - [7.3 Install Frontend Dependencies](#73-install-frontend-dependencies)
+  - [7.4 Start Next.js Development Server](#74-start-nextjs-development-server)
+- [Section 8: VS Code Setup](#section-8-vs-code-setup)
+  - [8.1 Install Visual Studio Code](#81-install-visual-studio-code)
+  - [8.2 Open Repository](#82-open-repository)
+  - [8.3 Select Python Interpreter](#83-select-python-interpreter)
+  - [8.4 Recommended Workspace Extensions](#84-recommended-workspace-extensions)
+  - [8.5 Command-Line Extension Installation](#85-command-line-extension-installation)
+  - [8.6 VS Code Tasks](#86-vs-code-tasks)
+  - [8.7 Interactive Debugging](#87-interactive-debugging)
+- [Section 9: Running Both Services Manually (Multi-Terminal)](#section-9-running-both-services-manually-multi-terminal)
+- [Section 10: Running Tests](#section-10-running-tests)
+- [Section 11: Developer Lifecycle Guide](#section-11-developer-lifecycle-guide)
+  - [11.1 Adding Python Dependencies](#111-adding-python-dependencies)
+  - [11.2 Adding Frontend Dependencies](#112-adding-frontend-dependencies)
+  - [11.3 Database Schema Changes (Migrations)](#113-database-schema-changes-migrations)
+  - [11.4 Updating Environment Variables](#114-updating-environment-variables)
+  - [11.5 Resetting the Database (Development Only)](#115-resetting-the-database-development-only)
+- [Section 12: Troubleshooting](#section-12-troubleshooting)
+- [Section 13: Documentation Coverage Matrix](#section-13-documentation-coverage-matrix)
 
 ---
 
-## 1. Quick Start: One-Command Automated Setup
+## Section 1: Overview — Two Setup Paths
 
-Lucid is designed so that a user with no software development experience can download the repository, run a single script, let the script configure the system automatically (including Visual Studio Code and required extensions), and begin using the web application in their browser.
+Lucid supports two setup workflows depending on your objective:
 
-### Step 1: Clone the Repository
+```mermaid
+flowchart TD
+    Start["Choose Setup Method"] --> Choice{"Are you a user or developer?"}
+    Choice -->|"Quick Evaluation / First Time"| OptA["Option A: One-Command Automated Setup"]
+    Choice -->|"Deep Customization / Debugging"| OptB["Option B: Manual Step-by-Step Setup"]
+    OptA --> A_Run["Run ./start_lucid.sh or start_lucid.ps1"]
+    OptB --> B_Backend["Section 4: Python & Backend Setup"]
+    B_Backend --> B_DB["Section 5: PostgreSQL & Migrations"]
+    B_DB --> B_Front["Section 7: Next.js Frontend Setup"]
+```
 
-Open your terminal (Terminal on macOS/Linux or PowerShell on Windows) and clone the repository:
+### Option A: One-Command Automated Setup (Recommended for Everyone)
+- **Who it is for**: First-time users, evaluators, students, and developers wanting an instant, working local environment.
+- **What it does**: A single script detects your operating system, validates tools, creates virtual environments, installs Python and Node dependencies, configures `.env`, provisions PostgreSQL, applies Alembic migrations, seeds 2,639 NSE/BSE equities, starts both servers, and opens the application in your browser.
+- **When to use**: Whenever you want the system up and running with zero configuration friction.
 
+### Option B: Manual Setup from Scratch (For Developers)
+- **Who it is for**: Core contributors, systems engineers, and developers troubleshooting specific components or deploying to custom environments.
+- **What it does**: Walks through each command line by line: installing Python 3.11+, initializing `.venv`, managing PostgreSQL databases and extensions, executing Alembic migrations, running `init_database.py`, installing npm packages, and starting servers in isolated terminals.
+- **When to use**: When you need granular control over environment variables, custom PostgreSQL installations, debugging database connection issues, or executing isolated component tests.
+
+---
+
+## Section 2: Prerequisites
+
+Before setting up Lucid, verify that your machine satisfies the minimum software versions:
+
+| Tool | Minimum Version | Dev Machine Tested | Why Needed | How to Verify |
+|---|---|---|---|---|
+| **Python** | `3.11+` | `3.14.7` | Backend REST API, LangGraph agents, SciPy SLSQP optimizer | `python3 --version` |
+| **Node.js** | `18+` | `v25.2.1` | Next.js 16 web application and server-side rendering | `node --version` |
+| **npm** | `9+` | `11.6.2` | Frontend package installation and build scripts | `npm --version` |
+| **PostgreSQL** | `16+` | `18.1` | Authoritative operational store (62 relational tables) | `psql --version` |
+| **Git** | `2.30+` | `2.39+` | Source code version control and repository cloning | `git --version` |
+
+> [!NOTE]
+> **No External Middleware Needed**: Lucid requires **no** Redis, Celery, Docker, Neo4j, or FAISS. All computational workloads and agent workflows run directly within the Python and PostgreSQL runtimes.
+
+---
+
+## Section 3: Option A — One-Command Setup
+
+The automated launcher script sets up the full stack in one step.
+
+### Step 1: Clone Repository
+Open your terminal and clone the Lucid repository:
 ```bash
 git clone https://github.com/imankur0011/Lucid.git
 cd Lucid
 ```
 
-### Step 2: Run the Setup Script
+### Step 2: Run Launcher
 
 #### macOS & Linux
 ```bash
+# Make script executable and launch
 chmod +x start_lucid.sh
 ./start_lucid.sh
 ```
 
-#### Windows 10/11 (PowerShell)
+#### Windows 10 / 11 (PowerShell)
 ```powershell
+# Run PowerShell script with bypass execution policy
 powershell -ExecutionPolicy Bypass -File .\start_lucid.ps1
 ```
 
-Once the launcher completes its automated tasks, your default browser opens immediately:
-- **Investor Web UI**: [http://localhost:3000](http://localhost:3000)
-- **FastAPI Interactive Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
-- **OpenAPI Schema**: [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json)
+### What Each of the 10 Stages Does
 
-Default local demo credentials:
-- **Email**: `developer@lucid.local`
-- **Password**: `LucidDevPass123!`
+1. **System & Architecture Detection**: Detects Darwin (`arm64`/`x86_64`), Linux, or Windows to apply the appropriate process and environment semantics.
+2. **Prerequisites & Toolchain Validation**: Checks for `git`, `python3`, `node`, `npm`, and `psql`. On macOS with Homebrew, missing prerequisites and VS Code are auto-installed.
+3. **Python Virtual Environment (`.venv`)**: Creates `.venv` in the project root, upgrades `pip`, and installs packages from `backend/requirements.txt` using MD5 hash caching to avoid slow reinstalls.
+4. **Frontend Dependency Preparation**: Enters `frontend/` and runs `npm install` for Next.js 16 and React 19 packages.
+5. **Environment Configuration (`.env`)**: If `.env` is absent, copies `.env.example` and generates 32-character cryptographically secure keys for `APP_SECRET_KEY` and `JWT_SECRET_KEY` using Python's `secrets` module.
+6. **PostgreSQL Verification**: Tests connection on configured host and port (`5432` default); automatically starts the service via Homebrew on macOS if stopped.
+7. **Database Provisioning, Migrations & Seeding**: Executes `PYTHONPATH=. python scripts/init_database.py`. Creates `portfolio_dev`, installs `pgcrypto` and `uuid-ossp`, applies Alembic migration `429fa263363c`, and seeds ~2,639 NSE/BSE equities.
+8. **Port Conflict Resolution**: Checks ports `8000` (FastAPI) and `3000` (Next.js) and terminates stale Lucid PID processes from prior sessions.
+9. **FastAPI Backend Launch**: Starts Uvicorn in the background on port 8000, logs to `logs/backend.log`, and polls `http://localhost:8000/api/health` until healthy.
+10. **Next.js Frontend Launch & Browser Open**: Starts Next.js on port 3000, logs to `logs/frontend.log`, polls for HTTP 200, opens `http://localhost:3000` in your default browser, and launches VS Code.
 
----
+### External API Limitations
+The launcher script automatically configures all local dependencies, but it cannot register for external third-party API accounts on your behalf.
+- **Google Gemini API**: During Stage 5, the launcher prompts you in the terminal for a `GEMINI_API_KEY` with a **10-second timeout**. If you press Enter or wait 10 seconds without typing, Lucid defaults to its deterministic rule-based engine.
+- **FRED & NewsAPI**: Optional keys that can be added to `.env` later if global macro or secondary news feeds are desired.
 
-## 2. Supported Operating Systems & Requirements
+### After Setup: URLs & Verification
+Once the script displays `🎉 LUCID IS RUNNING & READY!`:
+- **Web Application**: [http://localhost:3000](http://localhost:3000)
+- **FastAPI Documentation**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Health Endpoint**: [http://localhost:8000/api/health](http://localhost:8000/api/health)
+- **Pre-seeded Developer Login**:
+  - Email: `developer@lucid.local`
+  - Password: `LucidDevPass123!`
 
-### Tested Operating Systems
-- **macOS Sonoma / Sequoia**: Tested on Apple Silicon (`arm64`) and Intel (`x86_64`).
-- **Windows 10 / 11**: Tested via PowerShell 5.1+ and PowerShell 7.
-- **Ubuntu 22.04 / 24.04 LTS & Debian 12**: Tested via standard bash shell.
-
-### Minimum System Requirements
-- **RAM**: 8 GB minimum (16 GB recommended).
-- **Disk Space**: ~2.5 GB free disk space (for Python packages, Node modules, and PostgreSQL exchange data).
-- **Internet Connection**: Required during initial setup to download packages and exchange universe data.
-
----
-
-## 3. The 10-Step Automated Setup Pipeline
-
-When `./start_lucid.sh` (or `.\start_lucid.ps1`) runs, it executes the following 10-stage automated pipeline:
-
-```mermaid
-flowchart TD
-    S1["[1/10] Operating System & Hardware Detection"] --> S2["[2/10] Toolchain Validation & VS Code Auto-Setup"]
-    S2 --> S3["[3/10] Python Virtualenv (.venv) & Pip Hash Check"]
-    S3 --> S4["[4/10] Next.js Frontend Dependencies (npm install)"]
-    S4 --> S5["[5/10] Secure .env Configuration & Secret Generation"]
-    S5 --> S6["[6/10] PostgreSQL Service Verification & Auto-Start"]
-    S6 --> S7["[7/10] Database Migrations & NSE/BSE Universe Seeding"]
-    S7 --> S8["[8/10] Port Conflict Resolution (8000 & 3000)"]
-    S8 --> S9["[9/10] FastAPI Backend Startup & Health Polling"]
-    S9 --> S10["[10/10] Next.js Frontend Startup & Browser Launch"]
-```
-
-### What Happens in Each Stage:
-
-1. **System & Architecture Detection**: Identifies whether the machine is running Darwin (`arm64`/`x86_64`), Linux, or Windows to apply the appropriate process and environment semantics.
-2. **Prerequisite & VS Code Setup**: Validates `git`, `python3` ($\ge 3.11$), `node` ($\ge 18$), `npm`, `psql`, and Visual Studio Code (`code` CLI). On macOS with Homebrew, missing core tools and VS Code are installed automatically. Recommended workspace extensions are configured in the background.
-3. **Python Virtual Environment (`.venv`)**: Creates an isolated virtual environment at `.venv`, upgrades `pip`, and installs backend dependencies from `backend/requirements.txt` with MD5 hash caching to avoid slow reinstalls on future runs.
-4. **Frontend Dependencies**: Navigates to `frontend/` and executes `npm install` for Next.js 16 and React 19 dependencies.
-5. **Environment Configuration (`.env`)**: If `.env` is missing, copies `.env.example` and automatically generates cryptographically secure 32-character random keys for `JWT_SECRET_KEY` and `APP_SECRET_KEY` using Python's `secrets` module. Existing `.env` files are preserved.
-6. **PostgreSQL Verification**: Tests connection to PostgreSQL. On macOS, attempts automatic service start via Homebrew (`brew services start postgresql@16`).
-7. **Database Provisioning, Migrations & Universe Seeding**: Runs `scripts/init_database.py`. Creates the database (`portfolio_dev`), enables PostgreSQL extensions (`pgcrypto`, `uuid-ossp`), executes Alembic migrations to head (`429fa263363c`), and seeds reference data (5 psychometric risk questions, macroeconomic indicators, default developer user, and 2,639 NSE/BSE equities).
-8. **Port Availability Check**: Checks ports `8000` (backend) and `3000` (frontend), terminates lingering Lucid PID processes from prior sessions, and ensures ports are clean.
-9. **Backend Server Launch**: Starts Uvicorn ASGI server with FastAPI on port `8000` in the background, logging to `logs/backend.log`, and polls `http://localhost:8000/api/health` until healthy.
-10. **Frontend Server Launch & Browser Open**: Starts Next.js development server on port `3000` in the background, logging to `logs/frontend.log`, polls for HTTP 200, opens `http://localhost:3000` in your default browser, and opens the project in VS Code.
-
----
-
-## 4. Visual Studio Code Automatic Setup & Extensions
-
-Lucid integrates directly with Visual Studio Code to provide a ready-to-code workspace out of the box.
-
-### Automatic Discovery & Installation
-- The launcher automatically searches for the `code` CLI in your system `PATH`.
-- On macOS, if `code` is not in your shell path, the launcher checks `/Applications/Visual Studio Code.app` and automatically configures the CLI path. If VS Code is not installed and Homebrew is present, it installs VS Code automatically.
-- On Windows, the PowerShell script detects VS Code in `Local AppData` or uses `winget install Microsoft.VisualStudioCode`.
-
-### Recommended Workspace Extensions (`.vscode/extensions.json`)
-The setup automatically installs or prompts for the following extensions:
-
-| Extension | Extension ID | Purpose in Lucid |
-|---|---|---|
-| **Python** | `ms-python.python` | Core Python language support, linting, and autocomplete. |
-| **Pylance** | `ms-python.vscode-pylance` | High-performance Python static type analysis and IntelliSense. |
-| **Python Debugger** | `ms-python.debugpy` | Interactive debugging for FastAPI endpoints and pytest suites. |
-| **ESLint** | `dbaeumer.vscode-eslint` | Next.js and TypeScript linting directly in the editor. |
-| **Prettier** | `esbenp.prettier-vscode` | Opinionated code formatter for `.ts`, `.tsx`, `.json`, `.md`. |
-| **Tailwind CSS IntelliSense** | `bradlc.vscode-tailwindcss` | Autocomplete, syntax highlighting, and hover preview for utility classes. |
-| **PostgreSQL** | `ckolkman.vscode-postgres` | Native PostgreSQL connection management and SQL table explorer. |
-| **GitLens** | `eamodio.gitlens` | Git blame annotations, commit history, and revision navigation. |
-| **Even Better TOML** | `tamasfe.even-better-toml` | TOML schema validation and syntax highlighting. |
-| **YAML** | `redhat.vscode-yaml` | YAML validation for GitHub Actions and configuration files. |
-
-### VS Code Tasks & Debugging Configurations
-The `.vscode/` directory includes:
-- **`.vscode/settings.json`**: Pre-configures Python interpreter path (`.venv/bin/python`), Pytest test discovery (`backend/tests`), format-on-save, and Tailwind class mappings.
-- **`.vscode/launch.json`**: Pre-built debug profiles:
-  - `Lucid: Debug Backend (FastAPI / Uvicorn)`: Debug API endpoints with breakpoints.
-  - `Lucid: Debug Pytest (Full Suite)`: Run and debug unit/integration tests.
-  - `Lucid: Verify Setup Script`: Run setup verification in the debugger.
-  - `Lucid: Debug Frontend`: Attach Chrome debugger to Next.js client code.
-- **`.vscode/tasks.json`**: One-click VS Code tasks for starting, stopping, checking status, viewing logs, running migrations, and running test suites.
-
----
-
-## 5. Operational Lifecycle Scripts
-
-Lucid includes operational scripts in the repository root for managing running services.
-
-### Cross-Platform Command Matrix
-
-| Action | macOS / Linux | Windows PowerShell | Description |
-|---|---|---|---|
-| **Start / Launch** | `./start_lucid.sh` | `powershell -File .\start_lucid.ps1` | Runs full setup pipeline, starts services, opens browser & VS Code. |
-| **Check Status** | `./status_lucid.sh` | `powershell -File .\status_lucid.ps1` | Inspects system runtime, backend health, frontend HTTP, and PostgreSQL table/record counts. |
-| **Stream Logs** | `./logs_lucid.sh all` | `powershell -File .\logs_lucid.ps1` | Tails real-time logs from backend and frontend. |
-| **Stop Services** | `./stop_lucid.sh` | `powershell -File .\stop_lucid.ps1` | Gracefully terminates backend and frontend, releases ports, leaves DB intact. |
-
-### Log Streamer Usage
+To verify status at any time from a second terminal:
 ```bash
-./logs_lucid.sh backend    # Stream FastAPI logs only (logs/backend.log)
-./logs_lucid.sh frontend   # Stream Next.js logs only (logs/frontend.log)
-./logs_lucid.sh all 100    # Stream both services concurrently (last 100 lines)
-./logs_lucid.sh clear      # Truncate all log files to reclaim disk space
+./status_lucid.sh        # macOS / Linux
+powershell .\status_lucid.ps1 # Windows
 ```
 
 ---
 
-## 6. Environment Variables & Configuration (`.env`)
+## Section 4: Manual Backend Setup
 
-Configuration settings are stored in `.env` in the repository root. When running for the first time, the launcher generates `.env` from `.env.example` with random cryptographic secrets.
+Follow this section to install and run the FastAPI backend manually from scratch.
 
-### Complete Configuration Reference
+### 4.1 Install Python 3.11+
+Lucid requires Python 3.11 or higher.
 
-| Environment Variable | Required? | Default Value | Description |
-|---|---|---|---|
-| `POSTGRES_HOST` | **Yes** | `localhost` | PostgreSQL server hostname or IP. |
-| `POSTGRES_PORT` | **Yes** | `5432` / `5433` | PostgreSQL listening port. |
-| `POSTGRES_DB` | **Yes** | `portfolio_dev` | Application database name. |
-| `POSTGRES_USER` | **Yes** | `postgres` / current user | PostgreSQL username. |
-| `POSTGRES_PASSWORD` | Optional | `""` (local peer auth) | PostgreSQL password (leave empty if peer auth). |
-| `DATABASE_URL` | Optional | `None` | Direct SQLAlchemy connection URL (overrides separate parameters). |
-| `APP_ENV` | **Yes** | `development` | Application mode: `development`, `staging`, or `production`. |
-| `APP_PORT` | **Yes** | `8000` | Port for the FastAPI backend server. |
-| `APP_SECRET_KEY` | **Yes** | *Auto-generated* | Cryptographic application secret key. |
-| `JWT_SECRET_KEY` | **Yes** | *Auto-generated* | HMAC-SHA256 secret key for signing user auth tokens (min 32 chars). |
-| `CORS_ORIGINS` | **Yes** | `http://localhost:3000` | Whitelisted frontend origins. |
-| `LLM_PROVIDER` | Optional | `gemini` | Qualitative LLM provider: `gemini` or `ollama`. |
-| `LLM_MODEL` | Optional | `gemini-3.8-flash` | Gemini model name. |
-| `GEMINI_API_KEY` | Optional | *Empty* | Google AI Studio Gemini API key. If omitted, Lucid runs with rule-based models. |
-| `RISK_FREE_RATE_PCT` | Optional | `7.0` | India 10-Year G-Sec benchmark yield percentage. |
-| `FRED_API_KEY` | Optional | *Empty* | Federal Reserve Economic Data API key (for global macro data). |
-| `NEWS_API_KEY` | Optional | *Empty* | NewsAPI key (for secondary market sentiment feeds). |
+- **macOS (via Homebrew)**:
+  ```bash
+  brew install python@3.11
+  ```
+- **Windows**:
+  Download Python 3.11+ installer from [https://www.python.org/downloads/](https://www.python.org/downloads/). During installation, **ensure you check the box "Add python.exe to PATH"**.
+- **Linux (Ubuntu / Debian)**:
+  ```bash
+  sudo apt update
+  sudo apt install -y python3.11 python3.11-venv python3.11-pip
+  ```
+- **Verify Installation**:
+  ```bash
+  python3 --version
+  ```
+  *(Expected: `Python 3.11.x` or higher).*
 
----
-
-## 7. PostgreSQL Database Architecture & Initialization
-
-Lucid uses PostgreSQL 16 as its single authoritative transactional store. All relational data resides across 62 domain application tables plus 1 Alembic version table.
-
-### Schema Domain Breakdown
-1. **Security Master & Corporate Registry** (13 tables): Companies, listings, share classes, corporate actions, filings, sector classifications.
-2. **Market Data & Fundamentals** (9 tables): Historical OHLCV prices, volume, financial statements, balance sheets, corporate ratios, index compositions.
-3. **Investor Profiles & Suitability** (8 tables): App users, KYC details, psychometric risk assessments, score tiers, financial goals.
-4. **Portfolio Engine & Optimization** (14 tables): Generated portfolios, version trees, allocation weights, constraints, whole-share integer quantities, unallocated cash.
-5. **Demat Diagnosis & Rebalancing** (8 tables): External portfolio holdings, asset allocation drift, tax harvesting recommendations, rebalance trade orders.
-6. **Multi-Agent Telemetry & Audit Logs** (7 tables): Agent step execution runs, tool invocations, LLM token usage, qualitative research theses, evidence registries.
-7. **Broker Order Integration** (3 tables): Mock order books, trade executions, transaction ledger.
-
-### Database Initialization Script (`scripts/init_database.py`)
-This script can be executed standalone at any time:
+### 4.2 Clone Repository
+Clone the repository and enter the project directory:
 ```bash
-.venv/bin/python scripts/init_database.py
+git clone https://github.com/imankur0011/Lucid.git
+cd Lucid
 ```
-It performs:
-1. `CREATE DATABASE "portfolio_dev"` if missing.
-2. `CREATE EXTENSION IF NOT EXISTS "pgcrypto";` and `"uuid-ossp";`.
-3. `alembic upgrade head` to apply all schema revisions.
-4. Populates SEBI psychometric risk questionnaire (5 questions).
-5. Populates macroeconomic baseline indicators.
-6. Synchronizes exchange security master (2,639 active NSE/BSE equities).
-7. Provisions default developer account (`developer@lucid.local`).
-8. Verifies table count ($\ge 62$ tables).
 
----
+### 4.3 Create Virtual Environment
+A virtual environment (venv) is an isolated directory tree that houses a specific Python interpreter and set of libraries, preventing package version collisions with your global operating system. In Lucid, the virtual environment is named `.venv` and resides directly in the project root.
 
-## 8. Manual Step-by-Step Developer Setup
-
-For developers who prefer starting backend and frontend processes in separate terminal windows:
-
-### Terminal 1: PostgreSQL & Backend Setup
+Run from project root:
 ```bash
-# 1. Start PostgreSQL
-brew services start postgresql@16  # macOS
-# or: sudo systemctl start postgresql # Linux
-
-# 2. Create Python virtual environment
 python3 -m venv .venv
-source .venv/bin/activate
+```
 
-# 3. Install Python dependencies
+### 4.4 Activate Virtual Environment
+You must activate the virtual environment before installing packages or running Python commands.
+
+- **macOS & Linux**:
+  ```bash
+  source .venv/bin/activate
+  ```
+- **Windows (PowerShell)**:
+  ```powershell
+  .\.venv\Scripts\Activate.ps1
+  ```
+- **Windows (Command Prompt)**:
+  ```cmd
+  .venv\Scripts\activate.bat
+  ```
+- **Verify Activation**: Your terminal prompt will display the `(.venv)` prefix.
+- **Deactivation**: Type `deactivate` when finished.
+
+### 4.5 Install Python Dependencies
+The file `backend/requirements.txt` specifies all required Python packages with pinned compatibility constraints, including FastAPI, Uvicorn, SQLAlchemy 2.0, Alembic, SciPy, NumPy, and LangGraph.
+
+Run from project root with `.venv` active:
+```bash
 pip install --upgrade pip
 pip install -r backend/requirements.txt
+```
 
-# 4. Provision and seed the database
-PYTHONPATH=. python scripts/init_database.py
+Verify that critical packages are installed:
+```bash
+pip show fastapi scipy langgraph
+```
+*(Expected: prints version metadata for each package).*
 
-# 5. Start the FastAPI backend server
+### 4.6 Create `.env` Configuration
+Copy the environment template to create your local `.env`:
+
+Run from project root:
+```bash
+cp .env.example .env
+```
+
+Generate two distinct 32-character random cryptographic secrets for application and session security:
+```bash
+# Run this command TWICE: once for APP_SECRET_KEY, once for JWT_SECRET_KEY
+python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+Edit `.env` using your preferred editor (VS Code, nano, or vim) and update the following settings:
+
+| Variable | Required | Default | Purpose | How to Obtain |
+|---|---|---|---|---|
+| `POSTGRES_HOST` | **Yes** | `localhost` | PostgreSQL host | Local machine host (`localhost`) |
+| `POSTGRES_PORT` | **Yes** | `5432` | PostgreSQL port | Standard port `5432` |
+| `POSTGRES_DB` | **Yes** | `portfolio_dev` | Database name | Standard app database name |
+| `POSTGRES_USER` | **Yes** | `postgres` | Database user | Your OS user (Homebrew) or `postgres` |
+| `POSTGRES_PASSWORD` | Optional | `""` | Database password | Password set during PostgreSQL setup |
+| `APP_ENV` | **Yes** | `development` | Application mode | `development` |
+| `APP_PORT` | **Yes** | `8000` | FastAPI listening port | `8000` |
+| `APP_SECRET_KEY` | **Yes** | *Placeholder* | Cryptographic app key | Generated via `secrets.token_urlsafe(32)` |
+| `JWT_SECRET_KEY` | **Yes** | *Placeholder* | JWT signing key | Generated via `secrets.token_urlsafe(32)` |
+| `CORS_ORIGINS` | **Yes** | `http://localhost:3000` | Frontend CORS whitelist | `http://localhost:3000` |
+| `LLM_PROVIDER` | Optional | `gemini` | LLM provider | `gemini` or `ollama` |
+| `LLM_MODEL` | Optional | `gemini-3.8-flash` | Model identifier | `gemini-3.8-flash` |
+| `GEMINI_API_KEY` | Optional | *Empty* | AI Studio key | [https://aistudio.google.com/](https://aistudio.google.com/) |
+| `RISK_FREE_RATE_PCT`| Optional | `7.0` | Risk-free rate benchmark | RBI 10-Yr G-Sec baseline (`7.0`) |
+| `FRED_API_KEY` | Optional | *Empty* | FRED API key | [https://fred.stlouisfed.org/](https://fred.stlouisfed.org/) |
+| `NEWS_API_KEY` | Optional | *Empty* | NewsAPI key | [https://newsapi.org/](https://newsapi.org/) |
+
+### 4.7 Start Backend Server
+Always ensure `.venv` is active and you are located in the project root directory. Set `PYTHONPATH=.` so Python can resolve the `backend` module.
+
+Run from project root:
+```bash
 PYTHONPATH=. uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### Terminal 2: Frontend Setup
+- **Expected Output**:
+  ```text
+  INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+  INFO:     Started reloader process
+  INFO:     Application startup complete.
+  ```
+- **Verify Health via cURL**:
+  ```bash
+  curl http://localhost:8000/api/health
+  ```
+  *(Expected response: `{"api":"up","database":{"status":"healthy","total_tables":63}}`)*.
+- **Swagger Documentation**: Open [http://localhost:8000/docs](http://localhost:8000/docs) in your browser.
+
+---
+
+## Section 5: PostgreSQL Database Setup
+
+### 5.1 What is PostgreSQL & Why Lucid Uses It
+PostgreSQL is an enterprise-grade open-source relational database known for ACID compliance, strong data integrity, and support for advanced indexing and cryptographic primitives. Lucid uses PostgreSQL 16+ as its **single operational source of truth**, persisting all 62 domain application tables without relying on separate NoSQL or vector stores.
+
+### 5.2 Install PostgreSQL 16+
+
+- **macOS (via Homebrew)**:
+  ```bash
+  brew install postgresql@16
+  brew services start postgresql@16
+  ```
+- **Windows**:
+  Download the PostgreSQL 16 installer from [https://www.postgresql.org/download/windows/](https://www.postgresql.org/download/windows/). Follow the setup wizard, note the password you assign to the `postgres` superuser, and leave the default port as `5432`.
+- **Ubuntu / Debian**:
+  ```bash
+  sudo apt update
+  sudo apt install -y postgresql postgresql-contrib
+  sudo systemctl start postgresql
+  sudo systemctl enable postgresql
+  ```
+- **Verify Installation**:
+  ```bash
+  psql --version
+  ```
+
+### 5.3 Connect as PostgreSQL Administrator
+
+- **macOS (Homebrew Peer Auth)**:
+  ```bash
+  psql -d postgres
+  ```
+- **Linux (Peer Auth)**:
+  ```bash
+  sudo -u postgres psql
+  ```
+- **Windows (Password Auth)**:
+  ```bash
+  psql -U postgres -h localhost
+  ```
+  *(Or open pgAdmin 4 included with the Windows installer).*
+
+### 5.4 Create Database and Extensions
+In your `psql` interactive prompt, create the database and register the cryptographic and UUID extensions:
+
+```sql
+-- Create application database
+CREATE DATABASE portfolio_dev;
+
+-- Connect to the newly created database
+\c portfolio_dev
+
+-- Install required extensions
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Verify that extensions are installed
+\dx
+
+-- Exit psql
+\q
+```
+
+> [!NOTE]
+> **Optional Dedicated Database User**:  
+> If you prefer not to use the default superuser, create a dedicated application user:
+> ```sql
+> CREATE USER lucid_user WITH PASSWORD 'choose_a_strong_password';
+> GRANT ALL PRIVILEGES ON DATABASE portfolio_dev TO lucid_user;
+> ```
+> Then set `POSTGRES_USER=lucid_user` and `POSTGRES_PASSWORD=choose_a_strong_password` in `.env`.
+
+### 5.5 Configure `.env` for PostgreSQL
+Ensure the values in `.env` match your local PostgreSQL configuration:
+```ini
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=portfolio_dev
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=your_postgres_password_here
+```
+*(On macOS Homebrew with peer authentication, `POSTGRES_USER` is typically your macOS username and `POSTGRES_PASSWORD` is left empty).*
+
+### 5.6 Run Alembic Migrations
+A database migration is a version-controlled Python script that transitions a database schema between states. Lucid's configuration file `alembic.ini` is located in the **project root**, and the migration scripts reside in `backend/alembic/versions/`.
+
+Run from project root with `.venv` active:
 ```bash
-# 1. Enter the frontend directory
+PYTHONPATH=. alembic upgrade head
+```
+
+- **Expected Output**:
+  ```text
+  INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+  INFO  [alembic.runtime.migration] Will assume transactional DDL.
+  INFO  [alembic.runtime.migration] Running upgrade  -> 429fa263363c, initial_portfolio_schema
+  ```
+- **Check Current Migration Version**:
+  ```bash
+  PYTHONPATH=. alembic current
+  ```
+- **Verify Table Count in PostgreSQL**:
+  ```bash
+  psql -d portfolio_dev -c "\dt" | wc -l
+  ```
+  *(Expected: 63+ lines, corresponding to 62 domain application tables + 1 `alembic_version` table).*
+
+### 5.7 Seed Reference Data and NSE/BSE Universe
+Seeding is the automated process of populating a blank database with essential baseline data, including lookup tables, admin accounts, and market instruments. The `scripts/init_database.py` script performs this initialization and is fully **idempotent** (safe to run multiple times without duplicating data).
+
+Run from project root with `.venv` active:
+```bash
+PYTHONPATH=. python scripts/init_database.py
+```
+
+**What this script does:**
+1. Confirms connection and verifies `portfolio_dev` exists.
+2. Ensures `pgcrypto` and `uuid-ossp` extensions are active.
+3. Applies Alembic migrations up to `head`.
+4. Seeds the SEBI psychometric risk questionnaire (5 structured questions).
+5. Populates macroeconomic baseline indicators (G-Sec 10Y yield, Repo rate, Inflation).
+6. Seeds the default developer credentials (`developer@lucid.local`).
+7. Synchronizes the active exchange universe (~2,639 equities across NSE and BSE). *Requires internet access and may take 2–5 minutes on first run.*
+
+Verify database contents via SQL:
+```bash
+psql -d portfolio_dev -c "SELECT count(*) FROM securities;"
+psql -d portfolio_dev -c "SELECT count(*) FROM risk_questions;"
+```
+
+### 5.8 Verify Database Readiness
+Run the environment validation utility from the project root:
+```bash
+PYTHONPATH=. python scripts/validate_env.py
+```
+*(Expected: All 5/5 validation checks report `✅ PASS`).*
+
+#### Database Verification Summary Table
+
+| Verification Query | Expected Result | Meaning |
+|---|---|---|
+| `SELECT count(*) FROM securities;` | $\ge 2,600$ | Active NSE/BSE equity universe synchronized |
+| `SELECT count(*) FROM risk_questions;` | `5` | SEBI psychometric questionnaire seeded |
+| `SELECT count(*) FROM economic_indicators;` | $> 0$ | Macroeconomic regime indicators present |
+| `SELECT version_num FROM alembic_version;` | `429fa263363c` | Migration schema at latest head |
+| `SELECT count(*) FROM information_schema.tables WHERE table_schema='public';` | `63` | 62 app domain tables + 1 alembic version table |
+
+---
+
+## Section 6: External API Configuration
+
+### 6.1 Google Gemini (LLM — Optional but Recommended)
+- **Role in Lucid**: Powers the LangGraph multi-agent pipeline (Macro Analyst, Fundamental Analyst, News Auditor, and Strategist) to conduct qualitative stock research and draft explainability theses.
+- **Is it Required?**: **No**. Lucid includes a deterministic rule-based fallback engine. If no Gemini API key is provided, or if the API exceeds rate limits, Lucid generates portfolio allocations and rule-based explanations seamlessly.
+- **How to Obtain a Free Key**:
+  1. Visit Google AI Studio: [https://aistudio.google.com/](https://aistudio.google.com/).
+  2. Sign in with your Google Account.
+  3. Click **Get API key** in the left sidebar, then click **Create API key**.
+  4. Copy your API key (starts with `AIza...`).
+- **Cost**: The Gemini Free Tier provides generous rate limits for `gemini-3.8-flash` with no credit card required.
+- **Configuration in `.env`**:
+  ```ini
+  LLM_PROVIDER=gemini
+  LLM_MODEL=gemini-3.8-flash
+  GEMINI_API_KEY=AIzaSyYourActualKeyHere
+  ```
+- **How to Verify**: Start the backend and generate a portfolio via the UI or API. If Gemini is connected, backend logs will display `Gemini response received`.
+- **Without Key**: Portfolio generation completes with deterministic qualitative descriptions and mathematical SLSQP weights.
+
+### 6.2 Yahoo Finance (`yfinance` — No Key Required)
+- **Role in Lucid**: Ingests 1-year daily historical OHLCV price histories, market capitalization, sector mappings, and financial ratios (P/E, ROE, Debt-to-Equity).
+- **Is it Required?**: Yes, used automatically for real-time and historical market data.
+- **Key Requirement**: **No API key or user account is required**. The `yfinance` library downloads public quote data directly.
+- **Rate Limits & Caching**: Yahoo Finance enforces rate limits during live trading hours. Lucid caches fetched price series in PostgreSQL to minimize outgoing requests and prevent HTTP 429 throttling.
+
+### 6.3 FRED — Federal Reserve Economic Data (Optional)
+- **Role in Lucid**: Provides US macroeconomic indicators (US 10Y Treasury, Fed Funds Rate, US CPI) for global macro cross-referencing.
+- **Is it Required?**: **No**. Lucid's primary macroeconomic engine uses domestic Indian data (RBI Repo Rate, India 10Y G-Sec yield) seeded locally.
+- **How to Obtain**: Register for a free API key at [https://fred.stlouisfed.org/docs/api/api_key.html](https://fred.stlouisfed.org/docs/api/api_key.html).
+- **Configuration in `.env`**:
+  ```ini
+  FRED_API_KEY=your_fred_api_key_here
+  ```
+
+### 6.4 NewsAPI (Optional)
+- **Role in Lucid**: Acts as a secondary news feed for market sentiment auditing and corporate announcement scraping.
+- **Is it Required?**: **No**. Lucid uses direct RSS feeds from Indian financial publications as its primary news ingestion source.
+- **How to Obtain**: Free developer tier (100 requests/day) available at [https://newsapi.org/](https://newsapi.org/).
+- **Configuration in `.env`**:
+  ```ini
+  NEWS_API_KEY=your_newsapi_key_here
+  ```
+
+### 6.5 Auto-Generated Secrets (Local Security)
+`APP_SECRET_KEY` and `JWT_SECRET_KEY` are purely local cryptographic signing keys and do **not** require any third-party external service.
+
+Generate both keys using Python's built-in `secrets` module:
+```bash
+python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+Execute this command twice and paste the results into `.env`:
+```ini
+APP_SECRET_KEY=s8j2K...32_characters_minimum
+JWT_SECRET_KEY=w9LmP...32_characters_minimum
+```
+> [!CAUTION]
+> Never commit your `.env` file to version control. The repository's `.gitignore` file automatically excludes `.env`.
+
+---
+
+## Section 7: Manual Frontend Setup
+
+The frontend is built with Next.js 16 (App Router), React 19, TypeScript 5.8, and Tailwind CSS 4.1.
+
+### 7.1 Install Node.js 18+ and npm
+Lucid requires Node.js version 18.0.0 or higher (Node 20+ LTS recommended).
+
+- **macOS (via Homebrew)**:
+  ```bash
+  brew install node
+  ```
+- **Windows**:
+  Download and run the official Windows Node.js LTS installer from [https://nodejs.org/](https://nodejs.org/).
+- **Ubuntu / Debian**:
+  ```bash
+  curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+  sudo apt install -y nodejs
+  ```
+- **Verify Versions**:
+  ```bash
+  node --version   # Must be >= v18.0.0
+  npm --version    # Must be >= 9.0.0
+  ```
+
+### 7.2 Navigate to Frontend Directory
+From the project root:
+```bash
 cd frontend
+```
 
-# 2. Install Node dependencies
-npm install
+### 7.3 Install Frontend Dependencies
+Install dependencies using `npm ci` (for strict adherence to `package-lock.json`) or `npm install`:
+```bash
+npm ci
+```
+*(Expected: downloads packages into `frontend/node_modules/`).*
 
-# 3. Start Next.js development server
+### 7.4 Start Next.js Development Server
+Run from the `frontend/` directory:
+```bash
 npm run dev
 ```
 
-### Terminal 3: Setup Verification
-```bash
-# Run the automated end-to-end verification audit
-.venv/bin/python scripts/verify_setup.py
-```
+- **Expected Output**:
+  ```text
+     ▲ Next.js 16.4.2
+     - Local:        http://localhost:3000
+     - Network:      http://192.168.1.x:3000
+
+  ✓ Ready in 1200ms
+  ```
+- Open [http://localhost:3000](http://localhost:3000) in your web browser.
+
+#### Available Frontend npm Scripts:
+- `npm run dev`: Starts local development server on port 3000 with hot reloading.
+- `npm run build`: Compiles TypeScript and builds the optimized production bundle.
+- `npm run start`: Serves the production build.
+- `npm run lint`: Runs ESLint checks across frontend code. *(Note: 76 pre-existing style warnings are non-blocking; `npm run build` succeeds cleanly).*
+- `npm run test:e2e`: Runs Playwright end-to-end integration tests.
 
 ---
 
-## 9. Postman API Collection Verification
+## Section 8: VS Code Setup
 
-Lucid provides an official Postman API collection for testing all 82 REST endpoints.
+Lucid provides pre-configured workspace settings, task automation, and debugging profiles for Visual Studio Code.
 
-- **Collection File**: `postman/Lucid_API_Collection.json`
-- **Environment File**: `postman/Lucid_Development_Environment.json`
-- **Total Requests**: 96 organized across 16 folders.
+### 8.1 Install Visual Studio Code
+Download and install VS Code from [https://code.visualstudio.com/](https://code.visualstudio.com/).
 
-### How to Import & Run in Postman:
-1. Open Postman.
-2. Click **Import** in the top-left corner.
-3. Select both files:
-   - `postman/Lucid_API_Collection.json`
-   - `postman/Lucid_Development_Environment.json`
-4. In the top-right environment selector, choose **Lucid Development Environment**.
-5. Run the first request in folder `02 - Authentication & User Management`: **Login with Email and Password**.
-   - The test script extracts the bearer JWT token and populates the `{{jwt_token}}` variable automatically.
-6. Execute requests across the remaining folders:
-   - `01 - Health & System Information`
-   - `03 - Investor Onboarding & Profile`
-   - `04 - Financial Goals Management`
-   - `05 - Risk Suitability & Assessment`
-   - `06 - Market & Security Data`
-   - `07 - Portfolio Creation & Optimization`
-   - `08 - Real-Time Portfolio Monitoring & Whole-Share Rebalancing`
-   - `09 - Reasoning Trace, Stock Why & Evidence`
-   - `10 - Scenario Analysis & Stress Testing`
-   - `11 - Portfolio Comparison & Conversational Assistant`
-   - `12 - Trade Execution Basket Export`
-   - `13 - Portfolio Diagnosis & Rebalancing`
-   - `14 - Official Exchange Filings & URL Verification`
-   - `15 - In-App Notifications System`
-   - `16 - Negative & Edge Case Tests`
+### 8.2 Open Repository
+Launch VS Code and open the Lucid root directory:
+```bash
+code /path/to/Lucid
+```
+*(Or in VS Code: **File → Open Folder...** and select the `Lucid` folder).*
+
+### 8.3 Select Python Interpreter
+To enable autocomplete, linting, and type checking:
+1. Press `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows/Linux) to open the Command Palette.
+2. Type and select `Python: Select Interpreter`.
+3. Choose the virtual environment:
+   - macOS / Linux: `./.venv/bin/python`
+   - Windows: `.\.venv\Scripts\python.exe`
+
+### 8.4 Recommended Workspace Extensions
+The repository includes `.vscode/extensions.json` containing the recommended extension bundle:
+
+| Extension | Extension ID | Required? | Purpose in Lucid |
+|---|---|---|---|
+| **Python** | `ms-python.python` | ✅ Required | Python language server, formatting, and test discovery |
+| **Pylance** | `ms-python.vscode-pylance` | ✅ Required | Static type checking and IntelliSense |
+| **Ruff** | `charliermarsh.ruff` | ✅ Required | Fast Python linter and code formatter |
+| **ESLint** | `dbaeumer.vscode-eslint` | ✅ Required | TypeScript and Next.js React linting |
+| **Prettier** | `esbenp.prettier-vscode` | Recommended | Code formatting for `.ts`, `.tsx`, `.json`, `.md` |
+| **Tailwind CSS** | `bradlc.vscode-tailwindcss` | Recommended | Autocomplete and preview for Tailwind 4 utility classes |
+| **PostgreSQL** | `ckolkman.vscode-postgres` | Recommended | In-editor database explorer and query runner |
+| **GitLens** | `eamodio.gitlens` | Optional | Visual Git history, blame annotations, and branch comparisons |
+| **Even Better TOML** | `tamasfe.even-better-toml` | Optional | TOML syntax support for configuration files |
+| **YAML** | `redhat.vscode-yaml` | Optional | YAML validation for GitHub Actions and workflows |
+
+### 8.5 Command-Line Extension Installation
+You can install all recommended extensions via the terminal:
+```bash
+code --install-extension ms-python.python
+code --install-extension ms-python.vscode-pylance
+code --install-extension charliermarsh.ruff
+code --install-extension dbaeumer.vscode-eslint
+code --install-extension esbenp.prettier-vscode
+code --install-extension bradlc.vscode-tailwindcss
+code --install-extension ckolkman.vscode-postgres
+```
+
+### 8.6 VS Code Tasks
+Lucid defines tasks in `.vscode/tasks.json`. Access them via **Terminal → Run Task...**:
+- `Lucid: Start Application (Automated One-Command)`
+- `Lucid: Stop Application`
+- `Lucid: Service Status`
+- `Lucid: Stream Live Logs`
+- `Lucid: Run Backend Tests (Pytest)`
+- `Lucid: Verify Setup`
+
+### 8.7 Interactive Debugging
+Pre-configured debug targets are defined in `.vscode/launch.json`:
+1. Open the **Run & Debug** panel (`Cmd+Shift+D` on macOS, `Ctrl+Shift+D` on Windows) or press `F5`.
+2. Select **`Lucid: Debug Backend (FastAPI / Uvicorn)`**.
+3. Set breakpoints in any Python file (e.g., `backend/api/v1/portfolio.py`).
+4. Breakpoints will hit whenever the corresponding API route is called from the UI or cURL.
 
 ---
 
-## 10. Automated Test Suites & Health Audits
+## Section 9: Running Both Services Manually (Multi-Terminal)
 
-Lucid includes test suites for backend models, mathematical optimization, agent execution, and frontend production builds.
+For active full-stack development, run services across three dedicated terminal windows:
 
-### Run All Backend Tests (Pytest)
+### Terminal 1: PostgreSQL Service
+Verify or start your PostgreSQL database service:
+
 ```bash
-.venv/bin/pytest backend/tests -v
-```
-To run specific test modules:
-```bash
-# Optimization engine simplex invariants
-.venv/bin/pytest backend/tests/test_portfolio_engine.py -v
+# macOS (Homebrew)
+brew services start postgresql@16
 
-# Authentication, JWT signatures, rate limiting
-.venv/bin/pytest backend/tests/test_auth_and_security.py -v
+# Linux (systemd)
+sudo systemctl start postgresql
 
-# Database relationships, foreign key cascades, transaction rollbacks
-.venv/bin/pytest backend/tests/test_database.py -v
+# Windows
+# Starts automatically as a background Windows Service upon installation
 ```
 
-### Validate Production Frontend Build
+### Terminal 2: FastAPI Backend Server
+Run from the project root:
+```bash
+cd /path/to/Lucid
+source .venv/bin/activate       # Windows: .\.venv\Scripts\Activate.ps1
+PYTHONPATH=. uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### Terminal 3: Next.js Frontend Server
+Run from the frontend directory:
+```bash
+cd /path/to/Lucid/frontend
+npm run dev
+```
+
+### Verification
+Once both processes are active:
+- **Backend API**: `curl http://localhost:8000/api/health`
+- **Frontend App**: Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+To stop the servers, press `Ctrl+C` in each terminal window, or run `./stop_lucid.sh` from the repository root.
+
+---
+
+## Section 10: Running Tests
+
+Lucid includes test suites covering authentication, mathematical optimization invariants, multi-agent workflows, and database transaction rollbacks.
+
+Run from project root with `.venv` active:
+
+```bash
+# Activate virtual environment
+source .venv/bin/activate
+
+# 1. Run full backend test suite
+PYTHONPATH=. pytest backend/tests -v
+
+# 2. Run specific test modules
+PYTHONPATH=. pytest backend/tests/test_portfolio_engine.py -v
+PYTHONPATH=. pytest backend/tests/test_auth_and_security.py -v
+PYTHONPATH=. pytest backend/tests/test_database.py -v
+
+# 3. Run tests with coverage report
+PYTHONPATH=. pytest backend/tests --cov=backend --cov-report=term-missing
+```
+
+> [!NOTE]
+> Backend integration tests connect to the PostgreSQL database to verify transactions and foreign-key constraints. Ensure PostgreSQL is running and migrated before running `pytest`.
+
+---
+
+## Section 11: Developer Lifecycle Guide
+
+### 11.1 Adding Python Dependencies
+When introducing a new Python library:
+
+Run from project root with `.venv` active:
+```bash
+# 1. Install the package in your virtual environment
+pip install package-name
+
+# 2. Add the dependency to backend/requirements.txt with version constraint
+echo "package-name>=1.0.0" >> backend/requirements.txt
+
+# 3. Verify installation
+pip show package-name
+```
+
+### 11.2 Adding Frontend Dependencies
+When adding npm packages to the Next.js frontend:
+
+Run from `frontend/` directory:
 ```bash
 cd frontend
-npm run build
+
+# Install package and update package.json + package-lock.json
+npm install package-name
+
+# Always commit both package.json and package-lock.json
+cd ..
+git add frontend/package.json frontend/package-lock.json
 ```
 
-### End-to-End System Verification
+### 11.3 Database Schema Changes (Migrations)
+When modifying SQLAlchemy domain models in `backend/models/`:
+
+Run from project root with `.venv` active:
 ```bash
-.venv/bin/python scripts/verify_setup.py
+# 1. Modify or add models in backend/models/
+# 2. Generate an autogenerated Alembic revision script
+PYTHONPATH=. alembic revision --autogenerate -m "describe your schema change"
+
+# 3. Review the generated file in backend/alembic/versions/
+# 4. Apply the migration to your database
+PYTHONPATH=. alembic upgrade head
+
+# 5. Validate that all schema tables pass verification
+PYTHONPATH=. python scripts/validate_env.py
+```
+
+### 11.4 Updating Environment Variables
+- When adding a new configuration setting, always document it in `.env.example` with clear comments.
+- **Never commit real API keys, passwords, or production secrets** to `.env.example` or any git-tracked file.
+- Keep `.env` strictly untracked (it is included in `.gitignore`).
+
+### 11.5 Resetting the Database (Development Only)
+If you want to clear test portfolios, reset user sessions, and restore the database to an initial clean baseline:
+
+> [!CAUTION]
+> This operation drops and recreates the `portfolio_dev` database schema. All test data will be permanently wiped.
+
+Run from project root with `.venv` active:
+```bash
+# 1. Downgrade Alembic schema to base
+PYTHONPATH=. alembic downgrade base
+
+# 2. Re-apply all migrations to head
+PYTHONPATH=. alembic upgrade head
+
+# 3. Re-seed questionnaire, macroeconomic baseline, and exchange universe
+PYTHONPATH=. python scripts/init_database.py
 ```
 
 ---
 
-## 11. Troubleshooting & Common Questions
+## Section 12: Troubleshooting
 
-### 1. PostgreSQL is not accepting connections
-- **Symptom**: `psycopg2.OperationalError: could not connect to server: Connection refused`.
-- **Cause**: PostgreSQL service is stopped or listening on a different port.
-- **Resolution**:
-  - macOS: `brew services restart postgresql@16` or check `brew services list`.
-  - Check your port: Check whether PostgreSQL is on port `5432` or `5433` using `pg_isready -p 5432` and `pg_isready -p 5433`. Update `POSTGRES_PORT` in `.env` to match.
-
-### 2. Port 8000 or 3000 is occupied
-- **Symptom**: `Address already in use` or backend/frontend fails to bind.
-- **Cause**: A previous server instance was left running in the background.
-- **Resolution**:
-  - Run `./stop_lucid.sh` (or `powershell .\stop_lucid.ps1`). It terminates lingering processes and frees both ports.
-  - Or manually inspect listeners: `lsof -i :8000 -t` and `lsof -i :3000 -t`.
-
-### 3. Missing Python modules or `ModuleNotFoundError: No module named 'backend'`
-- **Symptom**: `ModuleNotFoundError: No module named 'backend'`.
-- **Cause**: Running Python scripts from inside a subdirectory without `PYTHONPATH` set to the project root.
-- **Resolution**:
-  - Always execute from the repository root: `PYTHONPATH=. .venv/bin/python scripts/...`.
-
-### 4. VS Code command `code` not found in terminal
-- **Symptom**: `./start_lucid.sh: line 105: code: command not found`.
-- **Cause**: The VS Code shell command was not registered in your system PATH.
-- **Resolution**:
-  - Open Visual Studio Code.
-  - Press `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows/Linux).
-  - Type `Shell Command: Install 'code' command in PATH` and press Enter.
-
-### 5. Gemini API Key rate limit or quota exceeded
-- **Symptom**: `429 ResourceExhausted` during multi-agent research.
-- **Cause**: Free cloud tier RPM limits on Google AI Studio.
-- **Resolution**:
-  - Lucid handles this gracefully via an automated deterministic fallback mechanism. You can clear `GEMINI_API_KEY` in `.env` or leave it empty, and Lucid will run the entire qualitative research and allocation pipeline using its deterministic rule engine.
+| Symptom / Error | Root Cause | Exact Solution |
+|---|---|---|
+| `ModuleNotFoundError: No module named 'backend'` | `PYTHONPATH` not set when invoking Python | Always prefix commands with `PYTHONPATH=.` and run from project root: `PYTHONPATH=. python scripts/...` |
+| `psycopg2.OperationalError: could not connect` | PostgreSQL service is stopped | macOS: `brew services start postgresql@16`<br>Linux: `sudo systemctl start postgresql`<br>Windows: Verify `postgresql` service in `services.msc` |
+| `connection refused on port 5432` | PostgreSQL is listening on an alternate port | Check active port: `pg_isready -p 5432` and `pg_isready -p 5433`. Update `POSTGRES_PORT` in `.env` to match. |
+| `relation "alembic_version" does not exist` | Database migrations have not been applied | Run `PYTHONPATH=. alembic upgrade head` from project root with `.venv` active. |
+| `no such table: securities` | Database exists but has not been seeded | Run `PYTHONPATH=. python scripts/init_database.py` from project root with `.venv` active. |
+| `GEMINI_API_KEY not set` | Missing Gemini key in `.env` | **No action needed**. This is expected behavior. Lucid automatically runs using its deterministic rule-based engine. |
+| `npm: command not found` | Node.js is not installed or not in system `PATH` | Install Node.js 18+ from [https://nodejs.org/](https://nodejs.org/) or via `brew install node`. |
+| Frontend displays "Failed to fetch" | Backend server is not running on port 8000 | Start backend server in a separate terminal: `PYTHONPATH=. uvicorn backend.main:app --reload --port 8000`. |
+| `alembic: command not found` | Virtual environment is not activated | Activate virtual environment: `source .venv/bin/activate` (macOS/Linux) or `.\.venv\Scripts\Activate.ps1` (Windows). |
+| `Exchange sync timeout` | Intermittent network latency or NSE rate limits | Re-run `PYTHONPATH=. python scripts/init_database.py`. The script is idempotent and safely skips already-synced securities. |
 
 ---
 
-## 12. Safe Service Stop, Reset & Data Hygiene
+## Section 13: Documentation Coverage Matrix
 
-### Graceful Shutdown
-To stop Lucid at any time:
-```bash
-# macOS / Linux:
-./stop_lucid.sh
+| Setup Step | Automated Script | Manual Docs | Tested | Location in this Guide |
+|---|---|---|---|---|
+| Python installation | ✅ macOS only | ✅ All OSes | ✅ | Section 4.1 |
+| Repository clone | ✅ | ✅ | ✅ | Section 4.2 |
+| Virtual environment creation | ✅ | ✅ | ✅ | Section 4.3 |
+| Virtual environment activation | ✅ | ✅ | ✅ | Section 4.4 |
+| Python requirements install | ✅ | ✅ | ✅ | Section 4.5 |
+| `.env` configuration | ✅ auto-generate | ✅ manual table | ✅ | Section 4.6, 5.5 |
+| PostgreSQL installation | ✅ macOS only | ✅ All OSes | ✅ | Section 5.2 |
+| Database creation | ✅ via `init_database.py` | ✅ SQL commands | ✅ | Section 5.4 |
+| PostgreSQL extensions | ✅ via `init_database.py` | ✅ SQL commands | ✅ | Section 5.4 |
+| Alembic migrations | ✅ | ✅ | ✅ | Section 5.6 |
+| Reference data seeding | ✅ | ✅ | ✅ | Section 5.7 |
+| NSE/BSE universe sync | ✅ | ✅ | ✅ | Section 5.7 |
+| Gemini API key setup | ⚠️ Prompts only | ✅ Full guide | ✅ | Section 6.1 |
+| Yahoo Finance | ✅ built-in | ✅ no key needed | ✅ | Section 6.2 |
+| FRED API key | ⚠️ Optional | ✅ Full guide | ✅ | Section 6.3 |
+| NewsAPI key | ⚠️ Optional | ✅ Full guide | ✅ | Section 6.4 |
+| Node.js installation | ✅ macOS only | ✅ All OSes | ✅ | Section 7.1 |
+| Frontend dependencies | ✅ | ✅ | ✅ | Section 7.3 |
+| VS Code installation | ✅ macOS only | ✅ | ✅ | Section 8.1 |
+| VS Code extensions | ✅ | ✅ with IDs | ✅ | Section 8.4 |
+| Backend startup | ✅ | ✅ | ✅ | Section 4.7, 9 |
+| Frontend startup | ✅ | ✅ | ✅ | Section 7.4, 9 |
+| Test execution | ⚠️ Not automated | ✅ | ✅ | Section 10 |
+| DB schema changes | ❌ | ✅ | ✅ | Section 11.3 |
 
-# Windows PowerShell:
-powershell -ExecutionPolicy Bypass -File .\stop_lucid.ps1
-```
-This terminates the Next.js frontend and FastAPI backend, removes PID files, and frees network ports `8000` and `3000`. **Your PostgreSQL database records are preserved intact.**
+---
 
-### Complete Database Reset (Caution)
-If you wish to wipe test portfolios and restore the database to a clean baseline state:
-```bash
-# 1. Connect to PostgreSQL
-psql -h localhost -p 5433 -U postgres -d postgres -c "DROP DATABASE portfolio_dev;"
+<div align="center">
 
-# 2. Re-run automated database provisioning
-.venv/bin/python scripts/init_database.py
-```
-This re-applies Alembic migrations, re-seeds the risk questionnaire and 2,639 NSE/BSE securities, and creates a fresh developer user.
+**Lucid Documentation Suite**  
+*Comprehensive Engineering Reference for Indian Equity Wealth Management*
+
+</div>
