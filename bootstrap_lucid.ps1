@@ -89,20 +89,23 @@ if ((Test-Path (Join-Path (Get-Location) "backend\requirements.txt")) -and (Test
     Write-Host "   Running inside existing Lucid repository: $TargetDir" -ForegroundColor Green
 } elseif (Test-Path $TargetDir) {
     Write-Host "   Found existing Lucid installation at: $TargetDir" -ForegroundColor Cyan
-    if (Test-Path (Join-Path $TargetDir ".git")) {
-        Write-Host "   Updating repository via git pull..." -ForegroundColor Cyan
-        try { git -C $TargetDir pull origin main | Out-Null } catch {}
-    }
-    Write-Host "   Updating launcher scripts from GitHub..." -ForegroundColor Cyan
+} else {
+    Write-Host "   Target Installation Directory: $TargetDir" -ForegroundColor Cyan
+    New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
+}
+
+# Always synchronize launcher scripts to ensure latest fixes are present
+if (Test-Path $TargetDir) {
+    Write-Host "   Synchronizing latest launcher scripts from GitHub..." -ForegroundColor Cyan
     try {
         Invoke-WebRequest -Uri "https://raw.githubusercontent.com/imankur0011/Lucid/main/start_lucid.ps1" -OutFile (Join-Path $TargetDir "start_lucid.ps1") -UseBasicParsing
         Invoke-WebRequest -Uri "https://raw.githubusercontent.com/imankur0011/Lucid/main/status_lucid.ps1" -OutFile (Join-Path $TargetDir "status_lucid.ps1") -UseBasicParsing
         Invoke-WebRequest -Uri "https://raw.githubusercontent.com/imankur0011/Lucid/main/stop_lucid.ps1" -OutFile (Join-Path $TargetDir "stop_lucid.ps1") -UseBasicParsing
         Invoke-WebRequest -Uri "https://raw.githubusercontent.com/imankur0011/Lucid/main/logs_lucid.ps1" -OutFile (Join-Path $TargetDir "logs_lucid.ps1") -UseBasicParsing
     } catch {}
-} else {
-    Write-Host "   Target Installation Directory: $TargetDir" -ForegroundColor Cyan
-    New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
+    if (Test-Path (Join-Path $TargetDir ".git")) {
+        try { git -C $TargetDir pull origin main | Out-Null } catch {}
+    }
 }
 
 $hasGit = [bool](Get-Command git -ErrorAction SilentlyContinue)
@@ -267,7 +270,9 @@ if ($pgService) {
         Write-Host "   Starting PostgreSQL service..." -ForegroundColor Cyan
         try { Start-Service $pgService.Name } catch {}
     }
-} elseif (-not $hasPsql) {
+} elseif ($hasPsql) {
+    Write-Host "   PostgreSQL Tools   : [OK] Detected (psql is available)" -ForegroundColor Green
+} else {
     Write-Host "   PostgreSQL is not found. Attempting installation via winget..." -ForegroundColor Yellow
     if ($hasWinget) {
         Write-Host "   Downloading and installing PostgreSQL 16 (~350 MB)... Live progress below:" -ForegroundColor Cyan
@@ -284,6 +289,10 @@ Set-Location $TargetDir
 
 $LauncherScript = Join-Path $TargetDir "start_lucid.ps1"
 if (Test-Path $LauncherScript) {
+    # Ensure launcher is the guaranteed latest pure ASCII version from GitHub
+    try {
+        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/imankur0011/Lucid/main/start_lucid.ps1" -OutFile $LauncherScript -UseBasicParsing
+    } catch {}
     Write-Host "   Executing: $LauncherScript`n" -ForegroundColor Green
     powershell -ExecutionPolicy Bypass -File $LauncherScript
 } else {
