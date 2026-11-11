@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     # --- PostgreSQL 16 (Authoritative Relational Database) ---
     postgres_host: str = "localhost"
     postgres_port: int = 5432
-    postgres_db: str = "majorproject"
+    postgres_db: str = "portfolio_dev"
     postgres_user: str = "postgres"
     postgres_password: str = "password"
 

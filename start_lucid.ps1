@@ -265,11 +265,11 @@ if ($Content -match "GEMINI_API_KEY=(.*)" -and ($matches[1].Trim() -eq "" -or $m
     Write-Host "`n🔑 Optional Google Gemini API Key:" -ForegroundColor Yellow
     Write-Host "   Lucid uses Google Gemini 3.8 Flash for qualitative agent research." -ForegroundColor Gray
     Write-Host "   (If skipped, Lucid runs with deterministic rule-based models)." -ForegroundColor Gray
-    Write-Host "   Press Enter or wait 10 seconds to continue with fallback..." -ForegroundColor Cyan
+    Write-Host "   Press Enter or wait 30 seconds to continue with fallback..." -ForegroundColor Cyan
     
     $KeyInput = ""
     $task = [System.Threading.Tasks.Task]::Run([Func[string]]{ [System.Console]::ReadLine() })
-    if ($task.Wait(10000)) {
+    if ($task.Wait(30000)) {
         $KeyInput = $task.Result
     }
     if ($KeyInput -and $KeyInput.Trim() -ne "") {

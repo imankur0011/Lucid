@@ -274,7 +274,7 @@ if [ -z "$GEMINI_KEY" ] || [ "$GEMINI_KEY" = "your_gemini_api_key_here" ]; then
         echo -e "${YELLOW}🔑 Optional Google Gemini API Key:${NC}"
         echo "   Lucid uses Google Gemini 3.8 Flash for qualitative agent research."
         echo "   (If skipped, Lucid runs in fully deterministic rule-based fallback mode)."
-        read -t 10 -r -p "   Enter GEMINI_API_KEY (press Enter or wait 10s to skip): " ENTERED_KEY || ENTERED_KEY=""
+        read -t 30 -r -p "   Enter GEMINI_API_KEY (press Enter or wait 30s to skip): " ENTERED_KEY || ENTERED_KEY=""
         if [ -n "$ENTERED_KEY" ]; then
             sed -i '' "s/GEMINI_API_KEY=.*/GEMINI_API_KEY=$ENTERED_KEY/" "$ENV_FILE" 2>/dev/null || sed -i "s/GEMINI_API_KEY=.*/GEMINI_API_KEY=$ENTERED_KEY/" "$ENV_FILE"
             echo -e "   ${GREEN}✅ Gemini API key configured.${NC}"

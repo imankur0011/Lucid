@@ -138,7 +138,7 @@ chmod +x start_lucid.sh
 2. **Validates Toolchain & VS Code**: Checks Git, Python 3.11+, Node.js, npm, PostgreSQL; configures VS Code extensions.
 3. **Creates Python Virtual Environment**: Sets up `.venv/` and installs dependencies from `backend/requirements.txt`.
 4. **Prepares Frontend**: Runs `npm install` inside `frontend/` for Next.js 16 and React 19.
-5. **Configures `.env`**: Generates secure 32-character random keys for `APP_SECRET_KEY` and `JWT_SECRET_KEY`; prompts for optional Gemini API key (10-second timeout, can skip).
+5. **Configures `.env`**: Generates secure 32-character random keys for `APP_SECRET_KEY` and `JWT_SECRET_KEY`; prompts for optional Gemini API key (30-second timeout, can skip).
 6. **Verifies PostgreSQL**: Tests connection; auto-starts service via Homebrew on macOS if stopped.
 7. **Provisions Database & Seeds Data**: Runs `scripts/init_database.py`, creates `portfolio_dev`, adds `pgcrypto`/`uuid-ossp`, runs Alembic migrations, and seeds ~2,639 equities.
 8. **Resolves Port Conflicts**: Reclaims ports `8000` and `3000` from lingering processes.

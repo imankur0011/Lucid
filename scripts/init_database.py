@@ -37,6 +37,10 @@ from backend.api.v1.auth import hash_password
 
 def ensure_database_exists():
     """Checks if the configured database exists; if not, creates it via maintenance db."""
+    import getpass
+    from sqlalchemy import create_engine
+    from backend.database import session
+
     db_name = settings.postgres_db
     user = settings.postgres_user
     password = settings.postgres_password
@@ -44,8 +48,9 @@ def ensure_database_exists():
     port = settings.postgres_port
 
     print(f"   Checking database '{db_name}' on {host}:{port}...")
+    
+    # 1. Direct connection attempt
     try:
-        # First try direct connection
         conn = psycopg2.connect(
             dbname=db_name,
             user=user,
@@ -61,26 +66,102 @@ def ensure_database_exists():
         err_msg = str(e)
         if f'database "{db_name}" does not exist' in err_msg:
             print(f"   ℹ️ Database '{db_name}' does not exist. Creating now...")
-            # Connect to maintenance database
+            # Connect to maintenance database with configured credentials
             maintenance_db = "postgres" if db_name != "postgres" else "template1"
-            m_conn = psycopg2.connect(
-                dbname=maintenance_db,
-                user=user,
-                password=password,
-                host=host,
-                port=port,
-                connect_timeout=5
-            )
-            m_conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-            cur = m_conn.cursor()
-            cur.execute(f'CREATE DATABASE "{db_name}";')
-            cur.close()
-            m_conn.close()
-            print(f"   ✅ Successfully created database '{db_name}'.")
-            return True
-        else:
-            print(f"   ❌ PostgreSQL connection failed: {e}")
-            return False
+            try:
+                m_conn = psycopg2.connect(
+                    dbname=maintenance_db,
+                    user=user,
+                    password=password,
+                    host=host,
+                    port=port,
+                    connect_timeout=5
+                )
+                m_conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+                cur = m_conn.cursor()
+                cur.execute(f'CREATE DATABASE "{db_name}";')
+                cur.close()
+                m_conn.close()
+                print(f"   ✅ Successfully created database '{db_name}'.")
+                return True
+            except Exception as m_err:
+                print(f"   ⚠️ Could not create via maintenance db: {m_err}")
+
+    # 2. Intelligent Fallback Probing for Port/User/Password Mismatches
+    print("   ℹ️ Probing local PostgreSQL server for working connection parameters...")
+    candidate_ports = [port]
+    for p in [5432, 5433]:
+        if p not in candidate_ports:
+            candidate_ports.append(p)
+
+    sys_user = getpass.getuser()
+    candidate_users = [user]
+    for u in ["postgres", sys_user]:
+        if u and u not in candidate_users:
+            candidate_users.append(u)
+
+    candidate_passwords = [password, "", "postgres", "password", "root"]
+
+    for c_port in candidate_ports:
+        for c_user in candidate_users:
+            for c_pwd in candidate_passwords:
+                for maint_db in ["postgres", "template1"]:
+                    try:
+                        probe_conn = psycopg2.connect(
+                            dbname=maint_db,
+                            user=c_user,
+                            password=c_pwd,
+                            host=host,
+                            port=c_port,
+                            connect_timeout=1
+                        )
+                        probe_conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+                        p_cur = probe_conn.cursor()
+                        # Check if target db exists
+                        p_cur.execute(f"SELECT 1 FROM pg_database WHERE datname = '{db_name}';")
+                        exists = p_cur.fetchone()
+                        if not exists:
+                            p_cur.execute(f'CREATE DATABASE "{db_name}";')
+                            print(f"   ✅ Auto-created database '{db_name}' on port {c_port} (User: '{c_user}').")
+                        else:
+                            print(f"   ✅ Connected to database '{db_name}' on port {c_port} (User: '{c_user}').")
+                        p_cur.close()
+                        probe_conn.close()
+
+                        # Update settings in-memory
+                        settings.postgres_port = c_port
+                        settings.postgres_user = c_user
+                        settings.postgres_password = c_pwd
+
+                        # Persist verified credentials to .env file
+                        env_path = ROOT_DIR / ".env"
+                        if env_path.exists():
+                            try:
+                                with open(env_path, "r") as f:
+                                    e_lines = f.readlines()
+                                with open(env_path, "w") as f:
+                                    for line in e_lines:
+                                        if line.startswith("POSTGRES_PORT="):
+                                            f.write(f"POSTGRES_PORT={c_port}\n")
+                                        elif line.startswith("POSTGRES_USER="):
+                                            f.write(f"POSTGRES_USER={c_user}\n")
+                                        elif line.startswith("POSTGRES_PASSWORD="):
+                                            f.write(f"POSTGRES_PASSWORD={c_pwd}\n")
+                                        else:
+                                            f.write(line)
+                            except Exception:
+                                pass
+
+                        # Reconnect session engine
+                        session.engine.dispose()
+                        session.engine = create_engine(settings.postgres_url, pool_pre_ping=True)
+                        session.SessionLocal.configure(bind=session.engine)
+                        return True
+                    except Exception:
+                        continue
+
+    print(f"   ❌ PostgreSQL connection failed. Ensure PostgreSQL service is started and check credentials in .env.")
+    return False
 
 
 def ensure_extensions():

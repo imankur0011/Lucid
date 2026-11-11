@@ -168,7 +168,7 @@ chmod +x start_lucid.sh
 
 ### External API Limitations
 The launcher script automatically configures all local dependencies, but it cannot register for external third-party API accounts on your behalf.
-- **Google Gemini API**: During Stage 5, the launcher prompts you in the terminal for a `GEMINI_API_KEY` with a **10-second timeout**. If you press Enter or wait 10 seconds without typing, Lucid defaults to its deterministic rule-based engine.
+- **Google Gemini API**: During Stage 5, the launcher prompts you in the terminal for a `GEMINI_API_KEY` with a **30-second timeout**. If you press Enter or wait 30 seconds without typing, Lucid defaults to its deterministic rule-based engine.
 - **FRED & NewsAPI**: Optional keys that can be added to `.env` later if global macro or secondary news feeds are desired.
 
 ### After Setup: URLs & Verification
@@ -837,7 +837,7 @@ PYTHONPATH=. python scripts/init_database.py
 | Alembic migrations | ✅ Auto-applied to head revision | ✅ `alembic upgrade head` | ✅ | Section 5.6 |
 | Reference data seeding | ✅ Risk questionnaire & macro indicators | ✅ `init_database.py` | ✅ | Section 5.7 |
 | NSE/BSE universe sync | ✅ ~2,639 active equities synced | ✅ `init_database.py` | ✅ | Section 5.7 |
-| Gemini API key setup | ⚠️ Prompts with 10s timeout (fallback active) | ✅ Step-by-step guide | ✅ | Section 6.1 |
+| Gemini API key setup | ⚠️ Prompts with 30s timeout (fallback active) | ✅ Step-by-step guide | ✅ | Section 6.1 |
 | Yahoo Finance | ✅ Built-in keyless ingestion | ✅ No key needed | ✅ | Section 6.2 |
 | FRED API key | ⚠️ Optional | ✅ Step-by-step guide | ✅ | Section 6.3 |
 | NewsAPI key | ⚠️ Optional | ✅ Step-by-step guide | ✅ | Section 6.4 |
