@@ -94,7 +94,7 @@ Before setting up Lucid, verify that your machine satisfies the minimum software
 | **Python** | `3.11+` | `3.14.7` | Backend REST API, LangGraph agents, SciPy SLSQP optimizer | `python3 --version` |
 | **Node.js** | `18+` | `v25.2.1` | Next.js 16 web application and server-side rendering | `node --version` |
 | **npm** | `9+` | `11.6.2` | Frontend package installation and build scripts | `npm --version` |
-| **PostgreSQL** | `16+` | `18.1` | Authoritative operational store (62 relational tables) | `psql --version` |
+| **PostgreSQL** | `16+` | `18.1` | Authoritative operational store (60 relational tables: 59 domain application tables + 1 alembic migration table) | `psql --version` |
 | **Git** | `2.30+` | `2.39+` | Source code version control and repository cloning | `git --version` |
 
 > [!NOTE]
@@ -359,11 +359,12 @@ Run from the root of the `Lucid` folder **with your virtual environment active (
   ```
 - **Windows (PowerShell)**:
   ```powershell
+  $env:PYTHONUTF8 = "1"
   python -m uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
   ```
 
 > [!TIP]
-> Using `python -m uvicorn` automatically includes the current working directory in Python's module path (`sys.path`), so you never need to manually export `PYTHONPATH`.
+> Using `python -m uvicorn` automatically includes the current working directory in Python's module path (`sys.path`), so you never need to manually export `PYTHONPATH`. Setting `$env:PYTHONUTF8 = "1"` ensures UTF-8 standard stream encoding on Windows.
 
 **Expected Output:**
 ```text
@@ -380,9 +381,9 @@ Open a second terminal window and test the health route:
   ```
 - **Windows (PowerShell)**:
   ```powershell
-  Invoke-RestMethod http://localhost:8000/api/health
+  Invoke-RestMethod http://127.0.0.1:8000/api/health
   ```
-*(Expected response: `{"api":"up","environment":"development","database":{"status":"healthy","total_tables":63}}`)*
+*(Expected response: `{"api":"up","environment":"development","database":{"status":"healthy","total_tables":60}}`)*
 
 **Interactive API Documentation:**  
 Open **[http://localhost:8000/docs](http://localhost:8000/docs)** in your browser to view the interactive Swagger UI and test any of the 82 endpoints.
@@ -392,7 +393,7 @@ Open **[http://localhost:8000/docs](http://localhost:8000/docs)** in your browse
 ## Section 5: PostgreSQL Database Setup
 
 ### 5.1 What is PostgreSQL & Why Lucid Uses It
-PostgreSQL is an enterprise-grade open-source relational database known for ACID compliance, strong data integrity, and support for advanced indexing and cryptographic primitives. Lucid uses PostgreSQL 16+ as its **single operational source of truth**, persisting all 62 domain application tables without relying on separate NoSQL or vector stores.
+PostgreSQL is an enterprise-grade open-source relational database known for ACID compliance, strong data integrity, and support for advanced indexing and cryptographic primitives. Lucid uses PostgreSQL 16+ as its **single operational source of truth**, persisting all 59 domain application tables without relying on separate NoSQL or vector stores (60 total tables including the Alembic migration history table).
 
 ### 5.2 Install PostgreSQL 16+
 
@@ -474,7 +475,7 @@ POSTGRES_PASSWORD=your_postgres_password_here
 
 ### 5.6 Run Alembic Database Migrations
 **What is this step?**  
-A database migration is a version-controlled Python script that builds your database tables automatically according to the application schema. Lucid uses **Alembic**. Running migrations applies the schema revision `429fa263363c` to create all 62 domain application tables.
+A database migration is a version-controlled Python script that builds your database tables automatically according to the application schema. Lucid uses **Alembic**. Running migrations applies the schema revision `429fa263363c` to create all 59 domain application tables.
 
 **Where should I run it?**  
 Run from the root of the `Lucid` folder **with your virtual environment active (`(.venv)`)**.
@@ -535,7 +536,7 @@ Run from the root of the `Lucid` folder **with your virtual environment active (
    ✅ Security universe synchronized: 2639 equities active.
    ✅ Created development user: developer@lucid.local
 
-🎉 Database is ready! Total public tables: 63 (Expected: 62+1)
+[SUCCESS] Database is ready! Total public tables: 60 (Expected: 60: 59 application tables + 1 alembic_version)
 ======================================================================
 ```
 
@@ -569,7 +570,7 @@ PYTHONPATH=. python scripts/validate_env.py
 | `SELECT count(*) FROM risk_questions;` | `5` | SEBI psychometric questionnaire seeded |
 | `SELECT count(*) FROM economic_indicators;` | $> 0$ | Macroeconomic regime indicators present |
 | `SELECT version_num FROM alembic_version;` | `429fa263363c` | Migration schema at latest head |
-| `SELECT count(*) FROM information_schema.tables WHERE table_schema='public';` | `63` | 62 app domain tables + 1 alembic version table |
+| `SELECT count(*) FROM information_schema.tables WHERE table_schema='public';` | `60` | 59 app domain tables + 1 alembic version table |
 
 ---
 
@@ -795,6 +796,7 @@ Open a terminal, activate your virtual environment, and launch FastAPI:
   ```powershell
   cd C:\path\to\Lucid
   .\.venv\Scripts\Activate.ps1
+  $env:PYTHONUTF8 = "1"
   python -m uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
   ```
 

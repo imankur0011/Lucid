@@ -76,7 +76,7 @@ Visualizes sector distribution, Sharpe ratio, Value-at-Risk (95%), whole-share q
 | **Frontend** | Language | TypeScript | `5.8.0` | End-to-end type safety |
 | **Backend** | API Engine | FastAPI, Uvicorn | `0.115.8` / `0.34.0` | 82 REST endpoints (ASGI) |
 | **Backend** | Language | Python | `3.11+` | Business logic, optimizer & agents |
-| **Database** | Core Store | PostgreSQL | `16+` | 62 application tables + 1 alembic table |
+| **Database** | Core Store | PostgreSQL | `16+` | 60 database tables (59 application tables + 1 alembic table) |
 | **Database** | ORM & Migrations | SQLAlchemy, Alembic | `2.0` / `1.14` | Relational mapping & schema revisions |
 | **Optimization**| Mathematical Solver | SciPy (SLSQP), NumPy | `1.15.2` | Convex portfolio weight optimization |
 | **AI Agents** | Agent Pipeline | LangGraph, Google Gemini | `gemini-3.8-flash` | Qualitative stock research (has rule fallback) |
@@ -198,7 +198,7 @@ Open `.env` in any text editor and update:
 ### Step 4: Provision PostgreSQL Database & Seed Equities
 Ensure PostgreSQL service is running (`brew services start postgresql@16` on macOS, or Windows Service):
 ```bash
-# Run database initializer (creates portfolio_dev, extensions, 62 tables & seeds universe)
+# Run database initializer (creates portfolio_dev, extensions, 60 tables & seeds universe)
 python scripts/init_database.py
 ```
 *Expected: Creates `portfolio_dev`, applies Alembic migration `429fa263363c`, seeds 5 SEBI questions, and syncs ~2,639 NSE/BSE equities.*
@@ -214,9 +214,14 @@ cd ..
 - **Terminal 1 — Backend API (FastAPI)**:
   ```bash
   # Inside Lucid root directory with (.venv) active:
+  # macOS / Linux:
+  python3 -m uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+
+  # Windows PowerShell:
+  $env:PYTHONUTF8 = "1"
   python -m uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
   ```
-  *Verify backend health: `curl http://localhost:8000/api/health` or open [http://localhost:8000/docs](http://localhost:8000/docs)*
+  *Verify backend health: `curl http://localhost:8000/api/health` or `curl http://127.0.0.1:8000/api/health` (PowerShell: `Invoke-RestMethod http://127.0.0.1:8000/api/health`), or open [http://localhost:8000/docs](http://localhost:8000/docs)*
 
 - **Terminal 2 — Frontend UI (Next.js)**:
   ```bash
@@ -296,7 +301,7 @@ Lucid/
 │   ├── api/v1/               # 82 REST API Endpoints (Auth, Portfolio, Market, etc.)
 │   ├── database/             # SQLAlchemy Engine, Session, & Base Models
 │   ├── market_data/          # NSE/BSE Universe Sync, Ingestion & Financial Ratios
-│   ├── models/               # 62 Relational Domain Table Definitions
+│   ├── models/               # 59 Relational Domain Table Definitions
 │   ├── portfolio_engine/     # SciPy SLSQP Solver & Whole-Share Allocator
 │   ├── requirements.txt      # Python Dependencies (FastAPI, SciPy, LangGraph, etc.)
 │   └── tests/                # Pytest Test Suites (Auth, Math, DB, Integrations)

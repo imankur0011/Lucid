@@ -93,7 +93,7 @@ flowchart TD
    - Connects to PostgreSQL server.
    - Creates the target database (`portfolio_dev` or configured name) if it does not exist.
    - Enables required PostgreSQL extensions: `pgcrypto` and `uuid-ossp`.
-   - Executes programmatic Alembic database migrations (`backend/alembic`) up to `head`, generating 62 domain tables + 1 alembic version tracking table (63 total tables).
+   - Executes programmatic Alembic database migrations (`backend/alembic`) up to `head`, generating 59 domain tables + 1 alembic version tracking table (60 total tables).
    - Idempotently seeds risk questionnaire questions, macroeconomic policy baselines (RBI Repo Rate 6.50%, India VIX), baseline market news, demo developer user account, and the complete NSE/BSE security universe (2,639 equities).
 
 8. **Port Conflict Resolution**:
@@ -253,7 +253,7 @@ Run `./status_lucid.sh` at any time to inspect system health:
 
 [4] PostgreSQL Database Status & Record Counts:
    Connection       : ✓ CONNECTED
-   Schema Tables    : 63 tables registered
+   Schema Tables    : 60 tables registered
    Exchange Stocks  : 2639 securities stored (NSE/BSE)
    User Accounts    : 639 user account(s)
    Macro Indicators : 5 economic series registered
