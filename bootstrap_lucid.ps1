@@ -113,7 +113,7 @@ if (-not $hasGit -and (-not (Test-Path (Join-Path $TargetDir "start_lucid.ps1"))
     if ($hasWinget) {
         Write-Host "   Installing Git for Windows via winget..." -ForegroundColor Cyan
         try {
-            winget install --id Git.Git -e --silent --accept-source-agreements --accept-package-agreements | Out-Null
+            winget install --id Git.Git -e --accept-source-agreements --accept-package-agreements
             Update-SessionPath
             $hasGit = [bool](Get-Command git -ErrorAction SilentlyContinue)
         } catch {}
@@ -175,7 +175,7 @@ if (-not $pyVer) {
     if ($hasWinget) {
         Write-Host "   Installing Python 3.11 via winget..." -ForegroundColor Cyan
         try {
-            winget install --id Python.Python.3.11 -e --silent --accept-source-agreements --accept-package-agreements | Out-Null
+            winget install --id Python.Python.3.11 -e --accept-source-agreements --accept-package-agreements
             Update-SessionPath
         } catch {}
     }
@@ -227,7 +227,7 @@ if (-not $nodeVer) {
     if ($hasWinget) {
         Write-Host "   Installing Node.js LTS via winget..." -ForegroundColor Cyan
         try {
-            winget install --id OpenJS.NodeJS.LTS -e --silent --accept-source-agreements --accept-package-agreements | Out-Null
+            winget install --id OpenJS.NodeJS.LTS -e --accept-source-agreements --accept-package-agreements
             Update-SessionPath
         } catch {}
     }
@@ -270,8 +270,9 @@ if ($pgService) {
 } elseif (-not $hasPsql) {
     Write-Host "   PostgreSQL is not found. Attempting installation via winget..." -ForegroundColor Yellow
     if ($hasWinget) {
+        Write-Host "   Downloading and installing PostgreSQL 16 (~350 MB)... Live progress below:" -ForegroundColor Cyan
         try {
-            winget install --id PostgreSQL.PostgreSQL.16 -e --silent --accept-source-agreements --accept-package-agreements | Out-Null
+            winget install --id PostgreSQL.PostgreSQL.16 -e --accept-source-agreements --accept-package-agreements
             Update-SessionPath
         } catch {}
     }

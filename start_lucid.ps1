@@ -87,7 +87,7 @@ $hasNpm = Test-CommandAvailable "npm" "npm"
 if (-not $hasGit -and $hasWinget) {
     Write-Host "   Installing Git via winget..." -ForegroundColor Cyan
     try {
-        winget install --id Git.Git -e --silent --accept-source-agreements --accept-package-agreements | Out-Null
+        winget install --id Git.Git -e --accept-source-agreements --accept-package-agreements
         Update-SessionPath
         $hasGit = [bool](Get-Command git -ErrorAction SilentlyContinue)
     } catch {}
@@ -98,7 +98,7 @@ if (-not $hasPython) {
     Write-Host "   Python is missing. Attempting automatic installation..." -ForegroundColor Yellow
     if ($hasWinget) {
         try {
-            winget install --id Python.Python.3.11 -e --silent --accept-source-agreements --accept-package-agreements | Out-Null
+            winget install --id Python.Python.3.11 -e --accept-source-agreements --accept-package-agreements
             Update-SessionPath
         } catch {}
     }
@@ -119,7 +119,7 @@ if (-not $hasNode -or -not $hasNpm) {
     Write-Host "   Node.js/npm is missing. Attempting automatic installation..." -ForegroundColor Yellow
     if ($hasWinget) {
         try {
-            winget install --id OpenJS.NodeJS.LTS -e --silent --accept-source-agreements --accept-package-agreements | Out-Null
+            winget install --id OpenJS.NodeJS.LTS -e --accept-source-agreements --accept-package-agreements
             Update-SessionPath
         } catch {}
     }
@@ -161,7 +161,7 @@ if (-not $hasCode) {
     } elseif ($hasWinget) {
         Write-Host "   Installing Visual Studio Code via winget..." -ForegroundColor Cyan
         try {
-            winget install --id Microsoft.VisualStudioCode -e --silent --accept-source-agreements --accept-package-agreements | Out-Null
+            winget install --id Microsoft.VisualStudioCode -e --accept-source-agreements --accept-package-agreements
             Update-SessionPath
             $hasCode = [bool](Get-Command code -ErrorAction SilentlyContinue)
         } catch {}
@@ -217,8 +217,8 @@ if (Test-Path $HashFile) {
 }
 
 if ($CurrentHash.Trim() -ne $PrevHash.Trim()) {
-    Write-Host "   Installing backend dependencies from backend\requirements.txt..."
-    & $VenvPip install -r $ReqFile > (Join-Path $LogDir "pip_install.log") 2>&1
+    Write-Host "   Installing backend dependencies from backend\requirements.txt (streaming live logs)..."
+    & $VenvPip install -r $ReqFile | Tee-Object -FilePath (Join-Path $LogDir "pip_install.log")
     $CurrentHash | Out-File -FilePath $HashFile -Encoding utf8
     Write-Host "   [OK] Backend dependencies installed." -ForegroundColor Green
 } else {
@@ -231,9 +231,9 @@ $FrontendDir = Join-Path $RootDir "frontend"
 $NodeModules = Join-Path $FrontendDir "node_modules"
 
 if (-not (Test-Path $NodeModules)) {
-    Write-Host "   Installing frontend dependencies (Next.js and React 19)..."
+    Write-Host "   Installing frontend dependencies (Next.js and React 19) (streaming live logs)..."
     Push-Location $FrontendDir
-    npm install --silent > (Join-Path $LogDir "npm_install.log") 2>&1
+    npm install | Tee-Object -FilePath (Join-Path $LogDir "npm_install.log")
     Pop-Location
     Write-Host "   [OK] Frontend dependencies installed." -ForegroundColor Green
 } else {
