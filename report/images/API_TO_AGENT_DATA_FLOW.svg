@@ -1,253 +1,247 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 1220" width="100%" height="100%" style="background:#FFFFFF; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-  <defs>
-    <filter id="cardShadow" x="-2%" y="-2%" width="104%" height="106%" filterUnits="userSpaceOnUse">
-      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.08"/>
-    </filter>
-    <marker id="flowArr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#334155"/>
-    </marker>
-    <marker id="flowArrBlue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563EB"/>
-    </marker>
-    <marker id="flowArrGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#16A34A"/>
-    </marker>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 870" width="1400" height="870" font-family="Arial, Helvetica, sans-serif">
 
-  <!-- Title & Subtitle -->
-  <text x="480" y="38" text-anchor="middle" font-size="24" font-weight="800" fill="#0F172A" letter-spacing="-0.3">Lucid: End-to-End Data Ingestion &amp; Agent Delivery</text>
-  <text x="480" y="60" text-anchor="middle" font-size="13" font-weight="500" fill="#64748B">Five-Stage Pipeline: Free-Tier External Ingestion, Normalization, Agent Synthesis &amp; Math Allocation</text>
+  <!-- Background -->
+  <rect width="1400" height="870" fill="#f8f9fa"/>
 
-  <!-- ======================================================== -->
-  <!-- STAGE 1: External Free-Tier Public Data Providers -->
-  <!-- ======================================================== -->
-  <g transform="translate(35, 80)">
-    <rect width="890" height="150" rx="8" fill="#F8FAFC" stroke="#0284C7" stroke-width="2" filter="url(#cardShadow)"/>
-    <rect width="890" height="26" rx="8" fill="#E0F2FE"/>
-    <rect y="16" width="890" height="10" fill="#E0F2FE"/>
-    <text x="16" y="18" font-size="12" font-weight="800" fill="#0369A1">STAGE 1: EXTERNAL FREE-TIER PUBLIC DATA SOURCES</text>
-    <text x="874" y="18" text-anchor="end" font-size="11" font-weight="600" fill="#0284C7">5 VERIFIED AUTHORITIES</text>
+  <!-- ══════════════════════════════════════════════════════════
+       STAGE 1: EXTERNAL DATA SOURCES  (blue band, y=10..185)
+  ═══════════════════════════════════════════════════════════════ -->
+  <rect x="10" y="10" width="1380" height="165" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="700" y="34" text-anchor="middle" font-size="13" font-weight="bold" fill="#1d4ed8">STAGE 1: EXTERNAL DATA SOURCES</text>
 
-    <!-- 5 Provider Boxes -->
-    <rect x="15" y="36" width="165" height="100" rx="5" fill="#FFFFFF" stroke="#BAE6FD" stroke-width="1.2"/>
-    <text x="97" y="54" text-anchor="middle" font-size="12" font-weight="800" fill="#0F172A">NSE &amp; BSE Archives</text>
-    <text x="97" y="70" text-anchor="middle" font-size="10.5" font-weight="600" fill="#0369A1">2,639 Master Equities</text>
-    <text x="97" y="86" text-anchor="middle" font-size="10" font-weight="500" fill="#475569">ISIN Registry &amp; Tickers</text>
-    <text x="97" y="100" text-anchor="middle" font-size="10" font-weight="500" fill="#64748B">Weekly Batch EOD</text>
-    <text x="97" y="118" text-anchor="middle" font-size="9.5" font-weight="600" fill="#0284C7">Fallback: PostgreSQL Cache</text>
+  <!-- Provider boxes (5 across) -->
+  <!-- Box 1: NSE & BSE Archives -->
+  <rect x="22" y="44" width="256" height="122" rx="6" fill="#bfdbfe" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="150" y="62" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">NSE &amp; BSE Archives</text>
+  <line x1="30" y1="68" x2="270" y2="68" stroke="#3b82f6" stroke-width="0.8"/>
+  <text x="150" y="85" text-anchor="middle" font-size="10.5" fill="#1e40af">2,639 equities listed</text>
+  <text x="150" y="101" text-anchor="middle" font-size="10.5" fill="#1e40af">ISIN Registry (NSE ↔ BSE)</text>
+  <text x="150" y="117" text-anchor="middle" font-size="10.5" fill="#1e40af">Historical OHLCV archives</text>
+  <text x="150" y="133" text-anchor="middle" font-size="10.5" fill="#1e40af">Corporate action records</text>
+  <text x="150" y="153" text-anchor="middle" font-size="10" fill="#2563eb">📂 Batch / Bulk Download</text>
 
-    <rect x="190" y="36" width="165" height="100" rx="5" fill="#FFFFFF" stroke="#BAE6FD" stroke-width="1.2"/>
-    <text x="272" y="54" text-anchor="middle" font-size="12" font-weight="800" fill="#0F172A">Yahoo Finance API</text>
-    <text x="272" y="70" text-anchor="middle" font-size="10.5" font-weight="600" fill="#0369A1">1-Year Daily OHLCV</text>
-    <text x="272" y="86" text-anchor="middle" font-size="10" font-weight="500" fill="#475569">P/E, P/B, ROE, D/E</text>
-    <text x="272" y="100" text-anchor="middle" font-size="10" font-weight="500" fill="#64748B">15-Min Lag / Post-Close</text>
-    <text x="272" y="118" text-anchor="middle" font-size="9.5" font-weight="600" fill="#0284C7">Fallback: Stored 252 Bars</text>
+  <!-- Box 2: Yahoo Finance -->
+  <rect x="288" y="44" width="256" height="122" rx="6" fill="#bfdbfe" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="416" y="62" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">Yahoo Finance API</text>
+  <line x1="296" y1="68" x2="536" y2="68" stroke="#3b82f6" stroke-width="0.8"/>
+  <text x="416" y="85" text-anchor="middle" font-size="10.5" fill="#1e40af">1-Year OHLCV (daily close)</text>
+  <text x="416" y="101" text-anchor="middle" font-size="10.5" fill="#1e40af">Fundamentals: P/E, ROE, P/B</text>
+  <text x="416" y="117" text-anchor="middle" font-size="10.5" fill="#1e40af">Market cap &amp; EV metrics</text>
+  <text x="416" y="133" text-anchor="middle" font-size="10.5" fill="#1e40af">Dividend yield &amp; EPS</text>
+  <text x="416" y="153" text-anchor="middle" font-size="10" fill="#2563eb">🔄 REST / yfinance</text>
 
-    <rect x="365" y="36" width="160" height="100" rx="5" fill="#FFFFFF" stroke="#BAE6FD" stroke-width="1.2"/>
-    <text x="445" y="54" text-anchor="middle" font-size="12" font-weight="800" fill="#0F172A">Reserve Bank (RBI)</text>
-    <text x="445" y="70" text-anchor="middle" font-size="10.5" font-weight="600" fill="#0369A1">Repo 6.50% • CPI 5.10%</text>
-    <text x="445" y="86" text-anchor="middle" font-size="10" font-weight="500" fill="#475569">10Y G-Sec: 7.04%</text>
-    <text x="445" y="100" text-anchor="middle" font-size="10" font-weight="500" fill="#64748B">Bi-Monthly MPC Bulletins</text>
-    <text x="445" y="118" text-anchor="middle" font-size="9.5" font-weight="600" fill="#0284C7">Fallback: Seeded 6.50%</text>
+  <!-- Box 3: RBI -->
+  <rect x="554" y="44" width="256" height="122" rx="6" fill="#bfdbfe" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="682" y="62" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">Reserve Bank of India</text>
+  <line x1="562" y1="68" x2="802" y2="68" stroke="#3b82f6" stroke-width="0.8"/>
+  <text x="682" y="85" text-anchor="middle" font-size="10.5" fill="#1e40af">Repo Rate: 6.50%</text>
+  <text x="682" y="101" text-anchor="middle" font-size="10.5" fill="#1e40af">CPI Inflation: 5.10%</text>
+  <text x="682" y="117" text-anchor="middle" font-size="10.5" fill="#1e40af">MPC policy decisions</text>
+  <text x="682" y="133" text-anchor="middle" font-size="10.5" fill="#1e40af">Liquidity &amp; FX data</text>
+  <text x="682" y="153" text-anchor="middle" font-size="10" fill="#2563eb">📰 RBI Open Data Portal</text>
 
-    <rect x="535" y="36" width="165" height="100" rx="5" fill="#FFFFFF" stroke="#BAE6FD" stroke-width="1.2"/>
-    <text x="617" y="54" text-anchor="middle" font-size="12" font-weight="800" fill="#0F172A">NSE Stream &amp; News</text>
-    <text x="617" y="70" text-anchor="middle" font-size="10.5" font-weight="600" fill="#0369A1">India VIX &amp; Nifty 50</text>
-    <text x="617" y="86" text-anchor="middle" font-size="10" font-weight="500" fill="#475569">30-Day News Headlines</text>
-    <text x="617" y="100" text-anchor="middle" font-size="10" font-weight="500" fill="#64748B">15-Min Public Index Lag</text>
-    <text x="617" y="118" text-anchor="middle" font-size="9.5" font-weight="600" fill="#0284C7">Fallback: 20-DMA Regime</text>
+  <!-- Box 4: NSE Stream & News -->
+  <rect x="820" y="44" width="256" height="122" rx="6" fill="#bfdbfe" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="948" y="62" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">NSE Stream &amp; News</text>
+  <line x1="828" y1="68" x2="1068" y2="68" stroke="#3b82f6" stroke-width="0.8"/>
+  <text x="948" y="85" text-anchor="middle" font-size="10.5" fill="#1e40af">India VIX (volatility index)</text>
+  <text x="948" y="101" text-anchor="middle" font-size="10.5" fill="#1e40af">Nifty 50 live / EOD</text>
+  <text x="948" y="117" text-anchor="middle" font-size="10.5" fill="#1e40af">Corporate announcements</text>
+  <text x="948" y="133" text-anchor="middle" font-size="10.5" fill="#1e40af">Business news headlines</text>
+  <text x="948" y="153" text-anchor="middle" font-size="10" fill="#2563eb">📡 NSE Feed / RSS</text>
 
-    <rect x="710" y="36" width="165" height="100" rx="5" fill="#FFFFFF" stroke="#BAE6FD" stroke-width="1.2"/>
-    <text x="792" y="54" text-anchor="middle" font-size="12" font-weight="800" fill="#0F172A">Google Gemini API</text>
-    <text x="792" y="70" text-anchor="middle" font-size="10.5" font-weight="600" fill="#0369A1">gemini-2.5-flash</text>
-    <text x="792" y="86" text-anchor="middle" font-size="10" font-weight="500" fill="#475569">Qualitative Reasoning</text>
-    <text x="792" y="100" text-anchor="middle" font-size="10" font-weight="500" fill="#64748B">1.5s-2.5s Roundtrip Quota</text>
-    <text x="792" y="118" text-anchor="middle" font-size="9.5" font-weight="600" fill="#0284C7">Fallback: Rule Engine v2</text>
-  </g>
+  <!-- Box 5: Google Gemini -->
+  <rect x="1086" y="44" width="300" height="122" rx="6" fill="#bfdbfe" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="1236" y="62" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">Google Gemini API</text>
+  <line x1="1094" y1="68" x2="1378" y2="68" stroke="#3b82f6" stroke-width="0.8"/>
+  <text x="1236" y="85" text-anchor="middle" font-size="10.5" fill="#1e40af">LLM reasoning engine</text>
+  <text x="1236" y="101" text-anchor="middle" font-size="10.5" fill="#1e40af">Multi-step chain-of-thought</text>
+  <text x="1236" y="117" text-anchor="middle" font-size="10.5" fill="#1e40af">Structured JSON output</text>
+  <text x="1236" y="133" text-anchor="middle" font-size="10.5" fill="#1e40af">Gemini 1.5 Pro model</text>
+  <text x="1236" y="153" text-anchor="middle" font-size="10" fill="#2563eb">🤖 REST / google-generativeai</text>
 
-  <!-- Flow 1 -> 2 Connector -->
-  <line x1="480" y1="230" x2="480" y2="260" stroke="#0284C7" stroke-width="2.5" marker-end="url(#flowArrBlue)"/>
-  <rect x="420" y="238" width="120" height="16" rx="4" fill="#FFFFFF" stroke="#0284C7" stroke-width="1"/>
-  <text x="480" y="250" text-anchor="middle" font-size="10" font-weight="700" fill="#0369A1">HTTPS REST &amp; CSV</text>
+  <!-- Arrow S1→S2 -->
+  <line x1="700" y1="175" x2="700" y2="202" stroke="#374151" stroke-width="2"/>
+  <polygon points="700,208 695,198 705,198" fill="#374151"/>
 
-  <!-- ======================================================== -->
-  <!-- STAGE 2: Ingestion, Normalization & PostgreSQL Storage -->
-  <!-- ======================================================== -->
-  <g transform="translate(35, 262)">
-    <rect width="890" height="175" rx="8" fill="#F8FAFC" stroke="#4F46E5" stroke-width="2" filter="url(#cardShadow)"/>
-    <rect width="890" height="26" rx="8" fill="#EEF2FF"/>
-    <rect y="16" width="890" height="10" fill="#EEF2FF"/>
-    <text x="16" y="18" font-size="12" font-weight="800" fill="#4338CA">STAGE 2: DATA NORMALIZATION, FUNNEL &amp; RELATIONAL PERSISTENCE</text>
-    <text x="874" y="18" text-anchor="end" font-size="11" font-weight="600" fill="#4F46E5">POSTGRESQL 16.4</text>
+  <!-- ══════════════════════════════════════════════════════════
+       STAGE 2: NORMALIZATION & STORAGE  (indigo, y=208..370)
+  ═══════════════════════════════════════════════════════════════ -->
+  <rect x="10" y="208" width="1380" height="152" rx="8" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="700" y="230" text-anchor="middle" font-size="13" font-weight="bold" fill="#3730a3">STAGE 2: NORMALIZATION &amp; STORAGE</text>
 
-    <!-- 3 Processing Columns -->
-    <rect x="15" y="36" width="275" height="125" rx="5" fill="#FFFFFF" stroke="#C7D2FE" stroke-width="1.2"/>
-    <text x="25" y="56" font-size="12" font-weight="800" fill="#0F172A">1. Dual-Listing &amp; ISIN Resolver</text>
-    <text x="25" y="74" font-size="11" font-weight="500" fill="#475569">• Ticker Mapping: NSE:RELIANCE ↔ BSE:500325</text>
-    <text x="25" y="92" font-size="11" font-weight="500" fill="#475569">• ISIN Validation: INE002A01018 verification</text>
-    <text x="25" y="110" font-size="11" font-weight="500" fill="#475569">• Cleanse symbol aliases &amp; corporate splits</text>
-    <text x="25" y="135" font-size="10.5" font-weight="700" fill="#4338CA">Saved: securities &amp; instrument_listings</text>
+  <!-- Box 1: ISIN Resolver -->
+  <rect x="22" y="240" width="310" height="110" rx="6" fill="#c7d2fe" stroke="#6366f1" stroke-width="1.2"/>
+  <text x="177" y="258" text-anchor="middle" font-size="12" font-weight="bold" fill="#312e81">ISIN Resolver</text>
+  <line x1="30" y1="264" x2="324" y2="264" stroke="#6366f1" stroke-width="0.8"/>
+  <text x="177" y="280" text-anchor="middle" font-size="10.5" fill="#3730a3">NSE ↔ BSE ticker mapping</text>
+  <text x="177" y="296" text-anchor="middle" font-size="10.5" fill="#3730a3">Deduplication by ISIN code</text>
+  <text x="177" y="312" text-anchor="middle" font-size="10.5" fill="#3730a3">Exchange canonical form</text>
+  <text x="177" y="328" text-anchor="middle" font-size="10.5" fill="#3730a3">Symbol normalization rules</text>
+  <text x="177" y="344" text-anchor="middle" font-size="10" fill="#4f46e5">🔍 ISIN → Canonical Ticker</text>
 
-    <rect x="305" y="36" width="280" height="125" rx="5" fill="#FFFFFF" stroke="#C7D2FE" stroke-width="1.2"/>
-    <text x="315" y="56" font-size="12" font-weight="800" fill="#0F172A">2. 3-Tier Liquidity Funnel</text>
-    <text x="315" y="74" font-size="11" font-weight="500" fill="#475569">• Master Universe: 2,639 listed equities</text>
-    <text x="315" y="92" font-size="11" font-weight="700" fill="#2563EB">• Liquidity Gate: ADTV ≥ ₹5 Lakhs, 200+ days</text>
-    <text x="315" y="110" font-size="11" font-weight="700" fill="#059669">• Liquid Universe Output: Exactly 504 Stocks</text>
-    <text x="315" y="135" font-size="10.5" font-weight="700" fill="#4338CA">Filters penny stocks &amp; illiquid securities</text>
+  <!-- Box 2: Liquidity Funnel -->
+  <rect x="348" y="240" width="358" height="110" rx="6" fill="#c7d2fe" stroke="#6366f1" stroke-width="1.2"/>
+  <text x="527" y="258" text-anchor="middle" font-size="12" font-weight="bold" fill="#312e81">Liquidity Funnel</text>
+  <line x1="356" y1="264" x2="698" y2="264" stroke="#6366f1" stroke-width="0.8"/>
+  <text x="527" y="280" text-anchor="middle" font-size="10.5" fill="#3730a3">2,639 → 504 liquid stocks</text>
+  <text x="527" y="296" text-anchor="middle" font-size="10.5" fill="#3730a3">ADTV filter: ≥ ₹5 Lakh/day</text>
+  <text x="527" y="312" text-anchor="middle" font-size="10.5" fill="#3730a3">Rolling 90-day average volume</text>
+  <text x="527" y="328" text-anchor="middle" font-size="10.5" fill="#3730a3">Penny stock &amp; halt exclusion</text>
+  <text x="527" y="344" text-anchor="middle" font-size="10" fill="#4f46e5">📉 2,639 → 504 Liquid Universe</text>
 
-    <rect x="600" y="36" width="275" height="125" rx="5" fill="#FFFFFF" stroke="#C7D2FE" stroke-width="1.2"/>
-    <text x="610" y="56" font-size="12" font-weight="800" fill="#0F172A">3. Factor Winsorization &amp; Z-Scores</text>
-    <text x="610" y="74" font-size="11" font-weight="500" fill="#475569">• Outlier Clipping: [5th, 95th Percentile]</text>
-    <text x="610" y="92" font-size="11" font-weight="500" fill="#475569">• Quality Z_Q: Sector-relative ROE</text>
-    <text x="610" y="110" font-size="11" font-weight="500" fill="#475569">• Value Z_V: P/E, P/B; Momentum Z_M (6M)</text>
-    <text x="610" y="135" font-size="10.5" font-weight="700" fill="#4338CA">Saved: fundamental_metrics, market_prices</text>
-  </g>
+  <!-- Box 3: Factor Z-Scores -->
+  <rect x="722" y="240" width="358" height="110" rx="6" fill="#c7d2fe" stroke="#6366f1" stroke-width="1.2"/>
+  <text x="901" y="258" text-anchor="middle" font-size="12" font-weight="bold" fill="#312e81">Factor Z-Scores</text>
+  <line x1="730" y1="264" x2="1072" y2="264" stroke="#6366f1" stroke-width="0.8"/>
+  <text x="901" y="280" text-anchor="middle" font-size="10.5" fill="#3730a3">ROE, P/E, P/B cross-sectional</text>
+  <text x="901" y="296" text-anchor="middle" font-size="10.5" fill="#3730a3">Price momentum (52-week)</text>
+  <text x="901" y="312" text-anchor="middle" font-size="10.5" fill="#3730a3">Composite quality score</text>
+  <text x="901" y="328" text-anchor="middle" font-size="10.5" fill="#3730a3">Sector-relative ranking</text>
+  <text x="901" y="344" text-anchor="middle" font-size="10" fill="#4f46e5">📊 Z = (x − μ) / σ per sector</text>
 
-  <!-- Flow 2 -> 3 Connector -->
-  <line x1="480" y1="437" x2="480" y2="467" stroke="#4F46E5" stroke-width="2.5" marker-end="url(#flowArr)"/>
-  <rect x="400" y="445" width="160" height="16" rx="4" fill="#FFFFFF" stroke="#4F46E5" stroke-width="1"/>
-  <text x="480" y="457" text-anchor="middle" font-size="10" font-weight="700" fill="#4338CA">Normalized Context Ingestion</text>
+  <!-- DB Storage box -->
+  <rect x="1096" y="240" width="290" height="110" rx="6" fill="#818cf8" stroke="#4338ca" stroke-width="1.5"/>
+  <text x="1241" y="262" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">🗄 PostgreSQL 16</text>
+  <line x1="1104" y1="268" x2="1378" y2="268" stroke="#6366f1" stroke-width="0.8"/>
+  <text x="1241" y="284" text-anchor="middle" font-size="10.5" fill="#e0e7ff">ACID transactions</text>
+  <text x="1241" y="300" text-anchor="middle" font-size="10.5" fill="#e0e7ff">SQLAlchemy 2.0 ORM</text>
+  <text x="1241" y="316" text-anchor="middle" font-size="10.5" fill="#e0e7ff">Alembic migrations</text>
+  <text x="1241" y="332" text-anchor="middle" font-size="10.5" fill="#e0e7ff">62 tables / 8 domains</text>
+  <text x="1241" y="348" text-anchor="middle" font-size="10" fill="#c7d2fe">🏛 Persistent data store</text>
 
-  <!-- ======================================================== -->
-  <!-- STAGE 3: Agent Payload & Graph State Assembly -->
-  <!-- ======================================================== -->
-  <g transform="translate(35, 469)">
-    <rect width="890" height="120" rx="8" fill="#F8FAFC" stroke="#0F172A" stroke-width="2" filter="url(#cardShadow)"/>
-    <rect width="890" height="26" rx="8" fill="#E2E8F0"/>
-    <rect y="16" width="890" height="10" fill="#E2E8F0"/>
-    <text x="16" y="18" font-size="12" font-weight="800" fill="#0F172A">STAGE 3: STRUCTURED AGENT PAYLOAD &amp; GRAPH STATE ASSEMBLY</text>
-    <text x="874" y="18" text-anchor="end" font-size="11" font-weight="600" fill="#475569">PortfolioAgentState (35 Fields)</text>
+  <!-- Arrow S2→S3 -->
+  <line x1="700" y1="360" x2="700" y2="387" stroke="#374151" stroke-width="2"/>
+  <polygon points="700,393 695,383 705,383" fill="#374151"/>
 
-    <!-- 3 Context Blocks -->
-    <rect x="15" y="36" width="275" height="72" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
-    <text x="25" y="54" font-size="12" font-weight="800" fill="#0F172A">Investor Mandate</text>
-    <text x="25" y="70" font-size="10.5" font-weight="600" fill="#2563EB">• Capital: ≥ ₹10,000</text>
-    <text x="25" y="86" font-size="10.5" font-weight="500" fill="#475569">• 5-Q Risk Score (5-20), Horizon, Sector Bans</text>
+  <!-- ══════════════════════════════════════════════════════════
+       STAGE 3: AGENT PAYLOAD ASSEMBLY  (slate, y=393..525)
+  ═══════════════════════════════════════════════════════════════ -->
+  <rect x="10" y="393" width="1380" height="132" rx="8" fill="#f1f5f9" stroke="#475569" stroke-width="1.5"/>
+  <text x="700" y="414" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e293b">STAGE 3: AGENT PAYLOAD ASSEMBLY</text>
 
-    <rect x="305" y="36" width="280" height="72" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
-    <text x="315" y="54" font-size="12" font-weight="800" fill="#0F172A">Macroeconomic Context</text>
-    <text x="315" y="70" font-size="10.5" font-weight="600" fill="#059669">• RBI Repo: 6.50% • CPI Inflation: 5.10%</text>
-    <text x="315" y="86" font-size="10.5" font-weight="500" fill="#475569">• India VIX Regime: Calm, Moderate, Volatile</text>
+  <!-- Box 1 -->
+  <rect x="22" y="423" width="416" height="94" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="1.2"/>
+  <text x="230" y="441" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">Investor Mandate</text>
+  <line x1="30" y1="447" x2="430" y2="447" stroke="#64748b" stroke-width="0.8"/>
+  <text x="230" y="463" text-anchor="middle" font-size="10.5" fill="#334155">Capital to invest &amp; risk score (1–10)</text>
+  <text x="230" y="479" text-anchor="middle" font-size="10.5" fill="#334155">Sector ban list &amp; ESG prefs</text>
+  <text x="230" y="495" text-anchor="middle" font-size="10.5" fill="#334155">Investment horizon &amp; goals</text>
+  <text x="230" y="511" text-anchor="middle" font-size="10" fill="#475569">👤 User profile from DB</text>
 
-    <rect x="600" y="36" width="275" height="72" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
-    <text x="610" y="54" font-size="12" font-weight="800" fill="#0F172A">Pre-Screened Universe</text>
-    <text x="610" y="70" font-size="10.5" font-weight="600" fill="#7C3AED">• 504 Verified Liquid Stocks</text>
-    <text x="610" y="86" font-size="10.5" font-weight="500" fill="#475569">• Winsorized Factor Z-Scores &amp; Valuations</text>
-  </g>
+  <!-- Box 2 -->
+  <rect x="454" y="423" width="416" height="94" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="1.2"/>
+  <text x="662" y="441" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">Macroeconomic Context</text>
+  <line x1="462" y1="447" x2="862" y2="447" stroke="#64748b" stroke-width="0.8"/>
+  <text x="662" y="463" text-anchor="middle" font-size="10.5" fill="#334155">Repo Rate 6.50% → rate regime tag</text>
+  <text x="662" y="479" text-anchor="middle" font-size="10.5" fill="#334155">CPI 5.10% → inflation tag</text>
+  <text x="662" y="495" text-anchor="middle" font-size="10.5" fill="#334155">VIX regime: low / mid / high</text>
+  <text x="662" y="511" text-anchor="middle" font-size="10" fill="#475569">🌐 Macro snapshot from DB</text>
 
-  <!-- Flow 3 -> 4 Connector -->
-  <line x1="480" y1="589" x2="480" y2="627" stroke="#7C3AED" stroke-width="2.5" marker-end="url(#flowArr)"/>
-  <rect x="350" y="599" width="260" height="18" rx="4" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.2"/>
-  <text x="480" y="612" text-anchor="middle" font-size="10" font-weight="700" fill="#6D28D9">Dispatched to LangGraph Multi-Agent Team</text>
+  <!-- Box 3 -->
+  <rect x="886" y="423" width="500" height="94" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="1.2"/>
+  <text x="1136" y="441" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">Pre-Screened Universe</text>
+  <line x1="894" y1="447" x2="1378" y2="447" stroke="#64748b" stroke-width="0.8"/>
+  <text x="1136" y="463" text-anchor="middle" font-size="10.5" fill="#334155">504 verified liquid stocks</text>
+  <text x="1136" y="479" text-anchor="middle" font-size="10.5" fill="#334155">With factor scores &amp; fundamentals</text>
+  <text x="1136" y="495" text-anchor="middle" font-size="10.5" fill="#334155">Sector tags &amp; market-cap bands</text>
+  <text x="1136" y="511" text-anchor="middle" font-size="10" fill="#475569">📋 Screened equity list</text>
 
-  <!-- ======================================================== -->
-  <!-- STAGE 4: LangGraph Multi-Agent Sequential Research & Audit -->
-  <!-- ======================================================== -->
-  <g transform="translate(35, 629)">
-    <rect width="890" height="235" rx="8" fill="#FAF5FF" stroke="#7C3AED" stroke-width="2" filter="url(#cardShadow)"/>
-    <rect width="890" height="26" rx="8" fill="#EDE9FE"/>
-    <rect y="16" width="890" height="10" fill="#EDE9FE"/>
-    <text x="16" y="18" font-size="12" font-weight="800" fill="#6D28D9">STAGE 4: LANGGRAPH MULTI-AGENT SEQUENTIAL RESEARCH &amp; ADVERSARIAL CRITIC</text>
-    <text x="874" y="18" text-anchor="end" font-size="11" font-weight="600" fill="#7C3AED">QUALITATIVE REASONING</text>
+  <!-- Arrow S3→S4 -->
+  <line x1="700" y1="525" x2="700" y2="552" stroke="#374151" stroke-width="2"/>
+  <polygon points="700,558 695,548 705,548" fill="#374151"/>
 
-    <!-- Sub-step A: Chained Specialists -->
-    <rect x="15" y="36" width="860" height="85" rx="6" fill="#FFFFFF" stroke="#DDD6FE" stroke-width="1.2"/>
-    <text x="25" y="54" font-size="12" font-weight="800" fill="#1E40AF">1. Chained Specialist Research Analysts (Enrich Shared Graph State Sequentially)</text>
-    
-    <rect x="25" y="62" width="195" height="50" rx="4" fill="#F0FDFA" stroke="#99F6E4"/>
-    <text x="122" y="80" text-anchor="middle" font-size="11" font-weight="700" fill="#0F766E">Macro Analyst (N3)</text>
-    <text x="122" y="96" text-anchor="middle" font-size="10" font-weight="500" fill="#134E4A">Repo, CPI → Cash Buffer 2.5–5%</text>
+  <!-- ══════════════════════════════════════════════════════════
+       STAGE 4: LANGGRAPH MULTI-AGENT RESEARCH  (purple, y=558..710)
+  ═══════════════════════════════════════════════════════════════ -->
+  <rect x="10" y="558" width="1380" height="152" rx="8" fill="#f3e8ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="700" y="579" text-anchor="middle" font-size="13" font-weight="bold" fill="#5b21b6">STAGE 4: LANGGRAPH MULTI-AGENT RESEARCH</text>
 
-    <line x1="220" y1="87" x2="245" y2="87" stroke="#0D9488" stroke-width="1.5" marker-end="url(#flowArr)"/>
+  <!-- Row 1 label -->
+  <text x="22" y="600" font-size="10" fill="#6d28d9" font-style="italic">Sequential Research Chain →</text>
 
-    <rect x="245" y="62" width="195" height="50" rx="4" fill="#EFF6FF" stroke="#BFDBFE"/>
-    <text x="342" y="80" text-anchor="middle" font-size="11" font-weight="700" fill="#1E40AF">Market Analyst (N4)</text>
-    <text x="342" y="96" text-anchor="middle" font-size="10" font-weight="500" fill="#1E3A8A">VIX, 200-DMA → Beta &amp; Vol Cap</text>
+  <!-- Row 1 agents -->
+  <rect x="22" y="606" width="296" height="68" rx="5" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="170" y="626" text-anchor="middle" font-size="12" font-weight="bold" fill="#4c1d95">🌐 Macro Analyst</text>
+  <text x="170" y="643" text-anchor="middle" font-size="10.5" fill="#5b21b6">Rate &amp; inflation regime analysis</text>
+  <text x="170" y="659" text-anchor="middle" font-size="10.5" fill="#5b21b6">Sector tailwind / headwind</text>
+  <text x="170" y="669" text-anchor="middle" font-size="10" fill="#6d28d9">→ Macro memo</text>
 
-    <line x1="440" y1="87" x2="465" y2="87" stroke="#2563EB" stroke-width="1.5" marker-end="url(#flowArr)"/>
+  <line x1="318" y1="640" x2="338" y2="640" stroke="#7c3aed" stroke-width="1.5"/>
+  <polygon points="338,640 330,636 330,644" fill="#7c3aed"/>
 
-    <rect x="465" y="62" width="195" height="50" rx="4" fill="#F0FDF4" stroke="#BBF7D0"/>
-    <text x="562" y="80" text-anchor="middle" font-size="11" font-weight="700" fill="#15803D">Fundamental Analyst (N5)</text>
-    <text x="562" y="96" text-anchor="middle" font-size="10" font-weight="500" fill="#14532D">ROE ≥15%, D/E ≤1.0, P/E Screening</text>
+  <rect x="338" y="606" width="296" height="68" rx="5" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="486" y="626" text-anchor="middle" font-size="12" font-weight="bold" fill="#4c1d95">📈 Market Analyst</text>
+  <text x="486" y="643" text-anchor="middle" font-size="10.5" fill="#5b21b6">Technical trend &amp; momentum</text>
+  <text x="486" y="659" text-anchor="middle" font-size="10.5" fill="#5b21b6">Sector rotation signals</text>
+  <text x="486" y="669" text-anchor="middle" font-size="10" fill="#6d28d9">→ Market memo</text>
 
-    <line x1="660" y1="87" x2="685" y2="87" stroke="#16A34A" stroke-width="1.5" marker-end="url(#flowArr)"/>
+  <line x1="634" y1="640" x2="654" y2="640" stroke="#7c3aed" stroke-width="1.5"/>
+  <polygon points="654,640 646,636 646,644" fill="#7c3aed"/>
 
-    <rect x="685" y="62" width="180" height="50" rx="4" fill="#FFFBEB" stroke="#FDE68A"/>
-    <text x="775" y="80" text-anchor="middle" font-size="11" font-weight="700" fill="#B45309">News &amp; Filings (N6)</text>
-    <text x="775" y="96" text-anchor="middle" font-size="10" font-weight="500" fill="#92400E">30d News, Filings, Pledges &lt;5%</text>
+  <rect x="654" y="606" width="296" height="68" rx="5" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="802" y="626" text-anchor="middle" font-size="12" font-weight="bold" fill="#4c1d95">📊 Fundamental Analyst</text>
+  <text x="802" y="643" text-anchor="middle" font-size="10.5" fill="#5b21b6">P/E, ROE, P/B, EPS scoring</text>
+  <text x="802" y="659" text-anchor="middle" font-size="10.5" fill="#5b21b6">Quality &amp; value ranking</text>
+  <text x="802" y="669" text-anchor="middle" font-size="10" fill="#6d28d9">→ Fundamental memo</text>
 
-    <!-- Sub-step B: Strategist & Critic Loop -->
-    <rect x="15" y="130" width="860" height="92" rx="6" fill="#FFFFFF" stroke="#DDD6FE" stroke-width="1.2"/>
-    <text x="25" y="148" font-size="12" font-weight="800" fill="#6D28D9">2. Strategist Allocation &amp; Adversarial Critic Feedback Loop</text>
+  <line x1="950" y1="640" x2="970" y2="640" stroke="#7c3aed" stroke-width="1.5"/>
+  <polygon points="970,640 962,636 962,644" fill="#7c3aed"/>
 
-    <rect x="25" y="156" width="250" height="56" rx="4" fill="#FDF4FF" stroke="#F0ABFC"/>
-    <text x="150" y="174" text-anchor="middle" font-size="11.5" font-weight="700" fill="#86198F">Lead Strategist Node (N7)</text>
-    <text x="150" y="190" text-anchor="middle" font-size="10" font-weight="500" fill="#701A75">Selects K ∈ [10..16] Candidate Stocks</text>
-    <text x="150" y="202" text-anchor="middle" font-size="9.5" font-weight="600" fill="#A21CAF">Core • Growth • Defensive</text>
+  <rect x="970" y="606" width="296" height="68" rx="5" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="1118" y="626" text-anchor="middle" font-size="12" font-weight="bold" fill="#4c1d95">📰 News Analyst</text>
+  <text x="1118" y="643" text-anchor="middle" font-size="10.5" fill="#5b21b6">Sentiment &amp; event scoring</text>
+  <text x="1118" y="659" text-anchor="middle" font-size="10.5" fill="#5b21b6">ESG &amp; risk flagging</text>
+  <text x="1118" y="669" text-anchor="middle" font-size="10" fill="#6d28d9">→ News memo</text>
 
-    <line x1="275" y1="184" x2="330" y2="184" stroke="#7C3AED" stroke-width="2" marker-end="url(#flowArr)"/>
+  <!-- Row 2 -->
+  <rect x="22" y="682" width="440" height="22" rx="4" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="242" y="697" text-anchor="middle" font-size="11" font-weight="bold" fill="#4c1d95">🧠 Lead Strategist — synthesises all 4 memos → long list</text>
 
-    <rect x="330" y="156" width="270" height="56" rx="4" fill="#FEF2F2" stroke="#FECDD3"/>
-    <text x="465" y="174" text-anchor="middle" font-size="11.5" font-weight="700" fill="#BE123C">Adversarial Critic Gate (N8)</text>
-    <text x="465" y="190" text-anchor="middle" font-size="10" font-weight="500" fill="#9F1239">Audits Mandate, Caps (≤25%) &amp; Ethics</text>
-    <text x="465" y="202" text-anchor="middle" font-size="9.5" font-weight="600" fill="#E11D48">Rework Loop (≤2) → Swaps Tickers</text>
+  <line x1="462" y1="693" x2="490" y2="693" stroke="#7c3aed" stroke-width="1.5"/>
+  <polygon points="490,693 482,689 482,697" fill="#7c3aed"/>
 
-    <line x1="600" y1="184" x2="655" y2="184" stroke="#16A34A" stroke-width="2" marker-end="url(#flowArrGreen)"/>
+  <rect x="490" y="682" width="440" height="22" rx="4" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="710" y="697" text-anchor="middle" font-size="11" font-weight="bold" fill="#4c1d95">⚔ Adversarial Critic — challenges &amp; refines</text>
 
-    <rect x="655" y="156" width="210" height="56" rx="4" fill="#DCFCE7" stroke="#86EFAC"/>
-    <text x="760" y="174" text-anchor="middle" font-size="11.5" font-weight="700" fill="#15803D">Vetted Candidates</text>
-    <text x="760" y="190" text-anchor="middle" font-size="10" font-weight="600" fill="#166534">10–16 Critic-Approved Equities</text>
-    <text x="760" y="202" text-anchor="middle" font-size="9.5" font-weight="700" fill="#15803D">Passed to Deterministic Math</text>
-  </g>
+  <line x1="930" y1="693" x2="958" y2="693" stroke="#7c3aed" stroke-width="1.5"/>
+  <polygon points="958,693 950,689 950,697" fill="#7c3aed"/>
 
-  <!-- Flow 4 -> 5 Connector -->
-  <line x1="480" y1="864" x2="480" y2="902" stroke="#059669" stroke-width="2.5" marker-end="url(#flowArrGreen)"/>
-  <rect x="320" y="874" width="320" height="18" rx="4" fill="#FFFFFF" stroke="#059669" stroke-width="1.2"/>
-  <text x="480" y="887" text-anchor="middle" font-size="10" font-weight="700" fill="#047857">Architectural Boundary: Qualitative AI → Zero-LLM Math</text>
+  <rect x="958" y="682" width="430" height="22" rx="4" fill="#818cf8" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="1173" y="697" text-anchor="middle" font-size="11" font-weight="bold" fill="#ffffff">✅ Vetted Candidates: 10–16 stocks</text>
 
-  <!-- ======================================================== -->
-  <!-- STAGE 5: Zero-LLM Deterministic Financial Math & Delivery -->
-  <!-- ======================================================== -->
-  <g transform="translate(35, 904)">
-    <rect width="890" height="235" rx="8" fill="#F0FDF4" stroke="#059669" stroke-width="2" filter="url(#cardShadow)"/>
-    <rect width="890" height="26" rx="8" fill="#DCFCE7"/>
-    <rect y="16" width="890" height="10" fill="#DCFCE7"/>
-    <text x="16" y="18" font-size="12" font-weight="800" fill="#15803D">STAGE 5: ZERO-LLM DETERMINISTIC FINANCIAL MATH &amp; WHOLE-SHARE ALLOCATION</text>
-    <text x="874" y="18" text-anchor="end" font-size="11" font-weight="600" fill="#059669">NUMERICAL VERIFICATION</text>
+  <!-- Arrow S4→S5 -->
+  <line x1="700" y1="710" x2="700" y2="737" stroke="#374151" stroke-width="2"/>
+  <polygon points="700,743 695,733 705,733" fill="#374151"/>
 
-    <!-- 3 Math & Validation Steps -->
-    <rect x="15" y="36" width="275" height="120" rx="5" fill="#FFFFFF" stroke="#A7F3D0" stroke-width="1.2"/>
-    <text x="25" y="56" font-size="12" font-weight="800" fill="#0F172A">1. SciPy SLSQP Solver (N10)</text>
-    <text x="25" y="74" font-size="11" font-weight="500" fill="#475569">• Max Sharpe: max [wᵀμ - Rf] / σ_p</text>
-    <text x="25" y="92" font-size="11" font-weight="500" fill="#475569">• Hard Bounds: 0.05 ≤ w_i ≤ 0.25</text>
-    <text x="25" y="110" font-size="11" font-weight="500" fill="#475569">• Sector Cap: ∑ w_s ≤ 0.40</text>
-    <text x="25" y="132" font-size="10.5" font-weight="700" fill="#047857">Solves continuous target weights w_i*</text>
+  <!-- ══════════════════════════════════════════════════════════
+       STAGE 5: DETERMINISTIC MATH & DELIVERY  (green, y=743..855)
+  ═══════════════════════════════════════════════════════════════ -->
+  <rect x="10" y="743" width="1380" height="118" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="700" y="764" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">STAGE 5: DETERMINISTIC MATH &amp; DELIVERY</text>
 
-    <rect x="305" y="36" width="280" height="120" rx="5" fill="#FFFFFF" stroke="#A7F3D0" stroke-width="1.2"/>
-    <text x="315" y="56" font-size="12" font-weight="800" fill="#0F172A">2. Whole-Share Rounding (N10B)</text>
-    <text x="315" y="74" font-size="11" font-weight="500" fill="#475569">• Integer Lots: Q_i = ⌊(w_i* · V_tot) / P_i⌋</text>
-    <text x="315" y="92" font-size="11" font-weight="500" fill="#475569">• Greedy Remainder Pass on Cash</text>
-    <text x="315" y="110" font-size="11" font-weight="700" fill="#16A34A">• Guaranteed Cash Reserve: C_res ≥ ₹0</text>
-    <text x="315" y="132" font-size="10.5" font-weight="700" fill="#047857">No fractional shares; 100% executable</text>
+  <!-- Box 1 -->
+  <rect x="22" y="772" width="410" height="80" rx="6" fill="#bbf7d0" stroke="#22c55e" stroke-width="1.2"/>
+  <text x="227" y="790" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">SciPy SLSQP Optimizer</text>
+  <line x1="30" y1="796" x2="424" y2="796" stroke="#22c55e" stroke-width="0.8"/>
+  <text x="227" y="812" text-anchor="middle" font-size="10.5" fill="#166534">Objective: maximise Sharpe ratio</text>
+  <text x="227" y="828" text-anchor="middle" font-size="10.5" fill="#166534">Weight bounds 5%–25% per stock</text>
+  <text x="227" y="844" text-anchor="middle" font-size="10.5" fill="#166534">Sector concentration cap 40%</text>
 
-    <rect x="600" y="36" width="275" height="120" rx="5" fill="#FFFFFF" stroke="#A7F3D0" stroke-width="1.2"/>
-    <text x="610" y="56" font-size="12" font-weight="800" fill="#0F172A">3. Invariant Audit &amp; Levies (N11)</text>
-    <text x="610" y="74" font-size="11" font-weight="500" fill="#475569">• Verification: Post-Rounding Caps</text>
-    <text x="610" y="92" font-size="11" font-weight="500" fill="#475569">• Statutory Indian Levies (Oct 2024):</text>
-    <text x="620" y="108" font-size="10" font-weight="500" fill="#475569">STT (0.10%) • Stamp • Exchange • GST</text>
-    <text x="610" y="132" font-size="10.5" font-weight="700" fill="#047857">Node 11 Audit Gate: Zero violations</text>
+  <!-- Box 2 -->
+  <rect x="448" y="772" width="410" height="80" rx="6" fill="#bbf7d0" stroke="#22c55e" stroke-width="1.2"/>
+  <text x="653" y="790" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">Whole-Share Rounding</text>
+  <line x1="456" y1="796" x2="850" y2="796" stroke="#22c55e" stroke-width="0.8"/>
+  <text x="653" y="812" text-anchor="middle" font-size="10.5" fill="#166534">Integer lot allocation per security</text>
+  <text x="653" y="828" text-anchor="middle" font-size="10.5" fill="#166534">Cash reserve ≥ ₹0 enforced</text>
+  <text x="653" y="844" text-anchor="middle" font-size="10.5" fill="#166534">Pro-rata rounding algorithm</text>
 
-    <!-- Final Delivery Banner -->
-    <rect x="15" y="168" width="860" height="54" rx="6" fill="#DCFCE7" stroke="#16A34A" stroke-width="1.2"/>
-    <text x="35" y="190" font-size="12.5" font-weight="800" fill="#14532D">Fiduciary Output Delivery (Nodes 12 &amp; 13):</text>
-    <text x="35" y="208" font-size="11" font-weight="600" fill="#15803D">• Two-Level Explainability Modal (Level-1 Plain-English Thesis + Level-2 Official NSE/BSE Announcement Proofs)</text>
-    <text x="650" y="195" font-size="12" font-weight="800" fill="#0F172A">Atomic ACID Commit</text>
-    <text x="650" y="210" font-size="10.5" font-weight="600" fill="#475569">6 Tables (Versions, Decisions, Audit)</text>
-  </g>
+  <!-- Box 3 -->
+  <rect x="874" y="772" width="510" height="80" rx="6" fill="#bbf7d0" stroke="#22c55e" stroke-width="1.2"/>
+  <text x="1129" y="790" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">Audit &amp; Transaction Levies</text>
+  <line x1="882" y1="796" x2="1376" y2="796" stroke="#22c55e" stroke-width="0.8"/>
+  <text x="1129" y="812" text-anchor="middle" font-size="10.5" fill="#166534">STT, Stamp Duty, Exchange &amp; GST</text>
+  <text x="1129" y="828" text-anchor="middle" font-size="10.5" fill="#166534">Fiduciary output: net cost &amp; rationale</text>
+  <text x="1129" y="844" text-anchor="middle" font-size="10.5" fill="#166534">ACID commit to PostgreSQL DB</text>
 
-  <!-- Bottom Summary Note -->
-  <g transform="translate(35, 1140)">
-    <rect width="890" height="38" rx="6" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.2"/>
-    <text x="445" y="23" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">Pipeline Summary: Raw Public Data → Validated Liquid Pool (504) → Multi-Agent Vetting (10-16) → SLSQP Solved Integer Portfolio</text>
-  </g>
 </svg>

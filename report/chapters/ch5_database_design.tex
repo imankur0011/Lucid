@@ -30,12 +30,14 @@ The Lucid database contains exactly \textbf{62 application tables} (plus 1 migra
 \section{Master Entity-Relationship Architecture}
 Figure~\ref{fig:master_er} illustrates the complete master Entity-Relationship diagram connecting all 62 application tables across the platform:
 
-\begin{figure}[!htbp]
+\clearpage
+\begin{figure}[p]
     \centering
-    \includegraphics[width=\textwidth, keepaspectratio]{00_master_er_diagram.pdf}
+    \includegraphics[width=1.0\textwidth, height=0.85\textheight, keepaspectratio]{00_master_er_diagram.pdf}
     \caption{Lucid Master Database Architecture (62 Tables, 8 Domains)}
     \label{fig:master_er}
 \end{figure}
+\clearpage
 
 In Figure~\ref{fig:master_er}, boxes represent individual database tables, grouped by color according to their functional domain. The lines connecting the boxes represent foreign-key relationships. For instance:
 \begin{itemize}
