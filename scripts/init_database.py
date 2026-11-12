@@ -31,6 +31,7 @@ from alembic.config import Config
 from alembic import command
 
 from backend.config import settings
+from backend.database import session
 from backend.database.session import SessionLocal, engine
 from backend.models import (
     Base,
@@ -49,9 +50,9 @@ from backend.api.v1.auth import hash_password
 
 def ensure_database_exists():
     """Checks if the configured database exists; if not, creates it via maintenance db."""
+    global engine, SessionLocal
     import getpass
     from sqlalchemy import create_engine
-    from backend.database import session
 
     db_name = settings.postgres_db
     user = settings.postgres_user
@@ -101,6 +102,11 @@ def ensure_database_exists():
 
     # 2. Intelligent Fallback Probing for Port/User/Password Mismatches
     print("   [INFO] Probing local PostgreSQL server for working connection parameters...")
+    candidate_hosts = [host]
+    for h in ["127.0.0.1", "localhost"]:
+        if h not in candidate_hosts:
+            candidate_hosts.append(h)
+
     candidate_ports = [port]
     for p in [5432, 5433]:
         if p not in candidate_ports:
@@ -112,65 +118,71 @@ def ensure_database_exists():
         if u and u not in candidate_users:
             candidate_users.append(u)
 
-    candidate_passwords = [password, "", "postgres", "password", "root"]
+    candidate_passwords = [password, "", "postgres", "password", "root", "admin", "123456", "LucidDevPass123!"]
 
-    for c_port in candidate_ports:
-        for c_user in candidate_users:
-            for c_pwd in candidate_passwords:
-                for maint_db in ["postgres", "template1"]:
-                    try:
-                        probe_conn = psycopg2.connect(
-                            dbname=maint_db,
-                            user=c_user,
-                            password=c_pwd,
-                            host=host,
-                            port=c_port,
-                            connect_timeout=1
-                        )
-                        probe_conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-                        p_cur = probe_conn.cursor()
-                        # Check if target db exists
-                        p_cur.execute(f"SELECT 1 FROM pg_database WHERE datname = '{db_name}';")
-                        exists = p_cur.fetchone()
-                        if not exists:
-                            p_cur.execute(f'CREATE DATABASE "{db_name}";')
-                            print(f"   [OK] Auto-created database '{db_name}' on port {c_port} (User: '{c_user}').")
-                        else:
-                            print(f"   [OK] Connected to database '{db_name}' on port {c_port} (User: '{c_user}').")
-                        p_cur.close()
-                        probe_conn.close()
+    for c_host in candidate_hosts:
+        for c_port in candidate_ports:
+            for c_user in candidate_users:
+                for c_pwd in candidate_passwords:
+                    for maint_db in ["postgres", "template1"]:
+                        try:
+                            probe_conn = psycopg2.connect(
+                                dbname=maint_db,
+                                user=c_user,
+                                password=c_pwd,
+                                host=c_host,
+                                port=c_port,
+                                connect_timeout=1
+                            )
+                            probe_conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+                            p_cur = probe_conn.cursor()
+                            # Check if target db exists
+                            p_cur.execute(f"SELECT 1 FROM pg_database WHERE datname = '{db_name}';")
+                            exists = p_cur.fetchone()
+                            if not exists:
+                                p_cur.execute(f'CREATE DATABASE "{db_name}";')
+                                print(f"   [OK] Auto-created database '{db_name}' on port {c_port} (User: '{c_user}').")
+                            else:
+                                print(f"   [OK] Connected to database '{db_name}' on port {c_port} (User: '{c_user}').")
+                            p_cur.close()
+                            probe_conn.close()
 
-                        # Update settings in-memory
-                        settings.postgres_port = c_port
-                        settings.postgres_user = c_user
-                        settings.postgres_password = c_pwd
+                            # Update settings in-memory
+                            settings.postgres_host = c_host
+                            settings.postgres_port = c_port
+                            settings.postgres_user = c_user
+                            settings.postgres_password = c_pwd
 
-                        # Persist verified credentials to .env file
-                        env_path = ROOT_DIR / ".env"
-                        if env_path.exists():
-                            try:
-                                with open(env_path, "r") as f:
-                                    e_lines = f.readlines()
-                                with open(env_path, "w") as f:
-                                    for line in e_lines:
-                                        if line.startswith("POSTGRES_PORT="):
-                                            f.write(f"POSTGRES_PORT={c_port}\n")
-                                        elif line.startswith("POSTGRES_USER="):
-                                            f.write(f"POSTGRES_USER={c_user}\n")
-                                        elif line.startswith("POSTGRES_PASSWORD="):
-                                            f.write(f"POSTGRES_PASSWORD={c_pwd}\n")
-                                        else:
-                                            f.write(line)
-                            except Exception:
-                                pass
+                            # Persist verified credentials to .env file
+                            env_path = ROOT_DIR / ".env"
+                            if env_path.exists():
+                                try:
+                                    with open(env_path, "r") as f:
+                                        e_lines = f.readlines()
+                                    with open(env_path, "w") as f:
+                                        for line in e_lines:
+                                            if line.startswith("POSTGRES_HOST="):
+                                                f.write(f"POSTGRES_HOST={c_host}\n")
+                                            elif line.startswith("POSTGRES_PORT="):
+                                                f.write(f"POSTGRES_PORT={c_port}\n")
+                                            elif line.startswith("POSTGRES_USER="):
+                                                f.write(f"POSTGRES_USER={c_user}\n")
+                                            elif line.startswith("POSTGRES_PASSWORD="):
+                                                f.write(f"POSTGRES_PASSWORD={c_pwd}\n")
+                                            else:
+                                                f.write(line)
+                                except Exception:
+                                    pass
 
-                        # Reconnect session engine
-                        session.engine.dispose()
-                        session.engine = create_engine(settings.postgres_url, pool_pre_ping=True)
-                        session.SessionLocal.configure(bind=session.engine)
-                        return True
-                    except Exception:
-                        continue
+                            # Reconnect session engine and rebind module-level references
+                            session.engine.dispose()
+                            session.engine = create_engine(settings.postgres_url, pool_pre_ping=True)
+                            session.SessionLocal.configure(bind=session.engine)
+                            engine = session.engine
+                            SessionLocal = session.SessionLocal
+                            return True
+                        except Exception:
+                            continue
 
     print(f"   [FAIL] PostgreSQL connection failed. Ensure PostgreSQL service is started and check credentials in .env.")
     return False
@@ -179,7 +191,7 @@ def ensure_database_exists():
 def ensure_extensions():
     """Ensures pgcrypto and uuid-ossp extensions are installed."""
     try:
-        with engine.connect() as conn:
+        with session.engine.connect() as conn:
             conn.execute(text('CREATE EXTENSION IF NOT EXISTS "pgcrypto";'))
             conn.execute(text('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'))
             conn.commit()
@@ -204,7 +216,7 @@ def run_migrations():
         print(f"   [WARN] Alembic migration warning: {e}")
         # Fallback to create_all if migrations fail
         try:
-            Base.metadata.create_all(bind=engine)
+            Base.metadata.create_all(bind=session.engine)
             print("   [OK] Fallback SQLAlchemy create_all completed.")
         except Exception as e2:
             print(f"   [FAIL] Schema creation failed: {e2}")
@@ -212,7 +224,7 @@ def run_migrations():
 
     # Ensure all required columns exist on app_users (idempotent patch for existing databases)
     try:
-        with engine.connect() as conn:
+        with session.engine.connect() as conn:
             conn.execute(text("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255);"))
             conn.execute(text("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT false;"))
             conn.execute(text("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS mobile_number VARCHAR(20);"))
@@ -226,7 +238,7 @@ def run_migrations():
 
 def seed_data_if_needed():
     """Idempotently populates reference data, questionnaire, and exchange universe."""
-    db = SessionLocal()
+    db = session.SessionLocal()
     try:
         # 1. Risk Questions
         q_count = db.query(RiskQuestion).count()
@@ -299,7 +311,7 @@ def main():
 
     # Final table verification
     try:
-        with engine.connect() as conn:
+        with session.engine.connect() as conn:
             table_count = conn.execute(
                 text("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'")
             ).scalar()
