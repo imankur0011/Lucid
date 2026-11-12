@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     app_port: int = 8000
     app_secret_key: str = "change-me-in-production"
     jwt_secret_key: str = "change-me-in-production-jwt-key-32-chars-minimum"
-    cors_origins: str = "http://localhost:3000"
+    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001"
     risk_free_rate_pct: float = 7.0  # Configurable benchmark yield (India 10Y G-Sec)
 
     # --- Database URL (Overrides component settings if provided) ---

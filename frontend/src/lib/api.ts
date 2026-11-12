@@ -3,7 +3,18 @@
  * Supports authentication tokens, diagnosis/rebalancing, comparisons, and backtesting benchmarks.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+function getApiBase(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  if (typeof window !== "undefined" && window.location.hostname === "127.0.0.1") {
+    return "http://127.0.0.1:8000/api/v1";
+  }
+  return "http://localhost:8000/api/v1";
+}
+
+const API_BASE = {
+  toString: getApiBase,
+  valueOf: getApiBase,
+};
 
 let authToken: string | null = null;
 

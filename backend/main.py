@@ -101,10 +101,15 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS middleware
+# CORS middleware - allows both localhost and 127.0.0.1 on ports 3000/3001
+allowed_origins = [o.strip() for o in settings.cors_origins.split(",") if o.strip()]
+for fallback_origin in ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001"]:
+    if fallback_origin not in allowed_origins:
+        allowed_origins.append(fallback_origin)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins.split(","),
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
