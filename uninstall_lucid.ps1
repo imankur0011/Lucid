@@ -1,10 +1,8 @@
-<#
-.SYNOPSIS
-    Lucid — Complete Application Teardown & Clean-Slate Reset for Windows
-.DESCRIPTION
-    Stops running services, drops portfolio_dev database, deletes .venv,
-    deletes frontend/node_modules, frontend/.next, .env, and logs.
-#>
+# ==============================================================================
+# Lucid — Complete Application Teardown & Clean-Slate Reset for Windows
+# Stops running services, drops portfolio_dev database, deletes .venv,
+# deletes frontend/node_modules, frontend/.next, .env, and logs.
+# ==============================================================================
 
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -74,3 +72,4 @@ Write-Host "🎉 Clean-slate reset complete! System is completely pristine." -Fo
 Write-Host "======================================================================" -ForegroundColor Green
 Write-Host "`nTo test the fresh one-command installation from scratch, run:" -ForegroundColor Cyan
 Write-Host "powershell -ExecutionPolicy Bypass -Command `"irm https://raw.githubusercontent.com/imankur0011/Lucid/main/bootstrap_lucid.ps1 | iex`"" -ForegroundColor Yellow
+
