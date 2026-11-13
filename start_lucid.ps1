@@ -284,13 +284,15 @@ if ($CurrentHash.Trim() -ne $PrevHash.Trim()) {
 Write-Host "`n[4/10] Preparing Frontend Dependencies..." -ForegroundColor White
 $FrontendDir = Join-Path $RootDir "frontend"
 $NodeModules = Join-Path $FrontendDir "node_modules"
+$NextCliCheck = Join-Path $FrontendDir "node_modules\next\dist\bin\next"
 
 if (-not (Test-Path $FrontendDir)) {
     Write-Host "[FAIL] Missing frontend directory. Repository files appear incomplete." -ForegroundColor Red
     exit 1
 }
 
-if (-not (Test-Path $NodeModules)) {
+# Install dependencies if node_modules is missing OR if the Next.js CLI binary is missing
+if ((-not (Test-Path $NodeModules)) -or (-not (Test-Path $NextCliCheck))) {
     Write-Host "   Installing frontend dependencies (Next.js and React 19) (streaming live logs)..."
     Push-Location $FrontendDir
 
@@ -369,32 +371,53 @@ if ($Content -match "GEMINI_API_KEY=(.*)" -and ($matches[1].Trim() -eq "" -or $m
 # [6/10] Verify PostgreSQL Service
 Write-Host "`n[6/10] Verifying PostgreSQL Service..." -ForegroundColor White
 
+function Test-PostgresPortOpen {
+    param([int]$port)
+    try {
+        $client = New-Object System.Net.Sockets.TcpClient
+        $iar = $client.BeginConnect("127.0.0.1", $port, $null, $null)
+        $wait = $iar.AsyncWaitHandle.WaitOne(1000)
+        if ($wait -and $client.Connected) {
+            $client.Close()
+            return $true
+        }
+        $client.Close()
+    } catch {}
+    return $false
+}
+
+$pgPortOpen = (Test-PostgresPortOpen 5432) -or (Test-PostgresPortOpen 5433)
 $pgService = Get-Service -Name "postgresql*" -ErrorAction SilentlyContinue
+
 if ($pgService) {
     Write-Host "   PostgreSQL Windows Service : $($pgService.Name) ($($pgService.Status))" -ForegroundColor Cyan
-    if ($pgService.Status -ne "Running") {
+    if ($pgService.Status -ne "Running" -or -not $pgPortOpen) {
         Write-Host "   Starting PostgreSQL service..." -ForegroundColor Yellow
-        try { Start-Service $pgService.Name } catch {}
+        try { Start-Service $pgService.Name -ErrorAction SilentlyContinue } catch {}
+        if (-not (Test-PostgresPortOpen 5432)) {
+            try { net start $pgService.Name 2>$null | Out-Null } catch {}
+        }
+        Start-Sleep -Seconds 2
+        $pgPortOpen = (Test-PostgresPortOpen 5432) -or (Test-PostgresPortOpen 5433)
+        if (-not $pgPortOpen) {
+            Write-Host "   [INFO] Requesting elevation to start service '$($pgService.Name)'..." -ForegroundColor Yellow
+            try {
+                Start-Process "powershell" -ArgumentList "-NoProfile -Command Start-Service $($pgService.Name)" -Verb RunAs -Wait -ErrorAction SilentlyContinue
+                Start-Sleep -Seconds 3
+                $pgPortOpen = (Test-PostgresPortOpen 5432) -or (Test-PostgresPortOpen 5433)
+            } catch {}
+        }
     }
-    Write-Host "   [OK] PostgreSQL service is active." -ForegroundColor Green
+    if ($pgPortOpen) {
+        Write-Host "   [OK] PostgreSQL service is active and listening on port 5432." -ForegroundColor Green
+    } else {
+        Write-Host "   [WARN] Could not automatically start '$($pgService.Name)'." -ForegroundColor Yellow
+        Write-Host "          Please start it: Win+R -> services.msc -> find '$($pgService.Name)' -> right-click Start" -ForegroundColor Cyan
+    }
 } else {
-    # Check if postgres port is reachable even without a Windows service entry (portable installs)
-    $pgPortOpen = $false
-    foreach ($pgPort in @(5432, 5433)) {
-        try {
-            $testConn = New-Object System.Net.Sockets.TcpClient
-            $testResult = $testConn.BeginConnect("127.0.0.1", $pgPort, $null, $null)
-            $testWait = $testResult.AsyncWaitHandle.WaitOne(1000)
-            if ($testWait -and $testConn.Connected) {
-                $pgPortOpen = $true
-                Write-Host "   [OK] PostgreSQL detected on port $pgPort (portable/custom install)." -ForegroundColor Green
-            }
-            $testConn.Close()
-        } catch {}
-        if ($pgPortOpen) { break }
-    }
-
-    if (-not $pgPortOpen) {
+    if ($pgPortOpen) {
+        Write-Host "   [OK] PostgreSQL detected on port 5432 (portable/custom install)." -ForegroundColor Green
+    } else {
         Write-Host "   [WARN] PostgreSQL not found. Attempting automatic installation..." -ForegroundColor Yellow
         $pgInstalled = $false
 
@@ -582,8 +605,17 @@ if ($BackendReady) {
 Write-Host "`n[10/10] Starting Lucid Frontend (Next.js on Port 3000)..." -ForegroundColor White
 $FrontendLog = Join-Path $LogDir "frontend.log"
 $FrontendErrLog = Join-Path $LogDir "frontend_err.log"
-$npmCmd = if (Get-Command npm.cmd -ErrorAction SilentlyContinue) { (Get-Command npm.cmd).Source } elseif (Get-Command npm -ErrorAction SilentlyContinue) { (Get-Command npm).Source } else { "npm.cmd" }
-$FrontendProcess = Start-Process -FilePath $npmCmd -ArgumentList @("run", "dev") -WorkingDirectory $FrontendDir -RedirectStandardOutput $FrontendLog -RedirectStandardError $FrontendErrLog -PassThru
+
+$NodeExe = if (Get-Command node -ErrorAction SilentlyContinue) { (Get-Command node).Source } else { "node" }
+$NextCli = Join-Path $FrontendDir "node_modules\next\dist\bin\next"
+
+if (Test-Path $NextCli) {
+    # Launch Next.js directly via node.exe - bypasses cmd.exe shell wrapper and .cmd PATH resolution issues
+    $FrontendProcess = Start-Process -FilePath $NodeExe -ArgumentList @("`"$NextCli`"", "dev", "--port", "3000") -WorkingDirectory $FrontendDir -RedirectStandardOutput $FrontendLog -RedirectStandardError $FrontendErrLog -PassThru
+} else {
+    $npmCmd = if (Get-Command npm.cmd -ErrorAction SilentlyContinue) { (Get-Command npm.cmd).Source } elseif (Get-Command npm -ErrorAction SilentlyContinue) { (Get-Command npm).Source } else { "npm.cmd" }
+    $FrontendProcess = Start-Process -FilePath $npmCmd -ArgumentList @("run", "dev") -WorkingDirectory $FrontendDir -RedirectStandardOutput $FrontendLog -RedirectStandardError $FrontendErrLog -PassThru
+}
 if ($FrontendProcess -and $FrontendProcess.Id) {
     $FrontendProcess.Id | Out-File -FilePath $FrontendPidFile -Encoding ascii
 }

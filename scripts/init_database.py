@@ -131,7 +131,12 @@ def ensure_database_exists():
         if u and u not in candidate_users:
             candidate_users.append(u)
 
-    candidate_passwords = [password, "", "postgres", "password", "root", "admin", "123456", "1234", "12345", "postgres123", "LucidDevPass123!"]
+    candidate_passwords = [
+        password, "", "postgres", "password", "root", "admin",
+        "123456", "1234", "12345", "postgres123", "password123",
+        "root123", "varun", "varun123", "akshay", "akshay123",
+        "LucidDevPass123!"
+    ]
 
     for c_host in candidate_hosts:
         for c_port in candidate_ports:
@@ -197,7 +202,33 @@ def ensure_database_exists():
                         except Exception:
                             continue
 
-    print(f"   [FAIL] PostgreSQL connection failed. Ensure PostgreSQL service is started and check credentials in .env.")
+    # Check if port is open at all to give precise diagnostics
+    import socket
+    port_open = False
+    for test_p in [port, 5432, 5433]:
+        for test_h in ["127.0.0.1", "localhost"]:
+            try:
+                s = socket.create_connection((test_h, test_p), timeout=1)
+                s.close()
+                port_open = True
+                break
+            except Exception:
+                pass
+        if port_open:
+            break
+
+    if not port_open:
+        print(f"   [FAIL] PostgreSQL server is NOT responding on port {port} (Service is STOPPED or NOT INSTALLED).")
+        print(f"   --> How to fix on Windows:")
+        print(f"       1. Press Win + R, type 'services.msc', and press Enter.")
+        print(f"       2. Scroll to 'postgresql-x64-16' (or similar), right-click and choose 'Start'.")
+        print(f"       3. Or open PowerShell as Administrator and run: net start postgresql-x64-16")
+    else:
+        print(f"   [FAIL] PostgreSQL is running on port {port}, but authentication failed for user '{user}'.")
+        print(f"   --> None of the common default passwords matched.")
+        print(f"   --> How to fix:")
+        print(f"       Open your '.env' file in the project root and set your actual password:")
+        print(f"       POSTGRES_PASSWORD=your_actual_password_here")
     return False
 
 
