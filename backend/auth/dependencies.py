@@ -117,6 +117,22 @@ async def get_current_user(
             db.query(AppUser).filter(AppUser.email == "developer@lucid.local").first()
             or db.query(AppUser).filter(AppUser.account_status == "active").first()
         )
+        if not user:
+            # Auto-provision DEMO_USER_ID on the fly in development
+            user = AppUser(
+                user_id=DEMO_USER_ID,
+                identity_provider="local-auth",
+                identity_subject="developer@lucid.local",
+                email="developer@lucid.local",
+                account_status="active",
+            )
+            db.add(user)
+            try:
+                db.commit()
+                db.refresh(user)
+            except Exception:
+                db.rollback()
+                user = db.query(AppUser).first()
 
     if not user:
         raise HTTPException(

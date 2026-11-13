@@ -48,12 +48,28 @@ function getHeaders(contentType: boolean = true): HeadersInit {
 }
 
 export async function loginDemoUser(email?: string): Promise<{ access_token: string; user_id: string; email: string }> {
-  const res = await fetch(`${API_BASE}/auth/token`, {
+  const cleanEmail = email ? email.trim().toLowerCase() : undefined;
+  const payload = JSON.stringify({ email: cleanEmail, demo_user: !cleanEmail });
+
+  let res = await fetch(`${API_BASE}/auth/token`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: email ? email.trim().toLowerCase() : undefined, demo_user: !email }),
-  });
-  if (!res.ok) throw new Error("Failed to obtain authentication token");
+    body: payload,
+  }).catch(() => null);
+
+  if (!res || !res.ok) {
+    // Retry via /auth/login alias
+    res = await fetch(`${API_BASE}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: payload,
+    }).catch(() => null);
+  }
+
+  if (!res || !res.ok) {
+    const errData = res ? await res.json().catch(() => ({})) : {};
+    throw new Error(errData.detail || "Failed to obtain authentication token. Ensure Lucid backend is running.");
+  }
   const data = await res.json();
   setAuthToken(data.access_token);
   return data;
@@ -84,13 +100,26 @@ export async function registerUser(
 }
 
 export async function loginWithCredentials(email: string, password?: string): Promise<{ access_token: string; user_id: string; email: string }> {
-  const res = await fetch(`${API_BASE}/auth/login`, {
+  const cleanEmail = email.trim().toLowerCase();
+  const payload = JSON.stringify({ email: cleanEmail, password: password || undefined, demo_user: false });
+
+  let res = await fetch(`${API_BASE}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: email.trim().toLowerCase(), password: password || undefined, demo_user: false }),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
+    body: payload,
+  }).catch(() => null);
+
+  if (!res || !res.ok) {
+    // Retry via /auth/token
+    res = await fetch(`${API_BASE}/auth/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: payload,
+    }).catch(() => null);
+  }
+
+  if (!res || !res.ok) {
+    const err = res ? await res.json().catch(() => ({})) : {};
     throw new Error(err.detail || "Login failed. Incorrect email or password.");
   }
   const data = await res.json();
