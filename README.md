@@ -14,7 +14,7 @@
 [![SciPy](https://img.shields.io/badge/SciPy-1.15.2-8CAAE6.svg?logo=scipy&logoColor=white)](https://scipy.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-[Quick Start](#one-command-automated-setup) • [Features](#key-features) • [Screenshots](#application-screenshots) • [Tech Stack](#technology-stack) • [Manual Setup](SETUP_AND_INSTALLATION.md) • [Lifecycle Commands](#lifecycle-management) • [Postman](#postman-api-testing) • [Documentation](SETUP_AND_INSTALLATION.md)
+[Quick Start](#one-command-automated-setup) • [Features](#key-features) • [Screenshots](#application-screenshots) • [Tech Stack](#technology-stack) • [Manual Setup](SETUP_AND_INSTALLATION.md) • [Lifecycle Commands](#lifecycle-management) • [Uninstall & Reset](#clean-slate-reset--teardown-one-command) • [Postman](#postman-api-testing) • [Documentation](SETUP_AND_INSTALLATION.md)
 
 </div>
 
@@ -120,19 +120,27 @@ curl -fsSL https://raw.githubusercontent.com/imankur0011/Lucid/main/bootstrap_lu
 ---
 
 ### Clean-Slate Reset & Teardown (One Command)
-If you ever want to completely uninstall or reset everything back to a pristine slate (stops processes, drops `portfolio_dev` database, removes `.venv`, `node_modules`, `.next`, `.env`, and logs):
+If you ever want to completely uninstall or reset everything back to a pristine clean slate — stopping running processes, freeing ports 8000 & 3000, dropping the `portfolio_dev` PostgreSQL database, and deleting `.venv`, `node_modules`, `.next`, `.env`, and logs:
 
-**Windows 10 / 11 (PowerShell):**
+#### 🪟 Windows 10 / 11 (PowerShell)
+**Remote One-Liner (Run from anywhere):**
 ```powershell
 powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/imankur0011/Lucid/main/uninstall_lucid.ps1 | Out-String | iex"
 ```
-*(Or locally if inside project folder: `powershell -ExecutionPolicy Bypass -File .\uninstall_lucid.ps1`)*
+*Or locally from inside the project directory:*
+```powershell
+powershell -ExecutionPolicy Bypass -File .\uninstall_lucid.ps1
+```
 
-**macOS & Linux (Terminal):**
+#### 🍎 macOS (Mac) & 🐧 Linux (Terminal)
+**Remote One-Liner (Run from anywhere):**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/imankur0011/Lucid/main/uninstall_lucid.sh | bash
 ```
-*(Or locally if inside project folder: `./uninstall_lucid.sh`)*
+*Or locally from inside the project directory:*
+```bash
+chmod +x uninstall_lucid.sh && ./uninstall_lucid.sh
+```
 
 ---
 
@@ -286,6 +294,7 @@ Lucid includes root-level lifecycle scripts for controlling services:
 | **Check System Status**| `./status_lucid.sh` | `powershell -File .\status_lucid.ps1` | Inspect service health and DB counts |
 | **Stream Live Logs** | `./logs_lucid.sh all` | `powershell -File .\logs_lucid.ps1` | Tail backend and frontend logs |
 | **Stop Services** | `./stop_lucid.sh` | `powershell -File .\stop_lucid.ps1` | Graceful shutdown (DB preserved) |
+| **Teardown & Clean Reset** | `./uninstall_lucid.sh` | `powershell -File .\uninstall_lucid.ps1` | Complete reset (wipes DB, .venv, node_modules, .env, logs) |
 
 ---
 

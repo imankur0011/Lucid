@@ -57,6 +57,7 @@ This document is the authoritative setup manual for **Lucid — Intelligent Inve
   - [11.3 Database Schema Changes (Migrations)](#113-database-schema-changes-migrations)
   - [11.4 Updating Environment Variables](#114-updating-environment-variables)
   - [11.5 Resetting the Database (Development Only)](#115-resetting-the-database-development-only)
+  - [11.6 Complete System Teardown & Clean-Slate Reset (One-Command)](#116-complete-system-teardown--clean-slate-reset-one-command)
 - [Section 12: Troubleshooting](#section-12-troubleshooting)
 - [Section 13: Documentation Coverage Matrix](#section-13-documentation-coverage-matrix)
 
@@ -924,6 +925,27 @@ PYTHONPATH=. alembic upgrade head
 # 3. Re-seed questionnaire, macroeconomic baseline, and exchange universe
 PYTHONPATH=. python scripts/init_database.py
 ```
+
+### 11.6 Complete System Teardown & Clean-Slate Reset (One-Command)
+When you need to completely erase the installation and return to a 100% pristine baseline (stops all services, frees ports 8000 and 3000, drops `portfolio_dev` database, and wipes `.venv`, `node_modules`, `.next`, `.env`, and logs):
+
+- **Windows 10 / 11 (PowerShell)**:
+  ```powershell
+  # Remote one-liner:
+  powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/imankur0011/Lucid/main/uninstall_lucid.ps1 | Out-String | iex"
+
+  # Or locally from project directory:
+  powershell -ExecutionPolicy Bypass -File .\uninstall_lucid.ps1
+  ```
+
+- **macOS & Linux (Terminal)**:
+  ```bash
+  # Remote one-liner:
+  curl -fsSL https://raw.githubusercontent.com/imankur0011/Lucid/main/uninstall_lucid.sh | bash
+
+  # Or locally from project directory:
+  chmod +x uninstall_lucid.sh && ./uninstall_lucid.sh
+  ```
 
 ---
 
