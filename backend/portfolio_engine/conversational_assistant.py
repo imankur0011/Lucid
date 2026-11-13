@@ -4115,7 +4115,8 @@ def call_configured_llm(
             model=getattr(settings, "llm_model", "gemini-3.8-flash") or "gemini-3.8-flash",
             google_api_key=api_key,
             temperature=0.3,
-            timeout=12,
+            timeout=10,
+            max_retries=1,
         )
 
         # Build grounded system context with real-world calendar & Indian market timings

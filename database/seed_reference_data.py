@@ -24,6 +24,7 @@ from backend.models import (
     InstrumentListing,
     RiskQuestion,
     AppUser,
+    UserProfile,
     EconomicIndicator,
 )
 from backend.seed.seed_questionnaire import seed_risk_questions
@@ -31,16 +32,21 @@ from backend.market_data.exchange_universe_sync import sync_full_exchange_univer
 from backend.market_data.regime import seed_macro_and_news_data
 from backend.api.v1.auth import hash_password
 
+DEMO_USER_ID = uuid.UUID("10000000-0000-4000-8000-000000000001")
+
 
 def seed_development_user(db):
-    """Ensures a safe local development test user exists."""
+    """Ensures a safe local development test user and profile exist."""
     email = "developer@lucid.local"
-    user = db.query(AppUser).filter(AppUser.email == email).first()
+    user = (
+        db.query(AppUser).filter(AppUser.user_id == DEMO_USER_ID).first()
+        or db.query(AppUser).filter(AppUser.email == email).first()
+    )
     if not user:
         user = AppUser(
-            user_id=uuid.uuid4(),
-            identity_provider="local",
-            identity_subject="developer@lucid.local",
+            user_id=DEMO_USER_ID,
+            identity_provider="local-demo",
+            identity_subject="demo-investor@lucid.local",
             email=email,
             password_hash=hash_password("LucidDevPass123!"),
             email_verified=True,
@@ -48,10 +54,44 @@ def seed_development_user(db):
             account_status="active",
         )
         db.add(user)
-        db.commit()
+        db.flush()
         print(f"   ✅ Created development user: {email} (Password: LucidDevPass123!)")
     else:
-        print(f"   ℹ️ Development user already exists: {email}")
+        print(f"   ℹ️ Development user already exists: {email} ({user.user_id})")
+
+    # Ensure UserProfile exists for this user
+    prof = db.query(UserProfile).filter(UserProfile.user_id == user.user_id).first()
+    if not prof:
+        prof = UserProfile(
+            user_id=user.user_id,
+            display_name="Senior Investor",
+            country_code="IN",
+            preferred_currency="INR",
+            investment_experience="intermediate",
+            investment_knowledge_level="intermediate",
+            version_number=1,
+        )
+        db.add(prof)
+        print("   ✅ UserProfile initialized for development user.")
+
+    # Also ensure canonical DEMO_USER_ID has UserProfile
+    if user.user_id != DEMO_USER_ID:
+        canon_prof = db.query(UserProfile).filter(UserProfile.user_id == DEMO_USER_ID).first()
+        if not canon_prof:
+            try:
+                canon_prof = UserProfile(
+                    user_id=DEMO_USER_ID,
+                    display_name="Senior Investor",
+                    country_code="IN",
+                    preferred_currency="INR",
+                    investment_experience="intermediate",
+                    investment_knowledge_level="intermediate",
+                    version_number=1,
+                )
+                db.add(canon_prof)
+            except Exception:
+                pass
+    db.commit()
 
 
 def main():
@@ -70,19 +110,19 @@ def main():
         else:
             print(f"   ℹ️ Risk questionnaire already populated ({q_count} questions present).")
 
-        # 2. Seed Macroeconomic Indicators & News
-        print("\n[2/4] Seeding Macro Indicators, Policy Rates, and Market News...")
+        # 2. Seed Local Development User (prioritized before long-running network sync)
+        print("\n[2/4] Ensuring Local Development User Account and Profile...")
+        seed_development_user(db)
+
+        # 3. Seed Macroeconomic Indicators & News
+        print("\n[3/4] Seeding Macro Indicators, Policy Rates, and Market News...")
         seed_macro_and_news_data(db)
         print("   ✅ RBI Repo Rate, India VIX, and market news baseline seeded.")
 
-        # 3. Synchronize Full Exchange Universe (NSE + BSE)
-        print("\n[3/4] Synchronizing Full NSE/BSE Equity Security Master...")
+        # 4. Synchronize Full Exchange Universe (NSE + BSE)
+        print("\n[4/4] Synchronizing Full NSE/BSE Equity Security Master...")
         sync_res = sync_full_exchange_universe(db)
         print(f"   ✅ Security Master Synchronized: {sync_res['status']}")
-
-        # 4. Seed Local Development User
-        print("\n[4/4] Ensuring Local Development User Account...")
-        seed_development_user(db)
 
         # Print Database Verification Summary
         total_sec = db.query(Security).count()

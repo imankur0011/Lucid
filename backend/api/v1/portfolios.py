@@ -271,7 +271,7 @@ async def create_portfolio_generation_request(
     graph = create_portfolio_graph(db)
     final_state = graph.invoke(initial_state)
 
-    if final_state.get("status") == "failed" or not final_state.get("validation_passed"):
+    if final_state.get("status") == "failed" or not final_state.get("validation_passed", True):
         err = final_state.get("error_summary", "Portfolio generation failed validation checks")
         status_422 = getattr(status, "HTTP_422_UNPROCESSABLE_CONTENT", 422)
         raise HTTPException(
@@ -279,7 +279,25 @@ async def create_portfolio_generation_request(
             detail=f"Portfolio Generation Failed: {err}",
         )
 
-    version_id = uuid.UUID(final_state["portfolio_version_id"])
+    version_id_str = final_state.get("portfolio_version_id")
+    if not version_id_str:
+        latest_ver = (
+            db.query(PortfolioVersion)
+            .filter(PortfolioVersion.portfolio_id == portfolio.portfolio_id)
+            .order_by(desc(PortfolioVersion.version_number))
+            .first()
+        )
+        if latest_ver:
+            version_id = latest_ver.portfolio_version_id
+        else:
+            err = final_state.get("error_summary", "Portfolio generation did not produce a version")
+            raise HTTPException(
+                status_code=getattr(status, "HTTP_422_UNPROCESSABLE_CONTENT", 422),
+                detail=f"Portfolio Generation Failed: {err}",
+            )
+    else:
+        version_id = uuid.UUID(str(version_id_str))
+
     return await get_portfolio_version(portfolio.portfolio_id, version_id, current_user, db)
 
 

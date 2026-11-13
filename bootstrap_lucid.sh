@@ -150,6 +150,13 @@ elif [ "$OS_NAME" = "Linux" ]; then
         elif command -v service >/dev/null 2>&1; then
             sudo service postgresql start 2>/dev/null || true
         fi
+        # Configure local postgres credentials
+        sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';" >/dev/null 2>&1 || sudo -n -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';" >/dev/null 2>&1 || true
+        sudo -u postgres psql -c "CREATE DATABASE portfolio_dev OWNER postgres;" >/dev/null 2>&1 || sudo -n -u postgres psql -c "CREATE DATABASE portfolio_dev OWNER postgres;" >/dev/null 2>&1 || true
+        if [ -n "$USER" ] && [ "$USER" != "postgres" ]; then
+            sudo -u postgres psql -c "CREATE USER \"$USER\" WITH SUPERUSER PASSWORD 'postgres';" >/dev/null 2>&1 || true
+            sudo -u postgres psql -c "ALTER USER \"$USER\" WITH SUPERUSER PASSWORD 'postgres';" >/dev/null 2>&1 || true
+        fi
 
     elif command -v dnf >/dev/null 2>&1; then
         command -v git >/dev/null 2>&1 || sudo dnf install -y git

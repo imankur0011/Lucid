@@ -18,7 +18,7 @@ import jwt
 try:
     from backend.config import settings
     from backend.database import get_db
-    from backend.models import AppUser, UserVerificationCode, RevokedToken
+    from backend.models import AppUser, UserVerificationCode, RevokedToken, UserProfile
     from backend.auth.dependencies import (
         get_current_user,
         create_access_token,
@@ -38,7 +38,7 @@ try:
 except ImportError:
     from config import settings
     from database import get_db
-    from models import AppUser, UserVerificationCode, RevokedToken
+    from models import AppUser, UserVerificationCode, RevokedToken, UserProfile
     from auth.dependencies import (
         get_current_user,
         create_access_token,
@@ -131,72 +131,104 @@ async def issue_token(
             user = db.query(AppUser).filter(AppUser.account_status == "active").first()
         # 4. If STILL None, auto-provision the demo user immediately on the fly
         if not user:
-            user = AppUser(
-                user_id=DEMO_USER_ID,
-                identity_provider="local-auth",
-                identity_subject="developer@lucid.local",
-                email="developer@lucid.local",
-                password_hash=hash_password("LucidDevPass123!"),
-                email_verified=True,
-                mobile_verified=True,
-                account_status="active",
-            )
-            db.add(user)
-            db.flush()
-            prof = db.query(UserProfile).filter(UserProfile.user_id == DEMO_USER_ID).first()
-            if not prof:
-                prof = UserProfile(
+            try:
+                user = AppUser(
                     user_id=DEMO_USER_ID,
-                    display_name="Senior Investor",
-                    country_code="IN",
-                    preferred_currency="INR",
-                    investment_experience="intermediate",
-                    investment_knowledge_level="intermediate",
-                    version_number=1,
+                    identity_provider="local-demo",
+                    identity_subject="demo-investor@lucid.local",
+                    email="developer@lucid.local",
+                    password_hash=hash_password("LucidDevPass123!"),
+                    email_verified=True,
+                    mobile_verified=True,
+                    account_status="active",
                 )
-                db.add(prof)
-            db.commit()
-            db.refresh(user)
+                db.add(user)
+                db.flush()
+                prof = db.query(UserProfile).filter(UserProfile.user_id == DEMO_USER_ID).first()
+                if not prof:
+                    prof = UserProfile(
+                        user_id=DEMO_USER_ID,
+                        display_name="Senior Investor",
+                        country_code="IN",
+                        preferred_currency="INR",
+                        investment_experience="intermediate",
+                        investment_knowledge_level="intermediate",
+                        version_number=1,
+                    )
+                    db.add(prof)
+                db.commit()
+                db.refresh(user)
+            except Exception:
+                db.rollback()
+                user = (
+                    db.query(AppUser).filter(AppUser.user_id == DEMO_USER_ID).first()
+                    or db.query(AppUser).filter(AppUser.email == "developer@lucid.local").first()
+                    or db.query(AppUser).first()
+                )
+        
+        # Ensure UserProfile exists for demo user
+        if user:
+            try:
+                prof = db.query(UserProfile).filter(UserProfile.user_id == user.user_id).first()
+                if not prof:
+                    prof = UserProfile(
+                        user_id=user.user_id,
+                        display_name="Senior Investor",
+                        country_code="IN",
+                        preferred_currency="INR",
+                        investment_experience="intermediate",
+                        investment_knowledge_level="intermediate",
+                        version_number=1,
+                    )
+                    db.add(prof)
+                    db.commit()
+            except Exception:
+                db.rollback()
     else:
         clean_email = payload.email.lower().strip()
         user = db.query(AppUser).filter(AppUser.email == clean_email).first()
         if not user and (clean_email == "developer@lucid.local" or settings.app_env == "development"):
             # Auto-provision user in dev mode
-            pwd_hash = hash_password(payload.password) if payload.password else hash_password("LucidDevPass123!")
-            target_id = DEMO_USER_ID if clean_email == "developer@lucid.local" else uuid.uuid4()
-            if db.query(AppUser).filter(AppUser.user_id == target_id).first():
-                target_id = uuid.uuid4()
-            user = AppUser(
-                user_id=target_id,
-                identity_provider="local-auth",
-                identity_subject=clean_email,
-                email=clean_email,
-                password_hash=pwd_hash,
-                email_verified=True,
-                mobile_verified=True,
-                account_status="active",
-            )
-            db.add(user)
-            db.flush()
-            prof = db.query(UserProfile).filter(UserProfile.user_id == user.user_id).first()
-            if not prof:
-                prof = UserProfile(
-                    user_id=user.user_id,
-                    display_name="Senior Investor" if clean_email == "developer@lucid.local" else clean_email.split("@")[0].capitalize(),
-                    country_code="IN",
-                    preferred_currency="INR",
-                    investment_experience="intermediate",
-                    investment_knowledge_level="intermediate",
-                    version_number=1,
+            try:
+                pwd_hash = hash_password(payload.password) if payload.password else hash_password("LucidDevPass123!")
+                target_id = DEMO_USER_ID if clean_email == "developer@lucid.local" else uuid.uuid4()
+                if db.query(AppUser).filter(AppUser.user_id == target_id).first():
+                    target_id = uuid.uuid4()
+                user = AppUser(
+                    user_id=target_id,
+                    identity_provider="local-auth",
+                    identity_subject=clean_email,
+                    email=clean_email,
+                    password_hash=pwd_hash,
+                    email_verified=True,
+                    mobile_verified=True,
+                    account_status="active",
                 )
-                db.add(prof)
-            db.commit()
-            db.refresh(user)
+                db.add(user)
+                db.flush()
+                prof = db.query(UserProfile).filter(UserProfile.user_id == user.user_id).first()
+                if not prof:
+                    prof = UserProfile(
+                        user_id=user.user_id,
+                        display_name="Senior Investor" if clean_email == "developer@lucid.local" else clean_email.split("@")[0].capitalize(),
+                        country_code="IN",
+                        preferred_currency="INR",
+                        investment_experience="intermediate",
+                        investment_knowledge_level="intermediate",
+                        version_number=1,
+                    )
+                    db.add(prof)
+                db.commit()
+                db.refresh(user)
+            except Exception:
+                db.rollback()
+                user = db.query(AppUser).filter(AppUser.email == clean_email).first()
 
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User account not found for provided credentials",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User account not found for provided credentials. Please check your email or register.",
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
     # If user has a password set and password was provided, verify it (skip for demo_user requests)
@@ -252,22 +284,29 @@ async def register_user(
         mobile_verified=False,
         account_status="active",
     )
-    db.add(user)
-    db.flush()
+    try:
+        db.add(user)
+        db.flush()
 
-    # Pre-seed UserProfile for newly registered user so subsequent operations never hit missing profile
-    prof = UserProfile(
-        user_id=user.user_id,
-        display_name=email_clean.split("@")[0].capitalize(),
-        country_code="IN",
-        preferred_currency="INR",
-        investment_experience="beginner",
-        investment_knowledge_level="basic",
-        version_number=1,
-    )
-    db.add(prof)
-    db.commit()
-    db.refresh(user)
+        # Pre-seed UserProfile for newly registered user so subsequent operations never hit missing profile
+        prof = UserProfile(
+            user_id=user.user_id,
+            display_name=email_clean.split("@")[0].capitalize(),
+            country_code="IN",
+            preferred_currency="INR",
+            investment_experience="beginner",
+            investment_knowledge_level="basic",
+            version_number=1,
+        )
+        db.add(prof)
+        db.commit()
+        db.refresh(user)
+    except Exception as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Registration failed: {str(exc)}",
+        )
 
     expires_delta = timedelta(days=7)
     token = create_access_token(user.user_id, user.email, expires_delta=expires_delta)

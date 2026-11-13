@@ -12,6 +12,8 @@ import {
   submitRiskAssessment,
   extractProfileFromText,
   ProfileNLPExtractResponse,
+  loginDemoUser,
+  getAuthToken,
 } from "../lib/api";
 import {
   IconShield,
@@ -415,6 +417,15 @@ export function OnboardingWizard({
   };
 
   const handleFinalSubmit = async () => {
+    // Ensure authentication token exists before persisting or generating
+    if (!getAuthToken()) {
+      try {
+        await loginDemoUser();
+      } catch (e) {
+        console.warn("Auto demo login prior to final submit:", e);
+      }
+    }
+
     // Optionally persist goal and profile changes in background
     try {
       const validExperiences = ["beginner", "intermediate", "experienced"];
@@ -426,7 +437,7 @@ export function OnboardingWizard({
         investment_experience: cleanExp,
         investment_knowledge_level: cleanKnow,
         ...(mobileNumber.trim() ? { mobile_number: mobileNumber.trim() } : {}),
-      });
+      }).catch((e) => console.warn("Non-blocking profile update notice:", e));
 
       if (goalName && goalType && targetCorpus > 0) {
         await createGoal({

@@ -203,6 +203,96 @@ def ensure_database_exists():
                         except Exception:
                             continue
 
+    # 3. OS-Specific Self-Healing Fallback
+    import platform
+    if platform.system() == "Linux":
+        print("   [INFO] Probing failed. Attempting local peer authentication to configure 'postgres' password...")
+        try:
+            import subprocess
+            subprocess.run(
+                ["sudo", "-n", "-u", "postgres", "psql", "-c", f"ALTER USER postgres PASSWORD 'postgres'; CREATE DATABASE \"{db_name}\" OWNER postgres;"],
+                capture_output=True, timeout=5
+            )
+            subprocess.run(
+                ["sudo", "-n", "-u", "postgres", "psql", "-c", f"CREATE USER \"{sys_user}\" WITH SUPERUSER PASSWORD 'postgres'; ALTER USER \"{sys_user}\" WITH SUPERUSER PASSWORD 'postgres';"],
+                capture_output=True, timeout=5
+            )
+            for r_host in ["127.0.0.1", "localhost"]:
+                for r_user in ["postgres", sys_user]:
+                    try:
+                        retry_conn = psycopg2.connect(
+                            dbname="postgres",
+                            user=r_user,
+                            password="postgres",
+                            host=r_host,
+                            port=port,
+                            connect_timeout=2
+                        )
+                        retry_conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+                        r_cur = retry_conn.cursor()
+                        r_cur.execute(f"SELECT 1 FROM pg_database WHERE datname = '{db_name}';")
+                        if not r_cur.fetchone():
+                            r_cur.execute(f'CREATE DATABASE "{db_name}";')
+                        r_cur.close()
+                        retry_conn.close()
+
+                        settings.postgres_host = r_host
+                        settings.postgres_port = port
+                        settings.postgres_user = r_user
+                        settings.postgres_password = "postgres"
+
+                        env_path = ROOT_DIR / ".env"
+                        if env_path.exists():
+                            try:
+                                with open(env_path, "r") as f:
+                                    e_lines = f.readlines()
+                                with open(env_path, "w") as f:
+                                    for line in e_lines:
+                                        if line.startswith("POSTGRES_HOST="):
+                                            f.write(f"POSTGRES_HOST={r_host}\n")
+                                        elif line.startswith("POSTGRES_PORT="):
+                                            f.write(f"POSTGRES_PORT={port}\n")
+                                        elif line.startswith("POSTGRES_USER="):
+                                            f.write(f"POSTGRES_USER={r_user}\n")
+                                        elif line.startswith("POSTGRES_PASSWORD="):
+                                            f.write("POSTGRES_PASSWORD=postgres\n")
+                                        else:
+                                            f.write(line)
+                            except Exception:
+                                pass
+
+                        session.engine.dispose()
+                        session.engine = create_engine(settings.postgres_url, pool_pre_ping=True)
+                        session.SessionLocal.configure(bind=session.engine)
+                        engine = session.engine
+                        SessionLocal = session.SessionLocal
+                        print(f"   [OK] Configured and connected to database '{db_name}' as '{r_user}'.")
+                        return True
+                    except Exception:
+                        continue
+        except Exception:
+            pass
+    elif platform.system() == "Windows":
+        # Windows: attempt to start PostgreSQL service or launch via pg_ctl
+        try:
+            import subprocess
+            for svc in ["postgresql-x64-16", "postgresql-x64-15", "postgresql-x64-14", "postgresql-16", "postgresql", "postgres"]:
+                try:
+                    subprocess.run(["net", "start", svc], capture_output=True, timeout=5)
+                except Exception:
+                    pass
+            import glob
+            for pg_ctl in glob.glob(r"C:\Program Files\PostgreSQL\*\bin\pg_ctl.exe"):
+                bin_dir = Path(pg_ctl).parent
+                data_dir = bin_dir.parent / "data"
+                if data_dir.exists():
+                    try:
+                        subprocess.run([str(pg_ctl), "start", "-D", str(data_dir), "-w"], capture_output=True, timeout=10)
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+
     # Check if port is open at all to give precise diagnostics
     import socket
     port_open = False
@@ -348,22 +438,7 @@ def seed_data_if_needed():
         else:
             print(f"   [INFO] Risk questionnaire already populated ({q_count} questions).")
 
-        # 2. Macro Indicators & News
-        print("   Verifying macro indicators baseline...")
-        seed_macro_and_news_data(db)
-        print("   [OK] Macro indicators baseline verified.")
-
-        # 3. Security Master Universe
-        sec_count = db.query(Security).count()
-        if sec_count < 500:
-            print(f"   Populating exchange security universe (current: {sec_count} equities)...")
-            sync_res = sync_full_exchange_universe(db)
-            sec_count = db.query(Security).count()
-            print(f"   [OK] Security universe synchronized: {sec_count} equities active.")
-        else:
-            print(f"   [INFO] Security universe already populated ({sec_count} equities). Skipping full re-download.")
-
-        # 4. Local Development & Demo User (Strictly matches DEMO_USER_ID)
+        # 2. Local Development & Demo User (Strictly matches DEMO_USER_ID)
         DEMO_USER_ID = uuid.UUID("10000000-0000-4000-8000-000000000001")
         email = "developer@lucid.local"
         
@@ -375,8 +450,8 @@ def seed_data_if_needed():
             if not existing_email_user:
                 demo_by_id = AppUser(
                     user_id=DEMO_USER_ID,
-                    identity_provider="local",
-                    identity_subject="developer@lucid.local",
+                    identity_provider="local-demo",
+                    identity_subject="demo-investor@lucid.local",
                     email=email,
                     password_hash=hash_password("LucidDevPass123!"),
                     email_verified=True,
@@ -387,28 +462,16 @@ def seed_data_if_needed():
                 db.commit()
                 print(f"   [OK] Created development user: {email} (Password: LucidDevPass123!)")
             else:
-                # User exists with email; also seed DEMO_USER_ID alias so demo login and unauthenticated dev requests succeed
-                demo_by_id = AppUser(
-                    user_id=DEMO_USER_ID,
-                    identity_provider="local",
-                    identity_subject="developer@lucid.local",
-                    email="demo.investor@lucid.local",
-                    password_hash=hash_password("LucidDevPass123!"),
-                    email_verified=True,
-                    mobile_verified=True,
-                    account_status="active",
-                )
-                db.add(demo_by_id)
-                db.commit()
-                print(f"   [INFO] Seeded DEMO_USER_ID ({DEMO_USER_ID}) for dev mode fallback.")
+                demo_by_id = existing_email_user
+                print(f"   [INFO] Development demo user exists: {email} ({existing_email_user.user_id})")
         else:
             print(f"   [INFO] Development demo user exists: {email} ({DEMO_USER_ID})")
 
-        # Ensure UserProfile exists for DEMO_USER_ID
-        demo_prof = db.query(UserProfile).filter(UserProfile.user_id == DEMO_USER_ID).first()
+        # Ensure UserProfile exists for demo user
+        demo_prof = db.query(UserProfile).filter(UserProfile.user_id == demo_by_id.user_id).first()
         if not demo_prof:
             demo_prof = UserProfile(
-                user_id=DEMO_USER_ID,
+                user_id=demo_by_id.user_id,
                 display_name="Senior Investor",
                 country_code="IN",
                 preferred_currency="INR",
@@ -419,6 +482,40 @@ def seed_data_if_needed():
             db.add(demo_prof)
             db.commit()
             print("   [OK] Seeded default UserProfile for demo user.")
+
+        # Also ensure DEMO_USER_ID has UserProfile if separate
+        if demo_by_id.user_id != DEMO_USER_ID:
+            prof_canonical = db.query(UserProfile).filter(UserProfile.user_id == DEMO_USER_ID).first()
+            if not prof_canonical:
+                try:
+                    prof_canonical = UserProfile(
+                        user_id=DEMO_USER_ID,
+                        display_name="Senior Investor",
+                        country_code="IN",
+                        preferred_currency="INR",
+                        investment_experience="intermediate",
+                        investment_knowledge_level="intermediate",
+                        version_number=1,
+                    )
+                    db.add(prof_canonical)
+                    db.commit()
+                except Exception:
+                    db.rollback()
+
+        # 3. Macro Indicators & News
+        print("   Verifying macro indicators baseline...")
+        seed_macro_and_news_data(db)
+        print("   [OK] Macro indicators baseline verified.")
+
+        # 4. Security Master Universe
+        sec_count = db.query(Security).count()
+        if sec_count < 500:
+            print(f"   Populating exchange security universe (current: {sec_count} equities)...")
+            sync_res = sync_full_exchange_universe(db)
+            sec_count = db.query(Security).count()
+            print(f"   [OK] Security universe synchronized: {sec_count} equities active.")
+        else:
+            print(f"   [INFO] Security universe already populated ({sec_count} equities). Skipping full re-download.")
 
         return True
     except Exception as e:

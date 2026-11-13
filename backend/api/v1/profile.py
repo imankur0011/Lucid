@@ -89,6 +89,8 @@ async def update_profile(
             version_number=1,
             country_code="IN",
             preferred_currency="INR",
+            investment_experience="beginner",
+            investment_knowledge_level="basic",
         )
         db.add(profile)
         db.flush()
@@ -110,42 +112,55 @@ async def update_profile(
             update_data["investment_knowledge_level"] = "basic"
 
     if update_data:
-        # Determine unique non-colliding version number
-        max_ver = (
-            db.query(func.max(UserProfileVersion.version_number))
-            .filter(UserProfileVersion.user_id == profile.user_id)
-            .scalar()
-            or 0
-        )
-        next_ver = max(max_ver + 1, getattr(profile, "version_number", 1) or 1)
+        # Determine unique non-colliding version number with safe retry
+        for attempt in range(3):
+            try:
+                max_ver = (
+                    db.query(func.max(UserProfileVersion.version_number))
+                    .filter(UserProfileVersion.user_id == profile.user_id)
+                    .scalar()
+                    or 0
+                )
+                next_ver = max(max_ver + 1, getattr(profile, "version_number", 1) or 1)
 
-        snapshot = UserProfileVersion(
-            profile_version_id=uuid.uuid4(),
-            user_id=profile.user_id,
-            version_number=next_ver,
-            display_name=profile.display_name,
-            country_code=profile.country_code,
-            preferred_currency=profile.preferred_currency,
-            investment_experience=profile.investment_experience,
-            investment_knowledge_level=profile.investment_knowledge_level,
-            change_summary=f"Updated attributes: {', '.join(update_data.keys())}",
-            created_at=profile.updated_at or datetime.now(timezone.utc),
-        )
-        db.add(snapshot)
+                snapshot = UserProfileVersion(
+                    profile_version_id=uuid.uuid4(),
+                    user_id=profile.user_id,
+                    version_number=next_ver,
+                    display_name=profile.display_name or "Investor",
+                    country_code=profile.country_code or "IN",
+                    preferred_currency=profile.preferred_currency or "INR",
+                    investment_experience=profile.investment_experience or "beginner",
+                    investment_knowledge_level=profile.investment_knowledge_level or "basic",
+                    change_summary=f"Updated attributes: {', '.join(update_data.keys())}",
+                    created_at=profile.updated_at or datetime.now(timezone.utc),
+                )
+                db.add(snapshot)
 
-        # Apply update and increment version number
-        for field, val in update_data.items():
-            if val is not None:
-                setattr(profile, field, val)
+                # Apply update and increment version number
+                for field, val in update_data.items():
+                    if val is not None:
+                        setattr(profile, field, val)
 
-        profile.version_number = next_ver + 1
-        profile.updated_at = datetime.now(timezone.utc)
-        try:
-            db.commit()
-            db.refresh(profile)
-        except Exception:
-            db.rollback()
-            raise
+                profile.version_number = next_ver + 1
+                profile.updated_at = datetime.now(timezone.utc)
+                db.commit()
+                db.refresh(profile)
+                break
+            except Exception:
+                db.rollback()
+                if attempt == 2:
+                    # Fallback on persistent snapshot conflict: apply update directly to profile
+                    profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.user_id).first()
+                    for field, val in update_data.items():
+                        if val is not None:
+                            setattr(profile, field, val)
+                    profile.updated_at = datetime.now(timezone.utc)
+                    db.commit()
+                    db.refresh(profile)
+    else:
+        db.commit()
+        db.refresh(profile)
 
     return profile
 

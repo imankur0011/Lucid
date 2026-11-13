@@ -368,9 +368,15 @@ if [ ! -f "$ENV_FILE" ]; then
     # Replace placeholder secrets safely
     sed -i '' "s/JWT_SECRET_KEY=.*/JWT_SECRET_KEY=$JWT_SECRET/" "$ENV_FILE" 2>/dev/null || sed -i "s/JWT_SECRET_KEY=.*/JWT_SECRET_KEY=$JWT_SECRET/" "$ENV_FILE"
     sed -i '' "s/APP_SECRET_KEY=.*/APP_SECRET_KEY=$APP_SECRET/" "$ENV_FILE" 2>/dev/null || sed -i "s/APP_SECRET_KEY=.*/APP_SECRET_KEY=$APP_SECRET/" "$ENV_FILE"
+    sed -i '' "s/POSTGRES_PASSWORD=your_postgres_password_here/POSTGRES_PASSWORD=postgres/" "$ENV_FILE" 2>/dev/null || sed -i "s/POSTGRES_PASSWORD=your_postgres_password_here/POSTGRES_PASSWORD=postgres/" "$ENV_FILE"
     
     echo -e "   ${GREEN}✅ Created .env with cryptographically secure random secrets.${NC}"
 else
+    # Auto-repair placeholder password if still present in existing .env
+    if grep -q "POSTGRES_PASSWORD=your_postgres_password_here" "$ENV_FILE"; then
+        sed -i '' "s/POSTGRES_PASSWORD=your_postgres_password_here/POSTGRES_PASSWORD=postgres/" "$ENV_FILE" 2>/dev/null || sed -i "s/POSTGRES_PASSWORD=your_postgres_password_here/POSTGRES_PASSWORD=postgres/" "$ENV_FILE"
+        echo "   [OK] Replaced placeholder POSTGRES_PASSWORD with 'postgres' in .env."
+    fi
     echo -e "   ${GREEN}✅ Preserving existing .env configuration.${NC}"
 fi
 
@@ -446,6 +452,18 @@ fi
 
 if [ $PG_READY -eq 1 ]; then
     echo -e "   ${GREEN}✅ PostgreSQL server is active on $PG_HOST:$PG_PORT.${NC}"
+    if [ "$OS_NAME" = "Linux" ]; then
+        echo "   Configuring local PostgreSQL credentials for platform access..."
+        if command -v sudo >/dev/null 2>&1; then
+            sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';" >/dev/null 2>&1 || sudo -n -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';" >/dev/null 2>&1 || true
+            sudo -u postgres psql -c "CREATE DATABASE portfolio_dev OWNER postgres;" >/dev/null 2>&1 || sudo -n -u postgres psql -c "CREATE DATABASE portfolio_dev OWNER postgres;" >/dev/null 2>&1 || true
+            CURRENT_USER="$(whoami)"
+            if [ -n "$CURRENT_USER" ] && [ "$CURRENT_USER" != "postgres" ]; then
+                sudo -u postgres psql -c "CREATE USER \"$CURRENT_USER\" WITH SUPERUSER PASSWORD 'postgres';" >/dev/null 2>&1 || true
+                sudo -u postgres psql -c "ALTER USER \"$CURRENT_USER\" WITH SUPERUSER PASSWORD 'postgres';" >/dev/null 2>&1 || true
+            fi
+        fi
+    fi
 else
     echo -e "   ${YELLOW}⚠️ Could not verify PostgreSQL automatically on $PG_HOST:$PG_PORT.${NC}"
     echo "      Attempting Python-level connection..."

@@ -217,7 +217,8 @@ def get_llm():
                 model=getattr(settings, "llm_model", "gemini-3.8-flash") or "gemini-3.8-flash",
                 google_api_key=api_key,
                 temperature=0.2,
-                timeout=15,
+                timeout=5,
+                max_retries=1,
             )
         except Exception:
             return None

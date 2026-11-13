@@ -16,11 +16,11 @@ import hashlib
 try:
     from backend.config import settings
     from backend.database import get_db
-    from backend.models import AppUser, RevokedToken
+    from backend.models import AppUser, RevokedToken, UserProfile
 except ImportError:
     from config import settings
     from database import get_db
-    from models import AppUser, RevokedToken
+    from models import AppUser, RevokedToken, UserProfile
 
 def hash_token(token: str) -> str:
     """Returns SHA256 hex digest for token indexing and revocation lookup."""
@@ -145,5 +145,23 @@ async def get_current_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Account is {user.account_status}",
         )
+
+    # Ensure corresponding UserProfile exists for this user
+    try:
+        prof = db.query(UserProfile).filter(UserProfile.user_id == user.user_id).first()
+        if not prof:
+            prof = UserProfile(
+                user_id=user.user_id,
+                display_name="Senior Investor",
+                country_code="IN",
+                preferred_currency="INR",
+                investment_experience="intermediate",
+                investment_knowledge_level="intermediate",
+                version_number=1,
+            )
+            db.add(prof)
+            db.commit()
+    except Exception:
+        db.rollback()
 
     return user

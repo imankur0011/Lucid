@@ -301,17 +301,21 @@ if ((-not (Test-Path $NodeModules)) -or (-not (Test-Path $NextCliCheck))) {
     # 'npm install-scripts approve' writes the approval to .npmrc (idempotent).
     npm install-scripts approve unrs-resolver 2>$null | Out-Null
 
+    # Suppress engine warnings that trigger NativeCommandError in PowerShell
+    $env:NPM_CONFIG_ENGINE_STRICT = "false"
+    $env:NODE_OPTIONS = "--no-warnings"
+
     # --no-audit: skip the audit network call (saves ~10s, run separately if needed)
     # --no-fund:  suppress funding nag messages in the log
     # --loglevel=error: prevent non-fatal deprecation/engine warnings on stderr from triggering PowerShell NativeCommandError
     $npmInstallLog = Join-Path $LogDir "npm_install.log"
     $oldEAP = $ErrorActionPreference
     $ErrorActionPreference = "SilentlyContinue"
-    npm install --no-audit --no-fund --loglevel=error 2>&1 | Tee-Object -FilePath $npmInstallLog
+    npm install --no-audit --no-fund --engine-strict=false --loglevel=error 2>&1 | Tee-Object -FilePath $npmInstallLog
     if ($LASTEXITCODE -ne 0) {
         Write-Host "   [WARN] npm install had issues. Retrying with --legacy-peer-deps..." -ForegroundColor Yellow
         Start-Sleep -Seconds 3
-        npm install --no-audit --no-fund --legacy-peer-deps --loglevel=error 2>&1 | Tee-Object -FilePath $npmInstallLog -Append
+        npm install --no-audit --no-fund --legacy-peer-deps --engine-strict=false --loglevel=error 2>&1 | Tee-Object -FilePath $npmInstallLog -Append
     }
     $ErrorActionPreference = $oldEAP
     Pop-Location
@@ -339,8 +343,17 @@ if (-not (Test-Path $EnvFile)) {
     $Content = $Content -replace "JWT_SECRET_KEY=.*", "JWT_SECRET_KEY=$JwtSecret"
     $Content = $Content -replace "APP_SECRET_KEY=.*", "APP_SECRET_KEY=$AppSecret"
     $Content | Set-Content $EnvFile
+    $Content = $Content -replace "POSTGRES_PASSWORD=your_postgres_password_here", "POSTGRES_PASSWORD=postgres"
+    $Content | Set-Content $EnvFile
     Write-Host "   [OK] Created .env with cryptographically secure random secrets." -ForegroundColor Green
 } else {
+    # Auto-repair placeholder password if still present in existing .env
+    $Content = Get-Content $EnvFile -Raw
+    if ($Content -match "POSTGRES_PASSWORD=your_postgres_password_here") {
+        $Content = $Content -replace "POSTGRES_PASSWORD=your_postgres_password_here", "POSTGRES_PASSWORD=postgres"
+        $Content | Set-Content $EnvFile
+        Write-Host "   [OK] Replaced placeholder POSTGRES_PASSWORD with 'postgres' in .env." -ForegroundColor Green
+    }
     Write-Host "   [OK] Preserving existing .env configuration." -ForegroundColor Green
 }
 
@@ -387,22 +400,41 @@ function Test-PostgresPortOpen {
 }
 
 $pgPortOpen = (Test-PostgresPortOpen 5432) -or (Test-PostgresPortOpen 5433)
-$pgService = Get-Service -Name "postgresql*" -ErrorAction SilentlyContinue
+$pgServices = @(Get-Service -Name "postgresql*", "postgres*" -ErrorAction SilentlyContinue)
 
-if ($pgService) {
-    Write-Host "   PostgreSQL Windows Service : $($pgService.Name) ($($pgService.Status))" -ForegroundColor Cyan
-    if ($pgService.Status -ne "Running" -or -not $pgPortOpen) {
+if ($pgServices.Count -gt 0) {
+    $primarySvc = $pgServices[0]
+    Write-Host "   PostgreSQL Windows Service : $($primarySvc.Name) ($($primarySvc.Status))" -ForegroundColor Cyan
+    if ($primarySvc.Status -ne "Running" -or -not $pgPortOpen) {
         Write-Host "   Starting PostgreSQL service..." -ForegroundColor Yellow
-        try { Start-Service $pgService.Name -ErrorAction SilentlyContinue } catch {}
-        if (-not (Test-PostgresPortOpen 5432)) {
-            try { net start $pgService.Name 2>$null | Out-Null } catch {}
+        foreach ($svc in $pgServices) {
+            try { Start-Service $svc.Name -ErrorAction SilentlyContinue } catch {}
+            try { net start $svc.Name 2>$null | Out-Null } catch {}
         }
         Start-Sleep -Seconds 2
-        $pgPortOpen = (Test-PostgresPortOpen 5432) -or (Test-PostgresPortOpen 5433)
+        for ($i = 0; $i -lt 5; $i++) {
+            if ((Test-PostgresPortOpen 5432) -or (Test-PostgresPortOpen 5433)) { $pgPortOpen = $true; break }
+            Start-Sleep -Seconds 1
+        }
         if (-not $pgPortOpen) {
-            Write-Host "   [INFO] Requesting elevation to start service '$($pgService.Name)'..." -ForegroundColor Yellow
+            # Try pg_ctl directly if standard service start lacked permissions
+            $pgCtlFiles = @(Get-ChildItem -Path "C:\Program Files\PostgreSQL\*\bin\pg_ctl.exe" -ErrorAction SilentlyContinue)
+            foreach ($ctl in $pgCtlFiles) {
+                $dataDir = Join-Path (Split-Path (Split-Path $ctl.FullName)) "data"
+                if (Test-Path $dataDir) {
+                    Write-Host "   Attempting direct launch via pg_ctl: $($ctl.FullName)..." -ForegroundColor Cyan
+                    try {
+                        Start-Process -FilePath $ctl.FullName -ArgumentList "start -D `"$dataDir`" -w" -NoNewWindow -Wait -ErrorAction SilentlyContinue
+                    } catch {}
+                }
+            }
+            Start-Sleep -Seconds 2
+            if ((Test-PostgresPortOpen 5432) -or (Test-PostgresPortOpen 5433)) { $pgPortOpen = $true }
+        }
+        if (-not $pgPortOpen) {
+            Write-Host "   [INFO] Requesting elevation to start service '$($primarySvc.Name)'..." -ForegroundColor Yellow
             try {
-                Start-Process "powershell" -ArgumentList "-NoProfile -Command Start-Service $($pgService.Name)" -Verb RunAs -Wait -ErrorAction SilentlyContinue
+                Start-Process "powershell" -ArgumentList "-NoProfile -Command Start-Service $($primarySvc.Name)" -Verb RunAs -Wait -ErrorAction SilentlyContinue
                 Start-Sleep -Seconds 3
                 $pgPortOpen = (Test-PostgresPortOpen 5432) -or (Test-PostgresPortOpen 5433)
             } catch {}
@@ -411,8 +443,8 @@ if ($pgService) {
     if ($pgPortOpen) {
         Write-Host "   [OK] PostgreSQL service is active and listening on port 5432." -ForegroundColor Green
     } else {
-        Write-Host "   [WARN] Could not automatically start '$($pgService.Name)'." -ForegroundColor Yellow
-        Write-Host "          Please start it: Win+R -> services.msc -> find '$($pgService.Name)' -> right-click Start" -ForegroundColor Cyan
+        Write-Host "   [WARN] Could not automatically start '$($primarySvc.Name)'." -ForegroundColor Yellow
+        Write-Host "          Please start it: Win+R -> services.msc -> find '$($primarySvc.Name)' -> right-click Start" -ForegroundColor Cyan
     }
 } else {
     if ($pgPortOpen) {

@@ -198,6 +198,13 @@ async def submit_risk_assessment(
                     detail=f"Option {ans.selected_option_id} does not belong to question {ans.question_id}",
                 )
 
+    # Ensure current user exists in database
+    db_user = db.query(AppUser).filter(AppUser.user_id == current_user.user_id).first()
+    if not db_user:
+        current_user.account_status = "active"
+        db.add(current_user)
+        db.flush()
+
     # Compute scores deterministically
     tol_score, cap_score, category = calculate_risk_scores(db, payload.answers)
     now = datetime.now(timezone.utc)
@@ -232,9 +239,12 @@ async def submit_risk_assessment(
     try:
         db.commit()
         db.refresh(assessment)
-    except Exception:
+    except Exception as exc:
         db.rollback()
-        raise
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to persist risk assessment: {str(exc)}",
+        )
     return assessment
 
 

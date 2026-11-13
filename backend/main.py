@@ -102,7 +102,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS middleware - allows both localhost and 127.0.0.1 on ports 3000/3001
+# CORS middleware - allows both localhost and 127.0.0.1 on all development ports (3000, 3001, etc.)
 allowed_origins = [o.strip() for o in settings.cors_origins.split(",") if o.strip()]
 for fallback_origin in ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001"]:
     if fallback_origin not in allowed_origins:
@@ -111,9 +111,11 @@ for fallback_origin in ["http://localhost:3000", "http://127.0.0.1:3000", "http:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # In-Memory Rate Limiting middleware (protects auth and expensive AI generation)
@@ -141,6 +143,8 @@ def _cors_error_response(request: Request, status_code: int, detail: str) -> JSO
     elif allowed_origins:
         response.headers["Access-Control-Allow-Origin"] = allowed_origins[0]
         response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "*"
+        response.headers["Access-Control-Allow-Headers"] = "*"
     return response
 
 
@@ -169,6 +173,15 @@ async def add_security_headers(request, call_next):
         traceback.print_exc(file=sys.stderr)
         err_detail = f"{type(exc).__name__}: {str(exc)}" if settings.app_env == "development" else f"{type(exc).__name__}"
         response = _cors_error_response(request, 500, f"Internal server error: {err_detail}")
+
+    origin = request.headers.get("origin", "")
+    if origin and "access-control-allow-origin" not in response.headers and "Access-Control-Allow-Origin" not in response.headers:
+        is_local = any(h in origin for h in ("localhost", "127.0.0.1", "[::1]"))
+        if is_local or origin in allowed_origins:
+            response.headers["Access-Control-Allow-Origin"] = origin
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+            response.headers["Access-Control-Allow-Methods"] = "*"
+            response.headers["Access-Control-Allow-Headers"] = "*"
 
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"

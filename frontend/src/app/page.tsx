@@ -129,6 +129,17 @@ export default function Home() {
     if (existingToken) {
       setJwtToken(existingToken);
       loadUserData();
+    } else {
+      // In local development / first-time launch, auto-obtain a demo session token silently in background
+      // so all API requests (profile, risk assessment, portfolio generation) are authenticated immediately
+      loginDemoUser()
+        .then((res) => {
+          setJwtToken(res.access_token);
+          loadUserData();
+        })
+        .catch((err) => {
+          console.warn("Background demo login initialization note:", err);
+        });
     }
   }, [loadUserData]);
 
