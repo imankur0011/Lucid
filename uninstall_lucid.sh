@@ -79,3 +79,4 @@ echo -e "${GREEN}${BOLD}========================================================
 echo -e "\nTo test the fresh one-command installation from scratch, run:"
 echo -e "${CYAN}${BOLD}curl -fsSL https://raw.githubusercontent.com/imankur0011/Lucid/main/bootstrap_lucid.sh | bash${NC}"
 echo ""
+

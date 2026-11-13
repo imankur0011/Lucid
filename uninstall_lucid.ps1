@@ -1,5 +1,5 @@
 # ==============================================================================
-# Lucid — Complete Application Teardown & Clean-Slate Reset for Windows
+# Lucid - Complete Application Teardown & Clean-Slate Reset for Windows
 # Stops running services, drops portfolio_dev database, deletes .venv,
 # deletes frontend/node_modules, frontend/.next, .env, and logs.
 # ==============================================================================
@@ -7,7 +7,7 @@
 $ErrorActionPreference = "SilentlyContinue"
 
 Write-Host "======================================================================" -ForegroundColor Red
-Write-Host "             LUCID — COMPLETE TEARDOWN & CLEAN-SLATE RESET            " -ForegroundColor Red
+Write-Host "             LUCID - COMPLETE TEARDOWN & CLEAN-SLATE RESET            " -ForegroundColor Red
 Write-Host "======================================================================" -ForegroundColor Red
 
 # Determine target directory
@@ -35,6 +35,44 @@ Write-Host "   [OK] Processes stopped and ports 8000/3000 cleared." -ForegroundC
 
 # 2. Drop PostgreSQL Database
 Write-Host "`n[2/5] Dropping PostgreSQL database 'portfolio_dev'..." -ForegroundColor White
+
+# Read POSTGRES_PASSWORD from .env if present
+$pgPass = $env:POSTGRES_PASSWORD
+if (-not $pgPass -and (Test-Path (Join-Path $TargetDir ".env"))) {
+    $envContent = Get-Content (Join-Path $TargetDir ".env") -Raw -ErrorAction SilentlyContinue
+    if ($envContent -match 'POSTGRES_PASSWORD=([^\r\n]*)') {
+        $pgPass = $matches[1].Trim().Trim('"').Trim("'")
+    }
+}
+if ($pgPass) {
+    $env:PGPASSWORD = $pgPass
+}
+
+# Drop using Python if venv is present
+$venvPy = Join-Path $TargetDir ".venv\Scripts\python.exe"
+if (Test-Path $venvPy) {
+    & $venvPy -c "
+import psycopg2
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+import os
+pw = os.environ.get('PGPASSWORD', '')
+for host in ['127.0.0.1', 'localhost']:
+    for p in [pw, '', 'postgres', 'root', 'admin']:
+        try:
+            conn = psycopg2.connect(dbname='postgres', user='postgres', password=p, host=host, port=5432, connect_timeout=2)
+            conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+            cur = conn.cursor()
+            cur.execute('SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = \'portfolio_dev\';')
+            cur.execute('DROP DATABASE IF EXISTS portfolio_dev;')
+            cur.close()
+            conn.close()
+            break
+        except Exception:
+            pass
+" 2>$null
+}
+
+# Also try psql as fallback
 $dropSql = "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'portfolio_dev'; DROP DATABASE IF EXISTS portfolio_dev;"
 if (Get-Command psql -ErrorAction SilentlyContinue) {
     psql -U postgres -h 127.0.0.1 -c $dropSql 2>$null | Out-Null
@@ -68,8 +106,7 @@ Get-ChildItem -Path (Join-Path $TargetDir "logs") -Filter "*.log" | Remove-Item 
 Write-Host "   [OK] .env and log files removed." -ForegroundColor Green
 
 Write-Host "`n======================================================================" -ForegroundColor Green
-Write-Host "🎉 Clean-slate reset complete! System is completely pristine." -ForegroundColor Green
+Write-Host "[OK] Clean-slate reset complete! System is completely pristine." -ForegroundColor Green
 Write-Host "======================================================================" -ForegroundColor Green
 Write-Host "`nTo test the fresh one-command installation from scratch, run:" -ForegroundColor Cyan
-Write-Host "powershell -ExecutionPolicy Bypass -Command `"irm https://raw.githubusercontent.com/imankur0011/Lucid/main/bootstrap_lucid.ps1 | iex`"" -ForegroundColor Yellow
-
+Write-Host "powershell -ExecutionPolicy Bypass -Command `"irm https://raw.githubusercontent.com/imankur0011/Lucid/main/bootstrap_lucid.ps1 | Out-String | iex`"" -ForegroundColor Yellow

@@ -108,14 +108,31 @@ Run this single command in your terminal. It automatically downloads the reposit
 
 **Windows 10 / 11 (PowerShell):**
 ```powershell
-irm https://raw.githubusercontent.com/imankur0011/Lucid/main/bootstrap_lucid.ps1 | iex
+irm https://raw.githubusercontent.com/imankur0011/Lucid/main/bootstrap_lucid.ps1 | Out-String | iex
 ```
-*(If PowerShell execution policy is restricted, run: `powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/imankur0011/Lucid/main/bootstrap_lucid.ps1 | iex"`)*
+*(If PowerShell execution policy is restricted, run: `powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/imankur0011/Lucid/main/bootstrap_lucid.ps1 | Out-String | iex"`)*
 
 **macOS & Linux (Terminal):**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/imankur0011/Lucid/main/bootstrap_lucid.sh | bash
 ```
+
+---
+
+### Clean-Slate Reset & Teardown (One Command)
+If you ever want to completely uninstall or reset everything back to a pristine slate (stops processes, drops `portfolio_dev` database, removes `.venv`, `node_modules`, `.next`, `.env`, and logs):
+
+**Windows 10 / 11 (PowerShell):**
+```powershell
+powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/imankur0011/Lucid/main/uninstall_lucid.ps1 | Out-String | iex"
+```
+*(Or locally if inside project folder: `powershell -ExecutionPolicy Bypass -File .\uninstall_lucid.ps1`)*
+
+**macOS & Linux (Terminal):**
+```bash
+curl -fsSL https://raw.githubusercontent.com/imankur0011/Lucid/main/uninstall_lucid.sh | bash
+```
+*(Or locally if inside project folder: `./uninstall_lucid.sh`)*
 
 ---
 
