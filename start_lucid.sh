@@ -99,12 +99,93 @@ check_cmd() {
     fi
 }
 
-MISSING_TOOLS=0
+# Function to locate or auto-install Python 3.11+
+find_python_candidate() {
+    for cand in python3.12 python3.11 python3.13 python3 python; do
+        if command -v "$cand" >/dev/null 2>&1; then
+            if "$cand" -c "import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)" 2>/dev/null; then
+                command -v "$cand"
+                return 0
+            fi
+        fi
+    done
+    return 1
+}
+
+# 1. Resolve Python 3.11+ candidate
+PYTHON_CMD=$(find_python_candidate || echo "")
+
+if [ -z "$PYTHON_CMD" ]; then
+    echo -e "   ${YELLOW}⚠️ No Python >= 3.11 found on system (current: $(python3 --version 2>/dev/null || echo 'none')).${NC}"
+    echo "      Attempting automatic installation of Python 3.11..."
+    if [ "$OS_NAME" = "Linux" ]; then
+        if command -v apt-get >/dev/null 2>&1; then
+            sudo apt-get update -qq || true
+            sudo apt-get install -y software-properties-common curl || true
+            if command -v add-apt-repository >/dev/null 2>&1; then
+                sudo add-apt-repository -y ppa:deadsnakes/ppa 2>/dev/null || true
+                sudo apt-get update -qq || true
+            fi
+            sudo apt-get install -y python3.11 python3.11-venv python3.11-dev python3.11-distutils python3-pip || sudo apt-get install -y python3.12 python3.12-venv python3.12-dev || true
+        elif command -v dnf >/dev/null 2>&1; then
+            sudo dnf install -y python3.11 python3.11-pip python3.11-devel || sudo dnf install -y python3.12 python3.12-pip || true
+        elif command -v pacman >/dev/null 2>&1; then
+            sudo pacman -S --noconfirm python python-pip || true
+        fi
+    elif [ "$OS_NAME" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
+        brew install python@3.11 || true
+    fi
+
+    PYTHON_CMD=$(find_python_candidate || echo "")
+fi
+
+if [ -n "$PYTHON_CMD" ]; then
+    PY_VER=$("$PYTHON_CMD" -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}')")
+    echo -e "   Python 3                  : ${GREEN}✓ Installed${NC} ($PYTHON_CMD, v$PY_VER >= 3.11)"
+else
+    echo -e "   Python 3                  : ${RED}✗ Missing Python >= 3.11${NC}"
+    echo -e "\n${RED}❌ Python 3.11 or newer is required to run Lucid.${NC}"
+    echo "   How to install manually on Linux:"
+    echo "     sudo add-apt-repository -y ppa:deadsnakes/ppa"
+    echo "     sudo apt-get update"
+    echo "     sudo apt-get install -y python3.11 python3.11-venv python3.11-dev"
+    exit 1
+fi
+
+# 2. Check / Auto-upgrade Node.js (Require Node >= 18)
+NODE_VALID=0
+if command -v node >/dev/null 2>&1; then
+    NODE_MAJ=$(node -v 2>/dev/null | tr -d 'v' | cut -d. -f1)
+    if [ -n "$NODE_MAJ" ] && [ "$NODE_MAJ" -ge 18 ]; then
+        NODE_VALID=1
+    fi
+fi
+
+if [ $NODE_VALID -eq 0 ]; then
+    echo -e "   ${YELLOW}⚠️ Node.js >= 18 required (current: $(node -v 2>/dev/null || echo 'none')). Upgrading to Node.js 22 LTS...${NC}"
+    if [ "$OS_NAME" = "Linux" ] && command -v apt-get >/dev/null 2>&1; then
+        curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - 2>/dev/null || true
+        sudo apt-get install -y nodejs || true
+    elif [ "$OS_NAME" = "Linux" ] && command -v dnf >/dev/null 2>&1; then
+        curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash - 2>/dev/null || true
+        sudo dnf install -y nodejs || true
+    elif [ "$OS_NAME" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
+        brew install node || true
+    fi
+fi
+
 check_cmd "git" "Git" || MISSING_TOOLS=$((MISSING_TOOLS + 1))
-check_cmd "python3" "Python 3" || MISSING_TOOLS=$((MISSING_TOOLS + 1))
 check_cmd "node" "Node.js" || MISSING_TOOLS=$((MISSING_TOOLS + 1))
 check_cmd "npm" "npm" || MISSING_TOOLS=$((MISSING_TOOLS + 1))
 check_cmd "psql" "PostgreSQL Client (psql)" || MISSING_TOOLS=$((MISSING_TOOLS + 1))
+
+# Auto-install PostgreSQL if missing on Linux
+if ! command -v psql >/dev/null 2>&1; then
+    if [ "$OS_NAME" = "Linux" ] && command -v apt-get >/dev/null 2>&1; then
+        echo "   Installing PostgreSQL..."
+        sudo apt-get install -y postgresql postgresql-contrib || true
+    fi
+fi
 
 # Check VS Code & Code CLI
 VS_CODE_INSTALLED=0
@@ -142,19 +223,6 @@ else
     echo -e "   Postman                   : ${YELLOW}○ Optional (Not Installed)${NC}"
 fi
 
-# Auto-install missing core tools via Homebrew on macOS
-if [ $MISSING_TOOLS -gt 0 ]; then
-    if [ "$OS_NAME" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
-        echo -e "\n${YELLOW}⚠️ Missing required tools detected. Attempting automatic installation via Homebrew...${NC}"
-        command -v python3 >/dev/null 2>&1 || brew install python@3.11
-        command -v node >/dev/null 2>&1 || brew install node
-        command -v psql >/dev/null 2>&1 || brew install postgresql@16
-    else
-        echo -e "\n${RED}❌ Missing required tools: Please install Python 3.11+, Node.js 18+, and PostgreSQL before running Lucid.${NC}"
-        exit 1
-    fi
-fi
-
 # Install recommended VS Code extensions in background if code CLI is available
 if [ $VS_CODE_INSTALLED -eq 1 ]; then
     echo "   Configuring recommended VS Code workspace extensions in background..."
@@ -178,30 +246,33 @@ if [ $VS_CODE_INSTALLED -eq 1 ]; then
     done
 fi
 
-# Verify Python version >= 3.11
-PY_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
-PY_MAJOR=$(echo "$PY_VERSION" | cut -d. -f1)
-PY_MINOR=$(echo "$PY_VERSION" | cut -d. -f2)
-
-if [ "$PY_MAJOR" -lt 3 ] || ([ "$PY_MAJOR" -eq 3 ] && [ "$PY_MINOR" -lt 11 ]); then
-    echo -e "   ${RED}❌ Python $PY_VERSION is unsupported. Lucid requires Python 3.11 or newer.${NC}"
-    exit 1
-fi
-echo -e "   Python Version Verified   : ${GREEN}$PY_VERSION (>= 3.11)${NC}"
-
 # ==============================================================================
 # 3. PREPARE PYTHON VIRTUAL ENVIRONMENT & BACKEND DEPENDENCIES
 # ==============================================================================
 echo -e "\n${BOLD}[3/10] Preparing Python Virtual Environment...${NC}"
 
 VENV_DIR="$ROOT_DIR/.venv"
+VENV_PY="$VENV_DIR/bin/python"
 REQ_FILE="$ROOT_DIR/backend/requirements.txt"
 HASH_FILE="$VENV_DIR/.requirements.hash"
 
-if [ ! -d "$VENV_DIR" ] || [ ! -f "$VENV_DIR/bin/python" ]; then
-    echo "   Creating new virtual environment at .venv..."
-    python3 -m venv "$VENV_DIR"
-    "$VENV_DIR/bin/pip" install --upgrade pip setuptools wheel >/dev/null 2>&1
+# Check if existing venv uses Python >= 3.11
+RECREATE_VENV=0
+if [ -d "$VENV_DIR" ] && [ -x "$VENV_PY" ]; then
+    VENV_OK=$("$VENV_PY" -c "import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)" 2>/dev/null && echo "1" || echo "0")
+    if [ "$VENV_OK" != "1" ]; then
+        echo -e "   ${YELLOW}⚠️ Existing .venv uses an older Python version. Recreating with $PYTHON_CMD...${NC}"
+        rm -rf "$VENV_DIR"
+        RECREATE_VENV=1
+    fi
+else
+    RECREATE_VENV=1
+fi
+
+if [ $RECREATE_VENV -eq 1 ]; then
+    echo "   Creating new virtual environment at .venv using $PYTHON_CMD..."
+    "$PYTHON_CMD" -m venv "$VENV_DIR"
+    "$VENV_PY" -m pip install --upgrade pip setuptools wheel >/dev/null 2>&1 || true
     echo -e "   ${GREEN}✅ Virtual environment created.${NC}"
 else
     echo -e "   ${GREEN}✅ Reusing existing virtual environment at .venv.${NC}"
@@ -312,15 +383,28 @@ if [ $PG_READY -eq 0 ]; then
     echo "   PostgreSQL is not responding on $PG_HOST:$PG_PORT. Attempting service start..."
     if [ "$OS_NAME" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
         brew services start postgresql@16 >/dev/null 2>&1 || brew services start postgresql >/dev/null 2>&1 || true
-        # Wait for readiness
-        for i in {1..15}; do
+    elif [ "$OS_NAME" = "Linux" ]; then
+        if command -v systemctl >/dev/null 2>&1; then
+            sudo systemctl enable postgresql 2>/dev/null || true
+            sudo systemctl start postgresql 2>/dev/null || systemctl start postgresql 2>/dev/null || true
+        elif command -v service >/dev/null 2>&1; then
+            sudo service postgresql start 2>/dev/null || service postgresql start 2>/dev/null || true
+        elif command -v pg_ctlcluster >/dev/null 2>&1; then
+            for ver in 16 15 14 13 12; do
+                sudo pg_ctlcluster "$ver" main start 2>/dev/null || true
+            done
+        fi
+    fi
+    # Wait for readiness
+    for i in {1..15}; do
+        if command -v pg_isready >/dev/null 2>&1; then
             if pg_isready -h "$PG_HOST" -p "$PG_PORT" >/dev/null 2>&1; then
                 PG_READY=1
                 break
             fi
-            sleep 1
-        done
-    fi
+        fi
+        sleep 1
+    done
 fi
 
 if [ $PG_READY -eq 1 ]; then

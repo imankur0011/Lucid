@@ -86,14 +86,69 @@ elif [ "$OS_NAME" = "Linux" ]; then
         echo "   Updating apt package indices..."
         sudo apt-get update -qq || true
         command -v git >/dev/null 2>&1 || sudo apt-get install -y git
-        command -v python3 >/dev/null 2>&1 || sudo apt-get install -y python3 python3-pip python3-venv
-        command -v node >/dev/null 2>&1 || sudo apt-get install -y nodejs npm
-        command -v psql >/dev/null 2>&1 || sudo apt-get install -y postgresql postgresql-contrib
+        sudo apt-get install -y curl software-properties-common build-essential || true
+
+        # 1. Verify / Install Python 3.11+
+        HAS_PY311=0
+        for cand in python3.12 python3.11 python3.13 python3; do
+            if command -v "$cand" >/dev/null 2>&1; then
+                if "$cand" -c "import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)" 2>/dev/null; then
+                    HAS_PY311=1
+                    break
+                fi
+            fi
+        done
+        if [ $HAS_PY311 -eq 0 ]; then
+            echo "   Python 3.11+ required. Installing Python 3.11 via deadsnakes PPA..."
+            if command -v add-apt-repository >/dev/null 2>&1; then
+                sudo add-apt-repository -y ppa:deadsnakes/ppa 2>/dev/null || true
+                sudo apt-get update -qq || true
+            fi
+            sudo apt-get install -y python3.11 python3.11-venv python3.11-dev python3.11-distutils python3-pip || sudo apt-get install -y python3.12 python3.12-venv python3.12-dev || true
+        fi
+
+        # 2. Verify / Install Node.js 18+ (Node 22 LTS via NodeSource)
+        HAS_NODE18=0
+        if command -v node >/dev/null 2>&1; then
+            NODE_MAJ=$(node -v 2>/dev/null | tr -d 'v' | cut -d. -f1)
+            if [ -n "$NODE_MAJ" ] && [ "$NODE_MAJ" -ge 18 ]; then
+                HAS_NODE18=1
+            fi
+        fi
+        if [ $HAS_NODE18 -eq 0 ]; then
+            echo "   Installing Node.js 22 LTS via NodeSource..."
+            curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - 2>/dev/null || true
+            sudo apt-get install -y nodejs || true
+        fi
+
+        # 3. Verify / Install and Start PostgreSQL
+        if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get install -y postgresql postgresql-contrib || true
+        fi
+        if command -v systemctl >/dev/null 2>&1; then
+            sudo systemctl enable postgresql 2>/dev/null || true
+            sudo systemctl start postgresql 2>/dev/null || true
+        elif command -v service >/dev/null 2>&1; then
+            sudo service postgresql start 2>/dev/null || true
+        fi
+
     elif command -v dnf >/dev/null 2>&1; then
         command -v git >/dev/null 2>&1 || sudo dnf install -y git
-        command -v python3 >/dev/null 2>&1 || sudo dnf install -y python3 python3-pip
-        command -v node >/dev/null 2>&1 || sudo dnf install -y nodejs npm
-        command -v psql >/dev/null 2>&1 || sudo dnf install -y postgresql postgresql-server
+        sudo dnf install -y python3.11 python3.11-pip python3.11-devel || true
+        sudo dnf install -y postgresql postgresql-server || true
+        if command -v systemctl >/dev/null 2>&1; then
+            sudo systemctl enable postgresql 2>/dev/null || true
+            sudo systemctl start postgresql 2>/dev/null || true
+        fi
+        HAS_NODE18=0
+        if command -v node >/dev/null 2>&1; then
+            NODE_MAJ=$(node -v 2>/dev/null | tr -d 'v' | cut -d. -f1)
+            [ -n "$NODE_MAJ" ] && [ "$NODE_MAJ" -ge 18 ] && HAS_NODE18=1
+        fi
+        if [ $HAS_NODE18 -eq 0 ]; then
+            curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash - 2>/dev/null || true
+            sudo dnf install -y nodejs || true
+        fi
     fi
 fi
 
