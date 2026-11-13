@@ -293,16 +293,25 @@ if (-not (Test-Path $FrontendDir)) {
 if (-not (Test-Path $NodeModules)) {
     Write-Host "   Installing frontend dependencies (Next.js and React 19) (streaming live logs)..."
     Push-Location $FrontendDir
-    # --no-audit skips the audit network round-trip; --no-fund suppresses funding messages.
-    # On Windows, antivirus software can hold file locks causing EPERM on rmdir during install.
-    # We retry once on failure which usually resolves transient lock conflicts.
+
+    # Pre-approve blocked install scripts for npm v10+'s allowScripts policy.
+    # unrs-resolver@1.x needs its postinstall to place the correct native binary.
+    # 'npm install-scripts approve' writes the approval to .npmrc (idempotent).
+    npm install-scripts approve unrs-resolver 2>$null | Out-Null
+
+    # --no-audit: skip the audit network call (saves ~10s, run separately if needed)
+    # --no-fund:  suppress funding nag messages in the log
+    # --loglevel=error: prevent non-fatal deprecation/engine warnings on stderr from triggering PowerShell NativeCommandError
     $npmInstallLog = Join-Path $LogDir "npm_install.log"
-    npm install --no-audit --no-fund 2>&1 | Tee-Object -FilePath $npmInstallLog
+    $oldEAP = $ErrorActionPreference
+    $ErrorActionPreference = "SilentlyContinue"
+    npm install --no-audit --no-fund --loglevel=error 2>&1 | Tee-Object -FilePath $npmInstallLog
     if ($LASTEXITCODE -ne 0) {
         Write-Host "   [WARN] npm install had issues. Retrying with --legacy-peer-deps..." -ForegroundColor Yellow
         Start-Sleep -Seconds 3
-        npm install --no-audit --no-fund --legacy-peer-deps 2>&1 | Tee-Object -FilePath $npmInstallLog -Append
+        npm install --no-audit --no-fund --legacy-peer-deps --loglevel=error 2>&1 | Tee-Object -FilePath $npmInstallLog -Append
     }
+    $ErrorActionPreference = $oldEAP
     Pop-Location
     Write-Host "   [OK] Frontend dependencies installed." -ForegroundColor Green
 } else {
