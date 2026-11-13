@@ -137,6 +137,7 @@ async def create_portfolio_generation_request(
 
     # Determine risk category
     risk_category = payload.risk_category or "moderate"
+    valid_risk_assessment_id = None
     if payload.risk_assessment_id:
         assessment = (
             db.query(RiskAssessment)
@@ -146,8 +147,10 @@ async def create_portfolio_generation_request(
             )
             .first()
         )
-        if assessment and assessment.risk_category:
-            risk_category = assessment.risk_category
+        if assessment:
+            valid_risk_assessment_id = assessment.risk_assessment_id
+            if assessment.risk_category:
+                risk_category = assessment.risk_category
     elif not payload.risk_category:
         # Check latest completed assessment
         latest_assessment = (
@@ -161,6 +164,21 @@ async def create_portfolio_generation_request(
         )
         if latest_assessment and latest_assessment.risk_category:
             risk_category = latest_assessment.risk_category
+            valid_risk_assessment_id = latest_assessment.risk_assessment_id
+
+    # Verify goal ownership if provided
+    valid_goal_id = None
+    if payload.goal_id:
+        goal = (
+            db.query(FinancialGoal)
+            .filter(
+                FinancialGoal.goal_id == payload.goal_id,
+                FinancialGoal.user_id == current_user.user_id,
+            )
+            .first()
+        )
+        if goal:
+            valid_goal_id = goal.goal_id
 
     # Create or retrieve InvestorPortfolio container
     if payload.portfolio_id:
@@ -217,8 +235,8 @@ async def create_portfolio_generation_request(
         generation_request_id=uuid.uuid4(),
         portfolio_id=portfolio.portfolio_id,
         user_id=current_user.user_id,
-        goal_id=payload.goal_id,
-        risk_assessment_id=payload.risk_assessment_id,
+        goal_id=valid_goal_id,
+        risk_assessment_id=valid_risk_assessment_id,
         request_type="create",
         request_status="running",
         requested_amount=payload.investment_amount,
@@ -237,8 +255,8 @@ async def create_portfolio_generation_request(
         "generation_request_id": str(gen_req.generation_request_id),
         "portfolio_id": str(portfolio.portfolio_id),
         "user_id": str(current_user.user_id),
-        "goal_id": str(payload.goal_id) if payload.goal_id else None,
-        "risk_assessment_id": str(payload.risk_assessment_id) if payload.risk_assessment_id else None,
+        "goal_id": str(valid_goal_id) if valid_goal_id else None,
+        "risk_assessment_id": str(valid_risk_assessment_id) if valid_risk_assessment_id else None,
         "investment_amount": float(payload.investment_amount),
         "currency_code": payload.currency_code,
         "investment_horizon_months": payload.investment_horizon_months,

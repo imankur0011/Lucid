@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 try:
     from backend.database import get_db
@@ -71,8 +71,9 @@ def calculate_risk_scores(db: Session, answers: list) -> tuple[float, float, str
         if not q:
             continue
 
-        weight = q.scoring_config.get("weight", 0.2)
-        category = q.scoring_config.get("category", "tolerance")
+        scoring_cfg = q.scoring_config or {}
+        weight = scoring_cfg.get("weight", 0.2)
+        category = scoring_cfg.get("category", "tolerance")
         score = float(opt.score)
 
         q_code = (q.question_code or "").upper()
@@ -199,12 +200,12 @@ async def submit_risk_assessment(
 
     # Compute scores deterministically
     tol_score, cap_score, category = calculate_risk_scores(db, payload.answers)
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
 
     assessment = RiskAssessment(
         risk_assessment_id=uuid.uuid4(),
         user_id=current_user.user_id,
-        questionnaire_version=payload.questionnaire_version,
+        questionnaire_version=payload.questionnaire_version or "demo-questionnaire-v1",
         assessment_status="completed",
         risk_tolerance_score=tol_score,
         risk_capacity_score=cap_score,
@@ -228,8 +229,12 @@ async def submit_risk_assessment(
         )
         db.add(answer_rec)
 
-    db.commit()
-    db.refresh(assessment)
+    try:
+        db.commit()
+        db.refresh(assessment)
+    except Exception:
+        db.rollback()
+        raise
     return assessment
 
 

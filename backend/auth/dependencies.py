@@ -111,6 +111,13 @@ async def get_current_user(
             user_id = DEMO_USER_ID
 
     user = db.query(AppUser).filter(AppUser.user_id == user_id).first()
+    if not user and settings.app_env == "development":
+        # Development fallback: try finding developer@lucid.local or any active user
+        user = (
+            db.query(AppUser).filter(AppUser.email == "developer@lucid.local").first()
+            or db.query(AppUser).filter(AppUser.account_status == "active").first()
+        )
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

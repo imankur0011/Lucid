@@ -132,16 +132,25 @@ def _cors_error_response(request: Request, status_code: int, detail: str) -> JSO
     """
     origin = request.headers.get("origin", "")
     response = JSONResponse(status_code=status_code, content={"detail": detail})
-    if origin in allowed_origins:
+    is_local_origin = any(h in origin for h in ("localhost", "127.0.0.1", "[::1]")) if origin else False
+    if origin and (origin in allowed_origins or is_local_origin):
         response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "*"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+    elif allowed_origins:
+        response.headers["Access-Control-Allow-Origin"] = allowed_origins[0]
         response.headers["Access-Control-Allow-Credentials"] = "true"
     return response
 
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-    """Catch-all handler that injects CORS headers on unhandled 500 errors."""
-    return _cors_error_response(request, 500, f"Internal server error: {type(exc).__name__}")
+    """Catch-all handler that prints traceback to stderr and injects CORS headers on unhandled 500 errors."""
+    import traceback
+    traceback.print_exc(file=sys.stderr)
+    err_detail = f"{type(exc).__name__}: {str(exc)}" if settings.app_env == "development" else f"{type(exc).__name__}"
+    return _cors_error_response(request, 500, f"Internal server error: {err_detail}")
 
 
 @app.exception_handler(HTTPException)

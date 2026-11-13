@@ -417,16 +417,24 @@ export function OnboardingWizard({
   const handleFinalSubmit = async () => {
     // Optionally persist goal and profile changes in background
     try {
+      const validExperiences = ["beginner", "intermediate", "experienced"];
+      const validKnowledge = ["basic", "intermediate", "advanced"];
+      const cleanExp = validExperiences.includes(experience) ? experience : "beginner";
+      const cleanKnow = validKnowledge.includes(knowledge) ? knowledge : "basic";
+
       await updateProfile({
-        investment_experience: experience,
-        investment_knowledge_level: knowledge,
+        investment_experience: cleanExp,
+        investment_knowledge_level: cleanKnow,
         ...(mobileNumber.trim() ? { mobile_number: mobileNumber.trim() } : {}),
       });
-      await createGoal({
-        goal_name: goalName,
-        goal_type: goalType,
-        target_amount: targetCorpus,
-      });
+
+      if (goalName && goalType && targetCorpus > 0) {
+        await createGoal({
+          goal_name: goalName,
+          goal_type: goalType,
+          target_amount: targetCorpus,
+        }).catch(() => {});
+      }
     } catch {
       // Non-blocking persistence
     }

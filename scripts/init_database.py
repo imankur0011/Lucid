@@ -40,6 +40,7 @@ from backend.models import (
     InstrumentListing,
     RiskQuestion,
     AppUser,
+    UserProfile,
     EconomicIndicator,
 )
 from backend.seed.seed_questionnaire import seed_risk_questions
@@ -308,25 +309,62 @@ def seed_data_if_needed():
         else:
             print(f"   [INFO] Security universe already populated ({sec_count} equities). Skipping full re-download.")
 
-        # 4. Local Development User
+        # 4. Local Development & Demo User (Strictly matches DEMO_USER_ID)
+        DEMO_USER_ID = uuid.UUID("10000000-0000-4000-8000-000000000001")
         email = "developer@lucid.local"
-        user = db.query(AppUser).filter(AppUser.email == email).first()
-        if not user:
-            user = AppUser(
-                user_id=uuid.uuid4(),
-                identity_provider="local",
-                identity_subject="developer@lucid.local",
-                email=email,
-                password_hash=hash_password("LucidDevPass123!"),
-                email_verified=True,
-                mobile_verified=True,
-                account_status="active",
-            )
-            db.add(user)
-            db.commit()
-            print(f"   [OK] Created development user: {email} (Password: LucidDevPass123!)")
+        
+        # Check by DEMO_USER_ID first
+        demo_by_id = db.query(AppUser).filter(AppUser.user_id == DEMO_USER_ID).first()
+        if not demo_by_id:
+            # Check if developer@lucid.local exists with an older random UUID
+            existing_email_user = db.query(AppUser).filter(AppUser.email == email).first()
+            if not existing_email_user:
+                demo_by_id = AppUser(
+                    user_id=DEMO_USER_ID,
+                    identity_provider="local",
+                    identity_subject="developer@lucid.local",
+                    email=email,
+                    password_hash=hash_password("LucidDevPass123!"),
+                    email_verified=True,
+                    mobile_verified=True,
+                    account_status="active",
+                )
+                db.add(demo_by_id)
+                db.commit()
+                print(f"   [OK] Created development user: {email} (Password: LucidDevPass123!)")
+            else:
+                # User exists with email; also seed DEMO_USER_ID alias so demo login and unauthenticated dev requests succeed
+                demo_by_id = AppUser(
+                    user_id=DEMO_USER_ID,
+                    identity_provider="local",
+                    identity_subject="developer@lucid.local",
+                    email="demo.investor@lucid.local",
+                    password_hash=hash_password("LucidDevPass123!"),
+                    email_verified=True,
+                    mobile_verified=True,
+                    account_status="active",
+                )
+                db.add(demo_by_id)
+                db.commit()
+                print(f"   [INFO] Seeded DEMO_USER_ID ({DEMO_USER_ID}) for dev mode fallback.")
         else:
-            print(f"   [INFO] Development user exists: {email}")
+            print(f"   [INFO] Development demo user exists: {email} ({DEMO_USER_ID})")
+
+        # Ensure UserProfile exists for DEMO_USER_ID
+        demo_prof = db.query(UserProfile).filter(UserProfile.user_id == DEMO_USER_ID).first()
+        if not demo_prof:
+            demo_prof = UserProfile(
+                user_id=DEMO_USER_ID,
+                display_name="Senior Investor",
+                country_code="IN",
+                preferred_currency="INR",
+                investment_experience="intermediate",
+                investment_knowledge_level="intermediate",
+                version_number=1,
+            )
+            db.add(demo_prof)
+            db.commit()
+            print("   [OK] Seeded default UserProfile for demo user.")
 
         return True
     except Exception as e:

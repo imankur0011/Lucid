@@ -5,6 +5,7 @@ Investor Profile API endpoints (GET, PATCH) with full historical versioning.
 from fastapi import APIRouter, Depends, HTTPException, status, Security, Response
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
@@ -98,13 +99,30 @@ async def update_profile(
         current_user.updated_at = datetime.now(timezone.utc)
         db.add(current_user)
 
+    # Sanitize and guard against non-canonical values from external NLP / UI
+    if "investment_experience" in update_data:
+        val = update_data["investment_experience"]
+        if val not in ("beginner", "intermediate", "experienced"):
+            update_data["investment_experience"] = "beginner"
+    if "investment_knowledge_level" in update_data:
+        val = update_data["investment_knowledge_level"]
+        if val not in ("basic", "intermediate", "advanced"):
+            update_data["investment_knowledge_level"] = "basic"
+
     if update_data:
-        # Archive prior profile snapshot to history
-        current_ver = getattr(profile, "version_number", 1) or 1
+        # Determine unique non-colliding version number
+        max_ver = (
+            db.query(func.max(UserProfileVersion.version_number))
+            .filter(UserProfileVersion.user_id == profile.user_id)
+            .scalar()
+            or 0
+        )
+        next_ver = max(max_ver + 1, getattr(profile, "version_number", 1) or 1)
+
         snapshot = UserProfileVersion(
             profile_version_id=uuid.uuid4(),
             user_id=profile.user_id,
-            version_number=current_ver,
+            version_number=next_ver,
             display_name=profile.display_name,
             country_code=profile.country_code,
             preferred_currency=profile.preferred_currency,
@@ -120,10 +138,14 @@ async def update_profile(
             if val is not None:
                 setattr(profile, field, val)
 
-        profile.version_number = current_ver + 1
+        profile.version_number = next_ver + 1
         profile.updated_at = datetime.now(timezone.utc)
-        db.commit()
-        db.refresh(profile)
+        try:
+            db.commit()
+            db.refresh(profile)
+        except Exception:
+            db.rollback()
+            raise
 
     return profile
 
