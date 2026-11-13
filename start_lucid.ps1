@@ -660,14 +660,14 @@ for ($i = 0; $i -lt 40; $i++) {
         break
     }
     try {
-        $resp = Invoke-WebRequest -Uri "http://127.0.0.1:3000" -TimeoutSec 2 -ErrorAction SilentlyContinue
+        $resp = Invoke-WebRequest -Uri "http://localhost:3000" -TimeoutSec 2 -ErrorAction SilentlyContinue
         if ($resp.StatusCode -eq 200 -or $resp.StatusCode -eq 304) {
             $FrontendReady = $true
             break
         }
     } catch {}
     try {
-        $resp = Invoke-WebRequest -Uri "http://localhost:3000" -TimeoutSec 2 -ErrorAction SilentlyContinue
+        $resp = Invoke-WebRequest -Uri "http://127.0.0.1:3000" -TimeoutSec 2 -ErrorAction SilentlyContinue
         if ($resp.StatusCode -eq 200 -or $resp.StatusCode -eq 304) {
             $FrontendReady = $true
             break
@@ -725,7 +725,7 @@ Write-Host "    Email    : developer@lucid.local" -ForegroundColor Yellow
 Write-Host "    Password : LucidDevPass123!" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "Opening Lucid in your default browser..." -ForegroundColor Cyan
-Start-Process "http://127.0.0.1:3000"
+Start-Process "http://localhost:3000"
 
 if (Get-Command code -ErrorAction SilentlyContinue) {
     Write-Host "Opening Lucid workspace in Visual Studio Code..." -ForegroundColor Cyan
