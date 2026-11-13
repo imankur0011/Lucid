@@ -103,6 +103,9 @@ def downgrade() -> None:
         "financial_goals",
         "user_consents",
         "user_preferences",
+        "user_profile_versions",
+        "user_verification_codes",
+        "revoked_tokens",
         "user_profiles",
         "app_users",
     ]

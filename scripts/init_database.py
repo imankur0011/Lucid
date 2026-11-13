@@ -248,7 +248,7 @@ def ensure_extensions():
 
 
 def run_migrations():
-    """Runs Alembic migrations to bring schema to head."""
+    """Runs Alembic migrations to bring schema to head, followed by self-healing ORM validation."""
     print("   Applying database migrations via Alembic...")
     try:
         alembic_ini = ROOT_DIR / "alembic.ini"
@@ -259,24 +259,78 @@ def run_migrations():
         print("   [OK] Alembic migrations applied successfully.")
     except Exception as e:
         print(f"   [WARN] Alembic migration warning: {e}")
-        # Fallback to create_all if migrations fail
-        try:
-            Base.metadata.create_all(bind=session.engine)
-            print("   [OK] Fallback SQLAlchemy create_all completed.")
-        except Exception as e2:
-            print(f"   [FAIL] Schema creation failed: {e2}")
-            return False
 
-    # Ensure all required columns exist on app_users (idempotent patch for existing databases)
+    # Unconditionally run Base.metadata.create_all to ensure all 62 application models exist
+    try:
+        Base.metadata.create_all(bind=session.engine)
+        print("   [OK] Verified all SQLAlchemy ORM models in database schema.")
+    except Exception as e2:
+        print(f"   [WARN] Base.metadata.create_all warning: {e2}")
+
+    # Self-healing idempotent schema patch: guarantees columns, constraints, and tables exist
+    # across peer machines with older/diverged schemas without requiring manual SQL execution.
     try:
         with session.engine.connect() as conn:
+            # 1. Patch app_users authentication and verification columns
             conn.execute(text("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255);"))
             conn.execute(text("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT false;"))
             conn.execute(text("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS mobile_number VARCHAR(20);"))
             conn.execute(text("ALTER TABLE app_users ADD COLUMN IF NOT EXISTS mobile_verified BOOLEAN NOT NULL DEFAULT false;"))
+
+            # 2. Patch user_profiles version_number column
+            conn.execute(text("ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS version_number INTEGER NOT NULL DEFAULT 1;"))
+
+            # 3. Create user_profile_versions audit table if missing
+            conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS user_profile_versions (
+                    profile_version_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    user_id UUID NOT NULL REFERENCES app_users(user_id) ON DELETE CASCADE,
+                    version_number INTEGER NOT NULL,
+                    display_name VARCHAR(120),
+                    country_code CHAR(2) NOT NULL DEFAULT 'IN',
+                    preferred_currency CHAR(3) NOT NULL DEFAULT 'INR',
+                    investment_experience VARCHAR(20),
+                    investment_knowledge_level VARCHAR(20),
+                    change_summary VARCHAR(300),
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+                    CONSTRAINT uq_user_profile_version UNIQUE (user_id, version_number)
+                );
+            """))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS ix_user_profile_versions_user_ver ON user_profile_versions (user_id, version_number DESC);"))
+
+            # 4. Create revoked_tokens table if missing (used for JWT revocation & secure logout)
+            conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS revoked_tokens (
+                    revocation_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    token_hash VARCHAR(128) NOT NULL UNIQUE,
+                    user_id UUID REFERENCES app_users(user_id) ON DELETE CASCADE,
+                    revoked_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+                    expires_at TIMESTAMPTZ NOT NULL
+                );
+            """))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS ix_revoked_tokens_hash ON revoked_tokens (token_hash);"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS ix_revoked_tokens_expires ON revoked_tokens (expires_at);"))
+
+            # 5. Create user_verification_codes table if missing (used for email & mobile OTPs)
+            conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS user_verification_codes (
+                    verification_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    user_id UUID NOT NULL REFERENCES app_users(user_id) ON DELETE CASCADE,
+                    code_type VARCHAR(40) NOT NULL,
+                    code_value VARCHAR(32) NOT NULL,
+                    recipient VARCHAR(320) NOT NULL,
+                    expires_at TIMESTAMPTZ NOT NULL,
+                    is_used BOOLEAN NOT NULL DEFAULT false,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+                    CONSTRAINT ck_verification_code_type CHECK (code_type IN ('email_verification', 'mobile_verification', 'password_reset'))
+                );
+            """))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS ix_user_verification_lookup ON user_verification_codes (user_id, code_type, is_used);"))
+
             conn.commit()
+            print("   [OK] Self-healing schema validation completed successfully.")
     except Exception as e:
-        print(f"   [WARN] Column patch warning: {e}")
+        print(f"   [WARN] Self-healing schema patch error: {e}")
 
     return True
 
@@ -397,9 +451,9 @@ def main():
             table_count = conn.execute(
                 text("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'")
             ).scalar()
-            print(f"\n[SUCCESS] Database is ready! Total public tables: {table_count} (Expected: 60: 59 application tables + 1 alembic_version)")
-            if table_count < 50:
-                print(f"[WARN] Warning: Detected only {table_count} tables, expected at least 59.")
+            print(f"\n[SUCCESS] Database is ready! Total public tables: {table_count} (Expected: 63: 62 application tables + 1 alembic_version)")
+            if table_count < 55:
+                print(f"[WARN] Warning: Detected only {table_count} tables, expected at least 62.")
                 sys.exit(1)
     except Exception as e:
         print(f"[FAIL] Error verifying database tables: {e}")

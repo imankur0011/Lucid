@@ -30,6 +30,7 @@ CREATE INDEX ix_app_users_status ON app_users (account_status);
 
 CREATE TABLE user_profiles (
     user_id UUID PRIMARY KEY REFERENCES app_users(user_id) ON DELETE CASCADE,
+    version_number INTEGER NOT NULL DEFAULT 1 CHECK (version_number > 0),
     display_name VARCHAR(120),
     country_code CHAR(2) NOT NULL DEFAULT 'IN',
     preferred_currency CHAR(3) NOT NULL DEFAULT 'INR',
@@ -40,6 +41,44 @@ CREATE TABLE user_profiles (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+CREATE TABLE user_profile_versions (
+    profile_version_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES app_users(user_id) ON DELETE CASCADE,
+    version_number INTEGER NOT NULL,
+    display_name VARCHAR(120),
+    country_code CHAR(2) NOT NULL DEFAULT 'IN',
+    preferred_currency CHAR(3) NOT NULL DEFAULT 'INR',
+    investment_experience VARCHAR(20),
+    investment_knowledge_level VARCHAR(20),
+    change_summary VARCHAR(300),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT uq_user_profile_version UNIQUE (user_id, version_number)
+);
+CREATE INDEX ix_user_profile_versions_user_ver ON user_profile_versions (user_id, version_number DESC);
+
+CREATE TABLE user_verification_codes (
+    verification_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES app_users(user_id) ON DELETE CASCADE,
+    code_type VARCHAR(40) NOT NULL,
+    code_value VARCHAR(32) NOT NULL,
+    recipient VARCHAR(320) NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    is_used BOOLEAN NOT NULL DEFAULT false,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT ck_verification_code_type CHECK (code_type IN ('email_verification', 'mobile_verification', 'password_reset'))
+);
+CREATE INDEX ix_user_verification_lookup ON user_verification_codes (user_id, code_type, is_used);
+
+CREATE TABLE revoked_tokens (
+    revocation_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    token_hash VARCHAR(128) NOT NULL UNIQUE,
+    user_id UUID REFERENCES app_users(user_id) ON DELETE CASCADE,
+    revoked_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    expires_at TIMESTAMPTZ NOT NULL
+);
+CREATE INDEX ix_revoked_tokens_hash ON revoked_tokens (token_hash);
+CREATE INDEX ix_revoked_tokens_expires ON revoked_tokens (expires_at);
 
 CREATE TABLE user_preferences (
     user_id UUID PRIMARY KEY REFERENCES app_users(user_id) ON DELETE CASCADE,

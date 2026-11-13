@@ -161,8 +161,15 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> JSONRe
 
 @app.middleware("http")
 async def add_security_headers(request, call_next):
-    """Adds enterprise security headers to all HTTP responses."""
-    response = await call_next(request)
+    """Adds enterprise security headers to all HTTP responses, guaranteeing CORS headers on exceptions."""
+    try:
+        response = await call_next(request)
+    except Exception as exc:
+        import traceback
+        traceback.print_exc(file=sys.stderr)
+        err_detail = f"{type(exc).__name__}: {str(exc)}" if settings.app_env == "development" else f"{type(exc).__name__}"
+        response = _cors_error_response(request, 500, f"Internal server error: {err_detail}")
+
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "1; mode=block"
