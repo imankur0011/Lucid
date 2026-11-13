@@ -150,12 +150,25 @@ elif [ "$OS_NAME" = "Linux" ]; then
         elif command -v service >/dev/null 2>&1; then
             sudo service postgresql start 2>/dev/null || true
         fi
-        # Configure local postgres credentials
-        sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';" >/dev/null 2>&1 || sudo -n -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';" >/dev/null 2>&1 || true
+        # Configure PostgreSQL pg_hba.conf for passwordless trust access
+        PG_HBA_FILES=$(find /etc/postgresql -name "pg_hba.conf" 2>/dev/null)
+        if [ -n "$PG_HBA_FILES" ]; then
+            for hba in $PG_HBA_FILES; do
+                sudo sed -i -E 's/(local\s+all\s+(all|postgres)\s+)(peer|md5|scram-sha-256)/\1trust/g' "$hba" 2>/dev/null || true
+                sudo sed -i -E 's/(host\s+all\s+all\s+(127\.0\.0\.1\/32|::1\/128)\s+)(md5|scram-sha-256)/\1trust/g' "$hba" 2>/dev/null || true
+            done
+            sudo systemctl reload postgresql 2>/dev/null || sudo service postgresql reload 2>/dev/null || true
+        fi
+
+        # Configure local postgres credentials: password set to nothing ("")
+        sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD '';" >/dev/null 2>&1 || sudo -n -u postgres psql -c "ALTER USER postgres WITH PASSWORD '';" >/dev/null 2>&1 || true
+        sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD NULL;" >/dev/null 2>&1 || sudo -n -u postgres psql -c "ALTER USER postgres WITH PASSWORD NULL;" >/dev/null 2>&1 || true
         sudo -u postgres psql -c "CREATE DATABASE portfolio_dev OWNER postgres;" >/dev/null 2>&1 || sudo -n -u postgres psql -c "CREATE DATABASE portfolio_dev OWNER postgres;" >/dev/null 2>&1 || true
-        if [ -n "$USER" ] && [ "$USER" != "postgres" ]; then
-            sudo -u postgres psql -c "CREATE USER \"$USER\" WITH SUPERUSER PASSWORD 'postgres';" >/dev/null 2>&1 || true
-            sudo -u postgres psql -c "ALTER USER \"$USER\" WITH SUPERUSER PASSWORD 'postgres';" >/dev/null 2>&1 || true
+        CURRENT_USER="$(whoami)"
+        if [ -n "$CURRENT_USER" ] && [ "$CURRENT_USER" != "postgres" ]; then
+            sudo -u postgres psql -c "CREATE USER \"$CURRENT_USER\" WITH SUPERUSER;" >/dev/null 2>&1 || true
+            sudo -u postgres psql -c "ALTER USER \"$CURRENT_USER\" WITH PASSWORD '';" >/dev/null 2>&1 || true
+            sudo -u postgres psql -c "ALTER USER \"$CURRENT_USER\" WITH PASSWORD NULL;" >/dev/null 2>&1 || true
         fi
 
     elif command -v dnf >/dev/null 2>&1; then

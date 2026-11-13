@@ -133,7 +133,7 @@ def ensure_database_exists():
             candidate_users.append(u)
 
     candidate_passwords = [
-        password, "", "postgres", "password", "root", "admin",
+        "", password, "postgres", "password", "root", "admin",
         "123456", "1234", "12345", "postgres123", "password123",
         "root123", "varun", "varun123", "akshay", "akshay123",
         "LucidDevPass123!"
@@ -206,72 +206,121 @@ def ensure_database_exists():
     # 3. OS-Specific Self-Healing Fallback
     import platform
     if platform.system() == "Linux":
-        print("   [INFO] Probing failed. Attempting local peer authentication to configure 'postgres' password...")
-        try:
-            import subprocess
-            subprocess.run(
-                ["sudo", "-n", "-u", "postgres", "psql", "-c", f"ALTER USER postgres PASSWORD 'postgres'; CREATE DATABASE \"{db_name}\" OWNER postgres;"],
-                capture_output=True, timeout=5
-            )
-            subprocess.run(
-                ["sudo", "-n", "-u", "postgres", "psql", "-c", f"CREATE USER \"{sys_user}\" WITH SUPERUSER PASSWORD 'postgres'; ALTER USER \"{sys_user}\" WITH SUPERUSER PASSWORD 'postgres';"],
-                capture_output=True, timeout=5
-            )
-            for r_host in ["127.0.0.1", "localhost"]:
-                for r_user in ["postgres", sys_user]:
-                    try:
-                        retry_conn = psycopg2.connect(
-                            dbname="postgres",
-                            user=r_user,
-                            password="postgres",
-                            host=r_host,
-                            port=port,
-                            connect_timeout=2
-                        )
-                        retry_conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-                        r_cur = retry_conn.cursor()
-                        r_cur.execute(f"SELECT 1 FROM pg_database WHERE datname = '{db_name}';")
-                        if not r_cur.fetchone():
-                            r_cur.execute(f'CREATE DATABASE "{db_name}";')
-                        r_cur.close()
-                        retry_conn.close()
+        print("   [INFO] Probing failed. Attempting local socket/peer configuration for passwordless PostgreSQL...")
+        # 3a. Try direct local UNIX domain socket (peer auth without network password)
+        socket_configured = False
+        for s_host in ["/var/run/postgresql", "/tmp", None]:
+            for s_user in ["postgres", sys_user]:
+                try:
+                    s_conn = psycopg2.connect(
+                        dbname="postgres",
+                        user=s_user,
+                        host=s_host,
+                        connect_timeout=2
+                    ) if s_host else psycopg2.connect(
+                        dbname="postgres",
+                        user=s_user,
+                        connect_timeout=2
+                    )
+                    s_conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+                    s_cur = s_conn.cursor()
+                    s_cur.execute(f"SELECT 1 FROM pg_database WHERE datname = '{db_name}';")
+                    if not s_cur.fetchone():
+                        s_cur.execute(f'CREATE DATABASE "{db_name}";')
+                    s_cur.execute("ALTER USER postgres WITH PASSWORD '';")
+                    s_cur.execute("ALTER USER postgres WITH PASSWORD NULL;")
+                    if sys_user and sys_user != "postgres":
+                        s_cur.execute(f"DO $$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '{sys_user}') THEN CREATE ROLE \"{sys_user}\" WITH SUPERUSER LOGIN; END IF; END $$;")
+                        s_cur.execute(f"ALTER USER \"{sys_user}\" WITH PASSWORD '';")
+                        s_cur.execute(f"ALTER USER \"{sys_user}\" WITH PASSWORD NULL;")
+                    s_cur.close()
+                    s_conn.close()
+                    socket_configured = True
+                    break
+                except Exception:
+                    continue
+            if socket_configured:
+                break
 
-                        settings.postgres_host = r_host
-                        settings.postgres_port = port
-                        settings.postgres_user = r_user
-                        settings.postgres_password = "postgres"
+        # 3b. If local socket required elevation, configure trust and empty password via sudo
+        if not socket_configured:
+            try:
+                import subprocess
+                import glob
+                hba_files = glob.glob("/etc/postgresql/*/main/pg_hba.conf")
+                for hba in hba_files:
+                    subprocess.run(["sudo", "sed", "-i", "-E", "s/(local\\s+all\\s+(all|postgres)\\s+)(peer|md5|scram-sha-256)/\\1trust/g", hba], capture_output=True, timeout=5)
+                    subprocess.run(["sudo", "sed", "-i", "-E", "s/(host\\s+all\\s+all\\s+(127\\.0\\.0\\.1\\/32|::1\\/128)\\s+)(md5|scram-sha-256)/\\1trust/g", hba], capture_output=True, timeout=5)
+                if hba_files:
+                    subprocess.run(["sudo", "systemctl", "reload", "postgresql"], capture_output=True, timeout=5)
+                    subprocess.run(["sudo", "service", "postgresql", "reload"], capture_output=True, timeout=5)
 
-                        env_path = ROOT_DIR / ".env"
-                        if env_path.exists():
-                            try:
-                                with open(env_path, "r") as f:
-                                    e_lines = f.readlines()
-                                with open(env_path, "w") as f:
-                                    for line in e_lines:
-                                        if line.startswith("POSTGRES_HOST="):
-                                            f.write(f"POSTGRES_HOST={r_host}\n")
-                                        elif line.startswith("POSTGRES_PORT="):
-                                            f.write(f"POSTGRES_PORT={port}\n")
-                                        elif line.startswith("POSTGRES_USER="):
-                                            f.write(f"POSTGRES_USER={r_user}\n")
-                                        elif line.startswith("POSTGRES_PASSWORD="):
-                                            f.write("POSTGRES_PASSWORD=postgres\n")
-                                        else:
-                                            f.write(line)
-                            except Exception:
-                                pass
+                subprocess.run(
+                    ["sudo", "-u", "postgres", "psql", "-c", f"ALTER USER postgres WITH PASSWORD ''; ALTER USER postgres WITH PASSWORD NULL; CREATE DATABASE \"{db_name}\" OWNER postgres;"],
+                    capture_output=True, timeout=5
+                )
+                if sys_user and sys_user != "postgres":
+                    subprocess.run(
+                        ["sudo", "-u", "postgres", "psql", "-c", f"CREATE USER \"{sys_user}\" WITH SUPERUSER; ALTER USER \"{sys_user}\" WITH PASSWORD ''; ALTER USER \"{sys_user}\" WITH PASSWORD NULL;"],
+                        capture_output=True, timeout=5
+                    )
+            except Exception:
+                pass
 
-                        session.engine.dispose()
-                        session.engine = create_engine(settings.postgres_url, pool_pre_ping=True)
-                        session.SessionLocal.configure(bind=session.engine)
-                        engine = session.engine
-                        SessionLocal = session.SessionLocal
-                        print(f"   [OK] Configured and connected to database '{db_name}' as '{r_user}'.")
-                        return True
-                    except Exception:
-                        continue
-        except Exception:
-            pass
+        # 3c. Connect via passwordless TCP
+        for r_host in ["127.0.0.1", "localhost"]:
+            for r_user in ["postgres", sys_user]:
+                try:
+                    retry_conn = psycopg2.connect(
+                        dbname="postgres",
+                        user=r_user,
+                        password="",
+                        host=r_host,
+                        port=port,
+                        connect_timeout=2
+                    )
+                    retry_conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+                    r_cur = retry_conn.cursor()
+                    r_cur.execute(f"SELECT 1 FROM pg_database WHERE datname = '{db_name}';")
+                    if not r_cur.fetchone():
+                        r_cur.execute(f'CREATE DATABASE "{db_name}";')
+                    r_cur.close()
+                    retry_conn.close()
+
+                    settings.postgres_host = r_host
+                    settings.postgres_port = port
+                    settings.postgres_user = r_user
+                    settings.postgres_password = ""
+
+                    env_path = ROOT_DIR / ".env"
+                    if env_path.exists():
+                        try:
+                            with open(env_path, "r") as f:
+                                e_lines = f.readlines()
+                            with open(env_path, "w") as f:
+                                for line in e_lines:
+                                    if line.startswith("POSTGRES_HOST="):
+                                        f.write(f"POSTGRES_HOST={r_host}\n")
+                                    elif line.startswith("POSTGRES_PORT="):
+                                        f.write(f"POSTGRES_PORT={port}\n")
+                                    elif line.startswith("POSTGRES_USER="):
+                                        f.write(f"POSTGRES_USER={r_user}\n")
+                                    elif line.startswith("POSTGRES_PASSWORD="):
+                                        f.write("POSTGRES_PASSWORD=\n")
+                                    else:
+                                        f.write(line)
+                        except Exception:
+                            pass
+
+                    session.engine.dispose()
+                    session.engine = create_engine(settings.postgres_url, pool_pre_ping=True)
+                    session.SessionLocal.configure(bind=session.engine)
+                    engine = session.engine
+                    SessionLocal = session.SessionLocal
+                    print(f"   [OK] Configured and connected to database '{db_name}' as '{r_user}' (passwordless).")
+                    return True
+                except Exception:
+                    continue
     elif platform.system() == "Windows":
         # Windows: attempt to start PostgreSQL service or launch via pg_ctl
         try:
@@ -314,12 +363,14 @@ def ensure_database_exists():
         print(f"       1. Press Win + R, type 'services.msc', and press Enter.")
         print(f"       2. Scroll to 'postgresql-x64-16' (or similar), right-click and choose 'Start'.")
         print(f"       3. Or open PowerShell as Administrator and run: net start postgresql-x64-16")
+        print(f"   --> How to fix on Linux:")
+        print(f"       sudo systemctl start postgresql")
     else:
         print(f"   [FAIL] PostgreSQL is running on port {port}, but authentication failed for user '{user}'.")
-        print(f"   --> None of the common default passwords matched.")
-        print(f"   --> How to fix:")
-        print(f"       Open your '.env' file in the project root and set your actual password:")
-        print(f"       POSTGRES_PASSWORD=your_actual_password_here")
+        print(f"   --> To set password to nothing for seamless passwordless access, run:")
+        print(f"       sudo -u postgres psql -c \"ALTER USER postgres WITH PASSWORD '';\"")
+        print(f"       sudo -u postgres psql -c \"ALTER USER postgres WITH PASSWORD NULL;\"")
+        print(f"       And leave POSTGRES_PASSWORD= empty in your .env file.")
     return False
 
 

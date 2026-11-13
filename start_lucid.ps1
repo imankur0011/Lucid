@@ -343,16 +343,16 @@ if (-not (Test-Path $EnvFile)) {
     $Content = $Content -replace "JWT_SECRET_KEY=.*", "JWT_SECRET_KEY=$JwtSecret"
     $Content = $Content -replace "APP_SECRET_KEY=.*", "APP_SECRET_KEY=$AppSecret"
     $Content | Set-Content $EnvFile
-    $Content = $Content -replace "POSTGRES_PASSWORD=your_postgres_password_here", "POSTGRES_PASSWORD=postgres"
+    $Content = $Content -replace "POSTGRES_PASSWORD=your_postgres_password_here", "POSTGRES_PASSWORD="
     $Content | Set-Content $EnvFile
-    Write-Host "   [OK] Created .env with cryptographically secure random secrets." -ForegroundColor Green
+    Write-Host "   [OK] Created .env with cryptographically secure random secrets (passwordless PostgreSQL)." -ForegroundColor Green
 } else {
     # Auto-repair placeholder password if still present in existing .env
     $Content = Get-Content $EnvFile -Raw
     if ($Content -match "POSTGRES_PASSWORD=your_postgres_password_here") {
-        $Content = $Content -replace "POSTGRES_PASSWORD=your_postgres_password_here", "POSTGRES_PASSWORD=postgres"
+        $Content = $Content -replace "POSTGRES_PASSWORD=your_postgres_password_here", "POSTGRES_PASSWORD="
         $Content | Set-Content $EnvFile
-        Write-Host "   [OK] Replaced placeholder POSTGRES_PASSWORD with 'postgres' in .env." -ForegroundColor Green
+        Write-Host "   [OK] Configured passwordless POSTGRES_PASSWORD in .env." -ForegroundColor Green
     }
     Write-Host "   [OK] Preserving existing .env configuration." -ForegroundColor Green
 }
