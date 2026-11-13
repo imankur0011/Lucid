@@ -132,8 +132,8 @@ if (-not $hasNode -or -not $hasNpm) {
         } catch {}
     }
     if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
-        Write-Host "   Downloading Node.js LTS MSI installer..." -ForegroundColor Cyan
-        $nodeUrl = "https://nodejs.org/dist/v20.18.0/node-v20.18.0-x64.msi"
+        Write-Host "   Downloading Node.js 22 LTS MSI installer..." -ForegroundColor Cyan
+        $nodeUrl = "https://nodejs.org/dist/v22.14.0/node-v22.14.0-x64.msi"
         $nodeDest = Join-Path $env:TEMP "node_setup.msi"
         Invoke-WebRequest -Uri $nodeUrl -OutFile $nodeDest -UseBasicParsing
         Start-Process "msiexec.exe" -ArgumentList "/i `"$nodeDest`" /qn" -Wait
@@ -142,6 +142,48 @@ if (-not $hasNode -or -not $hasNpm) {
     }
     $hasNode = [bool](Get-Command node -ErrorAction SilentlyContinue)
     $hasNpm = [bool](Get-Command npm -ErrorAction SilentlyContinue)
+}
+
+# Verify Node.js version >= 20.19.0 (required by eslint-visitor-keys@5+ in next.js 16)
+if ($hasNode) {
+    try {
+        $nodeVerRaw = node --version 2>$null   # e.g. "v20.14.0"
+        $nodeVer = $nodeVerRaw.TrimStart('v')
+        $nodeParts = $nodeVer.Split('.')
+        $nodeMajor = [int]$nodeParts[0]
+        $nodeMinor = if ($nodeParts.Length -gt 1) { [int]$nodeParts[1] } else { 0 }
+        $nodePatch = if ($nodeParts.Length -gt 2) { [int]$nodeParts[2] } else { 0 }
+
+        # Need >= 20.19.0 (LTS Hydrogen min compatible with eslint-visitor-keys@5) OR >= 22.x
+        $nodeOk = ($nodeMajor -gt 22) -or
+                  ($nodeMajor -eq 22 -and $nodeMinor -ge 0) -or
+                  ($nodeMajor -eq 20 -and (($nodeMinor -gt 19) -or ($nodeMinor -eq 19 -and $nodePatch -ge 0)))
+
+        if (-not $nodeOk) {
+            Write-Host "   [WARN] Node.js $nodeVerRaw detected. Lucid requires Node.js >=20.19.0 or >=22.x (LTS)." -ForegroundColor Yellow
+            Write-Host "          Some dependencies (eslint-visitor-keys@5) may show EBADENGINE warnings." -ForegroundColor Yellow
+            Write-Host "          Attempting to upgrade Node.js to v22 LTS..." -ForegroundColor Cyan
+            if ($hasWinget) {
+                try {
+                    winget install --id OpenJS.NodeJS.LTS -e --accept-source-agreements --accept-package-agreements
+                    Update-SessionPath
+                } catch {}
+            }
+            if (-not (Get-Command node -ErrorAction SilentlyContinue) -or ((node --version 2>$null).TrimStart('v').Split('.')[0] -lt 22)) {
+                $nodeUrl22 = "https://nodejs.org/dist/v22.14.0/node-v22.14.0-x64.msi"
+                $nodeDest22 = Join-Path $env:TEMP "node22_setup.msi"
+                Write-Host "   Downloading Node.js 22 LTS (v22.14.0)..." -ForegroundColor Cyan
+                Invoke-WebRequest -Uri $nodeUrl22 -OutFile $nodeDest22 -UseBasicParsing
+                Start-Process "msiexec.exe" -ArgumentList "/i `"$nodeDest22`" /qn" -Wait
+                Remove-Item $nodeDest22 -Force -ErrorAction SilentlyContinue
+                Update-SessionPath
+                $nodeVerRaw = node --version 2>$null
+            }
+            Write-Host "   Node.js Version After Upgrade : $nodeVerRaw" -ForegroundColor Green
+        } else {
+            Write-Host "   Node.js Version Verified : $nodeVerRaw (>= 20.19.0)" -ForegroundColor Green
+        }
+    } catch {}
 }
 
 # Verify Python version >= 3.11
@@ -251,7 +293,16 @@ if (-not (Test-Path $FrontendDir)) {
 if (-not (Test-Path $NodeModules)) {
     Write-Host "   Installing frontend dependencies (Next.js and React 19) (streaming live logs)..."
     Push-Location $FrontendDir
-    npm install | Tee-Object -FilePath (Join-Path $LogDir "npm_install.log")
+    # --no-audit skips the audit network round-trip; --no-fund suppresses funding messages.
+    # On Windows, antivirus software can hold file locks causing EPERM on rmdir during install.
+    # We retry once on failure which usually resolves transient lock conflicts.
+    $npmInstallLog = Join-Path $LogDir "npm_install.log"
+    npm install --no-audit --no-fund 2>&1 | Tee-Object -FilePath $npmInstallLog
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "   [WARN] npm install had issues. Retrying with --legacy-peer-deps..." -ForegroundColor Yellow
+        Start-Sleep -Seconds 3
+        npm install --no-audit --no-fund --legacy-peer-deps 2>&1 | Tee-Object -FilePath $npmInstallLog -Append
+    }
     Pop-Location
     Write-Host "   [OK] Frontend dependencies installed." -ForegroundColor Green
 } else {
@@ -318,7 +369,85 @@ if ($pgService) {
     }
     Write-Host "   [OK] PostgreSQL service is active." -ForegroundColor Green
 } else {
-    Write-Host "   [INFO] PostgreSQL service not registered as Windows Service. Checking port connectivity..." -ForegroundColor Cyan
+    # Check if postgres port is reachable even without a Windows service entry (portable installs)
+    $pgPortOpen = $false
+    foreach ($pgPort in @(5432, 5433)) {
+        try {
+            $testConn = New-Object System.Net.Sockets.TcpClient
+            $testResult = $testConn.BeginConnect("127.0.0.1", $pgPort, $null, $null)
+            $testWait = $testResult.AsyncWaitHandle.WaitOne(1000)
+            if ($testWait -and $testConn.Connected) {
+                $pgPortOpen = $true
+                Write-Host "   [OK] PostgreSQL detected on port $pgPort (portable/custom install)." -ForegroundColor Green
+            }
+            $testConn.Close()
+        } catch {}
+        if ($pgPortOpen) { break }
+    }
+
+    if (-not $pgPortOpen) {
+        Write-Host "   [WARN] PostgreSQL not found. Attempting automatic installation..." -ForegroundColor Yellow
+        $pgInstalled = $false
+
+        # Try winget first
+        if ($hasWinget) {
+            try {
+                Write-Host "   Installing PostgreSQL 16 via winget..." -ForegroundColor Cyan
+                winget install --id PostgreSQL.PostgreSQL.16 -e --accept-source-agreements --accept-package-agreements
+                Update-SessionPath
+                Start-Sleep -Seconds 5
+                $pgService = Get-Service -Name "postgresql*" -ErrorAction SilentlyContinue
+                if ($pgService) {
+                    try { Start-Service $pgService.Name -ErrorAction SilentlyContinue } catch {}
+                    $pgInstalled = $true
+                    Write-Host "   [OK] PostgreSQL 16 installed and started via winget." -ForegroundColor Green
+                }
+            } catch {}
+        }
+
+        # Fallback: download PostgreSQL interactive installer
+        if (-not $pgInstalled) {
+            Write-Host "   Downloading PostgreSQL 16 installer (this may take 2-3 minutes)..." -ForegroundColor Cyan
+            $pgUrl = "https://get.enterprisedb.com/postgresql/postgresql-16.8-1-windows-x64.exe"
+            $pgDest = Join-Path $env:TEMP "postgresql_setup.exe"
+            try {
+                Invoke-WebRequest -Uri $pgUrl -OutFile $pgDest -UseBasicParsing
+                Write-Host "   Running PostgreSQL installer silently (password: LucidDevPass123!)..." -ForegroundColor Cyan
+                Start-Process $pgDest -ArgumentList "--unattendedmodeui minimal --mode unattended --superpassword LucidDevPass123! --servicename postgresql-16 --servicepassword LucidDevPass123! --serverport 5432" -Wait
+                Remove-Item $pgDest -Force -ErrorAction SilentlyContinue
+                Update-SessionPath
+                Start-Sleep -Seconds 8
+                $pgService = Get-Service -Name "postgresql*" -ErrorAction SilentlyContinue
+                if ($pgService) {
+                    try { Start-Service $pgService.Name -ErrorAction SilentlyContinue } catch {}
+                    $pgInstalled = $true
+                    # Persist the auto-generated password to .env
+                    $envContent = Get-Content $EnvFile -Raw -ErrorAction SilentlyContinue
+                    if ($envContent) {
+                        $envContent = $envContent -replace "POSTGRES_PASSWORD=.*", "POSTGRES_PASSWORD=LucidDevPass123!"
+                        $envContent | Set-Content $EnvFile
+                    }
+                    Write-Host "   [OK] PostgreSQL 16 installed via direct download." -ForegroundColor Green
+                }
+            } catch {
+                Write-Host "   [WARN] Automatic PostgreSQL install failed: $_" -ForegroundColor Yellow
+            }
+        }
+
+        if (-not $pgInstalled) {
+            Write-Host "" -ForegroundColor Red
+            Write-Host "   =================================================================" -ForegroundColor Red
+            Write-Host "   [FAIL] PostgreSQL could not be automatically installed." -ForegroundColor Red
+            Write-Host "   Please install PostgreSQL 16 manually:" -ForegroundColor Yellow
+            Write-Host "     1. Visit: https://www.postgresql.org/download/windows/" -ForegroundColor Yellow
+            Write-Host "     2. Install PostgreSQL 16 with default settings" -ForegroundColor Yellow
+            Write-Host "     3. Set a password for the 'postgres' user" -ForegroundColor Yellow
+            Write-Host "     4. Update POSTGRES_PASSWORD in the .env file" -ForegroundColor Yellow
+            Write-Host "     5. Re-run: powershell -ExecutionPolicy Bypass -File .\start_lucid.ps1" -ForegroundColor Yellow
+            Write-Host "   =================================================================" -ForegroundColor Red
+            exit 1
+        }
+    }
 }
 
 # [7/10] Initialize Database, Migrations and Seed Data

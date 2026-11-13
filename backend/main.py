@@ -17,8 +17,9 @@ if hasattr(sys.stderr, "reconfigure"):
     except Exception:
         pass
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 from sqlalchemy.orm import Session
 from sqlalchemy import text
@@ -117,6 +118,36 @@ app.add_middleware(
 
 # In-Memory Rate Limiting middleware (protects auth and expensive AI generation)
 app.add_middleware(InMemoryRateLimiterMiddleware, enabled=True)
+
+
+def _cors_error_response(request: Request, status_code: int, detail: str) -> JSONResponse:
+    """
+    Returns a JSONResponse with CORS headers injected manually.
+    FastAPI's CORSMiddleware only adds Access-Control-Allow-Origin on successful
+    responses that pass through the middleware chain normally. When an unhandled
+    exception propagates before a response is built (e.g. 500 Internal Server Error),
+    Starlette sends a plain response with no CORS headers, causing the browser to
+    report a CORS error instead of the actual 500. This helper injects the correct
+    origin header on every error response so browsers always see the real error.
+    """
+    origin = request.headers.get("origin", "")
+    response = JSONResponse(status_code=status_code, content={"detail": detail})
+    if origin in allowed_origins:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+    return response
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Catch-all handler that injects CORS headers on unhandled 500 errors."""
+    return _cors_error_response(request, 500, f"Internal server error: {type(exc).__name__}")
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
+    """HTTPException handler that also injects CORS headers."""
+    return _cors_error_response(request, exc.status_code, exc.detail)
 
 
 @app.middleware("http")
