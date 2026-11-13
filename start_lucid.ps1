@@ -269,7 +269,7 @@ if (-not (Test-Path $EnvFile)) {
         Copy-Item $ExampleFile $EnvFile
     } else {
         Write-Host "   Generating default .env configuration..."
-        "POSTGRES_HOST=localhost`nPOSTGRES_PORT=5432`nPOSTGRES_DB=portfolio_dev`nPOSTGRES_USER=postgres`nPOSTGRES_PASSWORD=`nAPP_ENV=development`nAPP_PORT=8000`nCORS_ORIGINS=http://localhost:3000`nLLM_PROVIDER=gemini`nLLM_MODEL=gemini-3.8-flash`nGEMINI_API_KEY=" | Set-Content $EnvFile
+        "POSTGRES_HOST=127.0.0.1`nPOSTGRES_PORT=5432`nPOSTGRES_DB=portfolio_dev`nPOSTGRES_USER=postgres`nPOSTGRES_PASSWORD=`nAPP_ENV=development`nAPP_PORT=8000`nCORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001`nLLM_PROVIDER=gemini`nLLM_MODEL=gemini-3.8-flash`nGEMINI_API_KEY=" | Set-Content $EnvFile
     }
     $JwtSecret = & $VenvPy -c "import secrets; print(secrets.token_urlsafe(32))"
     $AppSecret = & $VenvPy -c "import secrets; print(secrets.token_urlsafe(32))"
@@ -354,6 +354,24 @@ if (Test-Path $FrontendPidFile) {
     } catch {}
     Remove-Item $FrontendPidFile -Force -ErrorAction SilentlyContinue
 }
+
+# Release ports 8000 and 3000 directly from any lingering orphan processes
+function Release-Port {
+    param([int]$port, [string]$name)
+    try {
+        $conns = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue
+        foreach ($c in $conns) {
+            $pId = $c.OwningProcess
+            if ($pId -gt 0) {
+                Write-Host "   Releasing port $port (PID: $pId - $name)..." -ForegroundColor Yellow
+                Stop-Process -Id $pId -Force -ErrorAction SilentlyContinue
+            }
+        }
+    } catch {}
+}
+Release-Port 8000 "FastAPI Backend"
+Release-Port 3000 "Next.js Frontend"
+
 Write-Host "   [OK] Ports 8000 and 3000 are clear." -ForegroundColor Green
 
 # [9/10] Start Backend Server
@@ -505,7 +523,7 @@ Write-Host "    Email    : developer@lucid.local" -ForegroundColor Yellow
 Write-Host "    Password : LucidDevPass123!" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "Opening Lucid in your default browser..." -ForegroundColor Cyan
-Start-Process "http://localhost:3000"
+Start-Process "http://127.0.0.1:3000"
 
 if (Get-Command code -ErrorAction SilentlyContinue) {
     Write-Host "Opening Lucid workspace in Visual Studio Code..." -ForegroundColor Cyan

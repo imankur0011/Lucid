@@ -5,10 +5,15 @@
 
 function getApiBase(): string {
   if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
-  if (typeof window !== "undefined" && window.location.hostname === "127.0.0.1") {
-    return "http://127.0.0.1:8000/api/v1";
+  if (typeof window !== "undefined") {
+    // Both localhost and 127.0.0.1 default to 127.0.0.1:8000
+    // This avoids Windows 10/11 Chrome/Edge IPv6 [::1] loopback connection drops when Uvicorn is bound to IPv4 (0.0.0.0)
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      return "http://127.0.0.1:8000/api/v1";
+    }
+    return `http://${window.location.hostname}:8000/api/v1`;
   }
-  return "http://localhost:8000/api/v1";
+  return "http://127.0.0.1:8000/api/v1";
 }
 
 const API_BASE = {

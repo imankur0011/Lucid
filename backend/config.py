@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     llm_model: str = "gemini-3.8-flash"
 
     # --- PostgreSQL 16 (Authoritative Relational Database) ---
-    postgres_host: str = "localhost"
+    postgres_host: str = "127.0.0.1"
     postgres_port: int = 5432
     postgres_db: str = "portfolio_dev"
     postgres_user: str = "postgres"

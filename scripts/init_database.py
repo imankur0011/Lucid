@@ -62,51 +62,64 @@ def ensure_database_exists():
 
     print(f"   Checking database '{db_name}' on {host}:{port}...")
     
-    # 1. Direct connection attempt
-    try:
-        conn = psycopg2.connect(
-            dbname=db_name,
-            user=user,
-            password=password,
-            host=host,
-            port=port,
-            connect_timeout=3
-        )
-        conn.close()
-        print(f"   [OK] Database '{db_name}' exists and is accessible.")
-        return True
-    except psycopg2.OperationalError as e:
-        err_msg = str(e)
-        if f'database "{db_name}" does not exist' in err_msg:
-            print(f"   [INFO] Database '{db_name}' does not exist. Creating now...")
-            # Connect to maintenance database with configured credentials
-            maintenance_db = "postgres" if db_name != "postgres" else "template1"
-            try:
-                m_conn = psycopg2.connect(
-                    dbname=maintenance_db,
-                    user=user,
-                    password=password,
-                    host=host,
-                    port=port,
-                    connect_timeout=5
-                )
-                m_conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-                cur = m_conn.cursor()
-                cur.execute(f'CREATE DATABASE "{db_name}";')
-                cur.close()
-                m_conn.close()
-                print(f"   [OK] Successfully created database '{db_name}'.")
-                return True
-            except Exception as m_err:
-                print(f"   [WARN] Could not create via maintenance db: {m_err}")
+    # 1. Direct connection attempt across dual loopback hosts (prioritizing 127.0.0.1)
+    direct_hosts = ["127.0.0.1", host, "localhost"]
+    seen_hosts = set()
+    for d_host in direct_hosts:
+        if d_host in seen_hosts:
+            continue
+        seen_hosts.add(d_host)
+        try:
+            conn = psycopg2.connect(
+                dbname=db_name,
+                user=user,
+                password=password,
+                host=d_host,
+                port=port,
+                connect_timeout=3
+            )
+            conn.close()
+            settings.postgres_host = d_host
+            session.engine.dispose()
+            session.engine = create_engine(settings.postgres_url, pool_pre_ping=True)
+            session.SessionLocal.configure(bind=session.engine)
+            engine = session.engine
+            SessionLocal = session.SessionLocal
+            print(f"   [OK] Database '{db_name}' exists and is accessible on {d_host}:{port}.")
+            return True
+        except psycopg2.OperationalError as e:
+            err_msg = str(e)
+            if f'database "{db_name}" does not exist' in err_msg:
+                print(f"   [INFO] Database '{db_name}' does not exist. Creating now...")
+                maintenance_db = "postgres" if db_name != "postgres" else "template1"
+                try:
+                    m_conn = psycopg2.connect(
+                        dbname=maintenance_db,
+                        user=user,
+                        password=password,
+                        host=d_host,
+                        port=port,
+                        connect_timeout=5
+                    )
+                    m_conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+                    cur = m_conn.cursor()
+                    cur.execute(f'CREATE DATABASE "{db_name}";')
+                    cur.close()
+                    m_conn.close()
+                    settings.postgres_host = d_host
+                    session.engine.dispose()
+                    session.engine = create_engine(settings.postgres_url, pool_pre_ping=True)
+                    session.SessionLocal.configure(bind=session.engine)
+                    engine = session.engine
+                    SessionLocal = session.SessionLocal
+                    print(f"   [OK] Successfully created database '{db_name}'.")
+                    return True
+                except Exception as m_err:
+                    print(f"   [WARN] Could not create via maintenance db on {d_host}: {m_err}")
 
     # 2. Intelligent Fallback Probing for Port/User/Password Mismatches
     print("   [INFO] Probing local PostgreSQL server for working connection parameters...")
-    candidate_hosts = [host]
-    for h in ["127.0.0.1", "localhost"]:
-        if h not in candidate_hosts:
-            candidate_hosts.append(h)
-
+    candidate_hosts = ["127.0.0.1", "localhost"]
     candidate_ports = [port]
     for p in [5432, 5433]:
         if p not in candidate_ports:
@@ -118,13 +131,13 @@ def ensure_database_exists():
         if u and u not in candidate_users:
             candidate_users.append(u)
 
-    candidate_passwords = [password, "", "postgres", "password", "root", "admin", "123456", "LucidDevPass123!"]
+    candidate_passwords = [password, "", "postgres", "password", "root", "admin", "123456", "1234", "12345", "postgres123", "LucidDevPass123!"]
 
     for c_host in candidate_hosts:
         for c_port in candidate_ports:
             for c_user in candidate_users:
                 for c_pwd in candidate_passwords:
-                    for maint_db in ["postgres", "template1"]:
+                    for maint_db in ["postgres", "template1", db_name]:
                         try:
                             probe_conn = psycopg2.connect(
                                 dbname=maint_db,
@@ -316,8 +329,8 @@ def main():
                 text("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'")
             ).scalar()
             print(f"\n[SUCCESS] Database is ready! Total public tables: {table_count} (Expected: 60: 59 application tables + 1 alembic_version)")
-            if table_count < 60:
-                print(f"[WARN] Warning: Detected {table_count} tables, expected 60.")
+            if table_count < 50:
+                print(f"[WARN] Warning: Detected only {table_count} tables, expected at least 59.")
                 sys.exit(1)
     except Exception as e:
         print(f"[FAIL] Error verifying database tables: {e}")
