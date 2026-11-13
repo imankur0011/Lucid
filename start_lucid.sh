@@ -101,12 +101,27 @@ check_cmd() {
 
 # Function to locate or auto-install Python 3.11+
 find_python_candidate() {
+    export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+    if command -v uv >/dev/null 2>&1; then
+        local uv_py
+        uv_py="$(uv python find 3.11 2>/dev/null || uv python find '>=3.11' 2>/dev/null || echo "")"
+        if [ -n "$uv_py" ] && [ -x "$uv_py" ]; then
+            echo "$uv_py"
+            return 0
+        fi
+    fi
     for cand in python3.12 python3.11 python3.13 python3 python; do
         if command -v "$cand" >/dev/null 2>&1; then
             if "$cand" -c "import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)" 2>/dev/null; then
                 command -v "$cand"
                 return 0
             fi
+        fi
+    done
+    for uv_p in "$HOME/.local/share/uv/python"/cpython-3.11*/bin/python3.11 "$HOME/.local/share/uv/python"/cpython-3.12*/bin/python3.12; do
+        if [ -x "$uv_p" ]; then
+            echo "$uv_p"
+            return 0
         fi
     done
     return 1
@@ -126,16 +141,28 @@ if [ -z "$PYTHON_CMD" ]; then
                 sudo add-apt-repository -y ppa:deadsnakes/ppa 2>/dev/null || true
                 sudo apt-get update -qq || true
             fi
-            sudo apt-get install -y python3.11 python3.11-venv python3.11-dev python3.11-distutils python3-pip || sudo apt-get install -y python3.12 python3.12-venv python3.12-dev || true
+            sudo apt-get install -y python3.11 python3.11-venv python3.11-dev python3.11-distutils python3-pip 2>/dev/null || sudo apt-get install -y python3.12 python3.12-venv python3.12-dev 2>/dev/null || true
         elif command -v dnf >/dev/null 2>&1; then
-            sudo dnf install -y python3.11 python3.11-pip python3.11-devel || sudo dnf install -y python3.12 python3.12-pip || true
+            sudo dnf install -y python3.11 python3.11-pip python3.11-devel 2>/dev/null || sudo dnf install -y python3.12 python3.12-pip 2>/dev/null || true
         elif command -v pacman >/dev/null 2>&1; then
-            sudo pacman -S --noconfirm python python-pip || true
+            sudo pacman -S --noconfirm python python-pip 2>/dev/null || true
         fi
     elif [ "$OS_NAME" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
         brew install python@3.11 || true
     fi
 
+    PYTHON_CMD=$(find_python_candidate || echo "")
+fi
+
+# Fallback: If OS repositories lack Python 3.11 (e.g. Ubuntu 20.04 where deadsnakes dropped Focal),
+# install portable standalone Python 3.11 via astral/uv (zero root privileges required)
+if [ -z "$PYTHON_CMD" ]; then
+    echo "      Package manager did not provide Python 3.11. Installing standalone Python 3.11..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null 2>&1 || true
+    export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+    if command -v uv >/dev/null 2>&1; then
+        uv python install 3.11 >/dev/null 2>&1 || true
+    fi
     PYTHON_CMD=$(find_python_candidate || echo "")
 fi
 
@@ -146,9 +173,8 @@ else
     echo -e "   Python 3                  : ${RED}✗ Missing Python >= 3.11${NC}"
     echo -e "\n${RED}❌ Python 3.11 or newer is required to run Lucid.${NC}"
     echo "   How to install manually on Linux:"
-    echo "     sudo add-apt-repository -y ppa:deadsnakes/ppa"
-    echo "     sudo apt-get update"
-    echo "     sudo apt-get install -y python3.11 python3.11-venv python3.11-dev"
+    echo "     curl -LsSf https://astral.sh/uv/install.sh | sh"
+    echo "     ~/.local/bin/uv python install 3.11"
     exit 1
 fi
 
@@ -271,8 +297,15 @@ fi
 
 if [ $RECREATE_VENV -eq 1 ]; then
     echo "   Creating new virtual environment at .venv using $PYTHON_CMD..."
-    "$PYTHON_CMD" -m venv "$VENV_DIR"
-    "$VENV_PY" -m pip install --upgrade pip setuptools wheel >/dev/null 2>&1 || true
+    if command -v uv >/dev/null 2>&1; then
+        uv venv --seed "$VENV_DIR" --python "$PYTHON_CMD" >/dev/null 2>&1 || {
+            "$PYTHON_CMD" -m venv "$VENV_DIR"
+            "$VENV_PY" -m pip install --upgrade pip setuptools wheel >/dev/null 2>&1 || true
+        }
+    else
+        "$PYTHON_CMD" -m venv "$VENV_DIR"
+        "$VENV_PY" -m pip install --upgrade pip setuptools wheel >/dev/null 2>&1 || true
+    fi
     echo -e "   ${GREEN}✅ Virtual environment created.${NC}"
 else
     echo -e "   ${GREEN}✅ Reusing existing virtual environment at .venv.${NC}"
@@ -290,7 +323,11 @@ PREV_REQ_HASH=""
 
 if [ "$CURRENT_REQ_HASH" != "$PREV_REQ_HASH" ] || [ ! -f "$HASH_FILE" ]; then
     echo "   Installing backend dependencies from backend/requirements.txt..."
-    "$VENV_DIR/bin/pip" install -r "$REQ_FILE" > "$ROOT_DIR/logs/pip_install.log" 2>&1
+    if command -v uv >/dev/null 2>&1; then
+        uv pip install --python "$VENV_PY" -r "$REQ_FILE" > "$ROOT_DIR/logs/pip_install.log" 2>&1 || "$VENV_PY" -m pip install -r "$REQ_FILE" > "$ROOT_DIR/logs/pip_install.log" 2>&1
+    else
+        "$VENV_PY" -m pip install -r "$REQ_FILE" > "$ROOT_DIR/logs/pip_install.log" 2>&1
+    fi
     echo "$CURRENT_REQ_HASH" > "$HASH_FILE"
     echo -e "   ${GREEN}✅ Backend dependencies installed.${NC}"
 else

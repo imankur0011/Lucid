@@ -104,7 +104,26 @@ elif [ "$OS_NAME" = "Linux" ]; then
                 sudo add-apt-repository -y ppa:deadsnakes/ppa 2>/dev/null || true
                 sudo apt-get update -qq || true
             fi
-            sudo apt-get install -y python3.11 python3.11-venv python3.11-dev python3.11-distutils python3-pip || sudo apt-get install -y python3.12 python3.12-venv python3.12-dev || true
+            sudo apt-get install -y python3.11 python3.11-venv python3.11-dev python3.11-distutils python3-pip 2>/dev/null || sudo apt-get install -y python3.12 python3.12-venv python3.12-dev 2>/dev/null || true
+
+            # Fallback to standalone portable Python 3.11 if distro repositories lack packages (e.g. Ubuntu 20.04)
+            HAS_PY311=0
+            for cand in python3.12 python3.11 python3.13 python3; do
+                if command -v "$cand" >/dev/null 2>&1; then
+                    if "$cand" -c "import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)" 2>/dev/null; then
+                        HAS_PY311=1
+                        break
+                    fi
+                fi
+            done
+            if [ $HAS_PY311 -eq 0 ]; then
+                echo "   Installing portable standalone Python 3.11..."
+                curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null 2>&1 || true
+                export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+                if command -v uv >/dev/null 2>&1; then
+                    uv python install 3.11 >/dev/null 2>&1 || true
+                fi
+            fi
         fi
 
         # 2. Verify / Install Node.js 18+ (Node 22 LTS via NodeSource)
