@@ -5,7 +5,7 @@
 **Supervisor:** Dr. Biju R Mohan  
 **Department:** Department of Information Technology, National Institute of Technology Karnataka, Surathkal  
 **Academic Year:** 2026–2027  
-**Compiled Document:** `Final_Major_Project_Report.pdf` (130 Pages, Publication-Grade PDF, concludes at References)
+**Compiled Document:** `Final_Major_Project_Report.pdf` (142 Pages, Publication-Grade PDF, concludes at References)
 
 ---
 
@@ -15,20 +15,14 @@
 report/
 ├── main.tex                           # Master LaTeX document defining NITK layout, geometry, front matter
 ├── references.bib                     # Academic BibTeX citations (Markowitz, Sharpe, Fama-French, etc.)
-├── Final_Major_Project_Report.pdf     # Primary compiled thesis document (130 pages, ends at References)
-├── chapters/                          # 12 Core Academic Chapters
+├── Final_Major_Project_Report.pdf     # Primary compiled thesis document (142 pages, ends at References)
+├── chapters/                          # 6 Core Academic Chapters
 │   ├── ch1_introduction.tex           # Introduction, retail dilemma, motivation, contributions
 │   ├── ch2_market_survey.tex          # Literature review & competitive analysis (7 platforms)
-│   ├── ch3_hld.tex                    # High-Level Design (7 subsystems, 6 user journeys)
-│   ├── ch4_lld.tex                    # Low-Level Design (Frontend, backend, 13-node LangGraph)
-│   ├── ch5_database_design.tex        # 63 PostgreSQL tables across 8 domains + ER diagrams
-│   ├── ch6_system_architecture.tex    # 8-layer system architecture & technical stack
-│   ├── ch7_methodology.tex            # Mathematical methodology, SLSQP, integer lots, HHI
-│   ├── ch8_dataset.tex                # Ingested datasets, NSE/BSE feeds, multi-agent payloads
-│   ├── ch9_api_contract.tex           # 82 REST endpoints, Pydantic schemas, sequence flows
-│   ├── ch10_work_done.tex             # Comprehensive implementation review & UI verification
-│   ├── ch11_results_testing.tex       # 216 test cases, quantitative backtests, alpha evaluation
-│   └── ch12_conclusion.tex           # Academic contributions, limitations, prioritized roadmap
+│   ├── ch3_system_design.tex          # System Design (Architecture, HLD, LLD, Methodology, DB Design, Datasets, API Contract)
+│   ├── ch4_work_done.tex              # Comprehensive implementation review & UI verification
+│   ├── ch5_results_testing.tex        # 216 test cases, quantitative backtests, alpha evaluation
+│   └── ch6_conclusion.tex             # Academic contributions, limitations, prioritized roadmap
 └── images/                            # 20 High-resolution diagrams, flowcharts, ERDs, and crests
     ├── NITKLogo.jpeg                  # Official NITK Surathkal institutional crest
     ├── 00_master_er_diagram.png       # Complete 63-table master ER diagram
@@ -91,4 +85,4 @@ The LaTeX structure in `main.tex` strictly follows the NITK Surathkal M.Tech dis
 3. **Framed Front Matter**: Institutional framed **Declaration** and framed **Certificate** with guide and DPGC Chairman signatures.
 4. **Roman Page Numbering**: Roman numerals (`i`, `ii`, `iii`...) for Abstract, Contents, List of Figures, List of Tables, and Abbreviations.
 5. **Intentional Blank Page**: Formatted empty page prior to Chapter 1 ensuring that Chapter 1 begins on Arabic page 1 on an odd page.
-6. **Report Conclusion**: The document terminates cleanly with Chapter 12 and the formal **REFERENCES** bibliography.
+6. **Report Conclusion**: The document terminates cleanly with Chapter 6 and the formal **REFERENCES** bibliography.
